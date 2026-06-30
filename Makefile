@@ -8,8 +8,8 @@ vpath %.i include
 #					FILES						 #
 #------------------------------------------------#
 NAME		= ircserv
-INCLUDES	= 
-SRC_FILES	= main 
+INCLUDES	= Server.hpp Client.hpp
+SRC_FILES	= main Server Client
 
 #------------------------------------------------#
 #					DIRECTORY					 #

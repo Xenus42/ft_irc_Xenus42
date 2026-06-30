@@ -21,56 +21,55 @@
 #include <errno.h>          // error
 #include <stdio.h>          // perror
 
+// include
+#include "Server.hpp"
+#include "Client.hpp"
+
+void    printInfo(std::string message)
+{
+    std::cout << "[INFO] " << message << std::endl;
+}
+
+void    nl(void)
+{
+    std::cout << std::endl;
+}
+
 int main(void)
 {
-    int serverFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverFd < 0)
-        return (perror("socket"), 1);
+    std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "Testing Server orthodox canonical form" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+	{
+        Server defaultServ;
+        Server copyServ(defaultServ);
+        Server assignateServ;
 
-    sockaddr_in serverAddr;
-    std::memset(&serverAddr, 0, sizeof(serverAddr));
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(8080);
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-
-    if (bind(serverFd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
-        return (perror("bind"), 1);
-
-    if (listen(serverFd, 10) < 0)
-        return (perror("listen"), 1);
-
-    std::cout << "[SERVER] Waiting for client...\n";
-
-    sockaddr_in clientAddr;
-    socklen_t len = sizeof(clientAddr);
-
-    int clientFd = accept(serverFd, (sockaddr *)&clientAddr, &len);
-    if (clientFd < 0)
-        return (perror("accept"), 1);
-
-    std::cout << "[SERVER] Client connected!\n";
-
-    // ================= ECHO LOOP =================
-    char buffer[1024];
-
-    while (true)
-    {
-        int bytes = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
-
-        if (bytes <= 0)
-        {
-            std::cout << "[SERVER] Client disconnected\n";
-            break;
-        }
-
-        buffer[bytes] = '\0';
-
-        std::cout << "[RECEIVED] " << buffer;
-
-        send(clientFd, buffer, bytes, 0);
+        assignateServ = defaultServ;
+        nl();
     }
 
-    close(clientFd);
-    close(serverFd);
-    return 0;
+    std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "Testing Client orthodox canonical form" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+    {
+        Client defaultClient;
+        Client copyClient(defaultClient);
+        Client assignateClient;
+
+        assignateClient = defaultClient;
+        nl();
+    }
+
+    std::cout << "--------------------------------------------------" << std::endl;
+	std::cout << "Testing minimal Server" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
+    {
+        Server server;
+
+        server.init();
+        
+    }
+    
+    return (0);
 }
