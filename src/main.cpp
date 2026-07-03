@@ -5,71 +5,39 @@
 #include <map>          // std::map
 #include <set>          // std::set
 #include <sstream>      // std::stringstream
-#include <algorithm>    // std::find, std::remove
 #include <cstdlib>      // atoi
-#include <cstring>      // memset
-#include <ctime>        // time
 
 // lib POSIX / Reseau
-#include <unistd.h>         // close
-#include <fcntl.h>          // fcntl
-#include <sys/socket.h>     // socket, bind...
-#include <arpa/inet.h>      // htons, htonl, inet_ntoa
 #include <netinet/in.h>     // sockaddr_in
 #include <poll.h>           // poll
 #include <signal.h>         // signal
 #include <errno.h>          // error
-#include <stdio.h>          // perror
 
 // include
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Utils.hpp"
+#include "Tmp_Log.hpp"
 
-void    printInfo(std::string message)
+int main(int ac, char **av)
 {
-    std::cout << "[INFO] " << message << std::endl;
-}
-
-void    nl(void)
-{
-    std::cout << std::endl;
-}
-
-int main(void)
-{
-    std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "Testing Server orthodox canonical form" << std::endl;
-	std::cout << "--------------------------------------------------" << std::endl;
-	{
-        Server defaultServ;
-        Server copyServ(defaultServ);
-        Server assignateServ;
-
-        assignateServ = defaultServ;
-        nl();
-    }
-
-    std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "Testing Client orthodox canonical form" << std::endl;
-	std::cout << "--------------------------------------------------" << std::endl;
+    if (ac != 3 || !isValidPort(av[1]))
     {
-        Client defaultClient;
-        Client copyClient(defaultClient);
-        Client assignateClient;
-
-        assignateClient = defaultClient;
-        nl();
+        std::cerr << "Error: bad arguments" << std::endl;
+        return EXIT_FAILURE;
     }
-
-    std::cout << "--------------------------------------------------" << std::endl;
-	std::cout << "Testing minimal Server" << std::endl;
-	std::cout << "--------------------------------------------------" << std::endl;
+    try
     {
-        Server server;
-
+        printLog("INFO", "server initializing...");
+        Server server(std::atoi(av[1]), av[2]);
         server.init();
-        
+        server.run();
     }
-    
-    return (0);
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return (EXIT_FAILURE);
+    }
+
+    return (EXIT_SUCCESS);
 }

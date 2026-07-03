@@ -1,15 +1,15 @@
 #------------------------------------------------#
 #					STRUCTURE					 #
 #------------------------------------------------#
-vpath %.cpp src
+vpath %.cpp src src/client src/utils src/server src/commands
 vpath %.i include
 
 #------------------------------------------------#
 #					FILES						 #
 #------------------------------------------------#
 NAME		= ircserv
-INCLUDES	= Server.hpp Client.hpp
-SRC_FILES	= main Server Client
+INCLUDES	= Server.hpp Client.hpp Tmp_Log.hpp Utils.hpp
+SRC_FILES	= main Server Client Tmp_Log Utils
 
 #------------------------------------------------#
 #					DIRECTORY					 #

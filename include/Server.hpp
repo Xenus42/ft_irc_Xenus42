@@ -11,19 +11,20 @@ class Server
     public:
         // === OCF ===
         Server();
+        Server(int _port, std::string password);
         Server(const Server &other);
         Server &operator=(const Server &other);
         ~Server();
 
         // === Life cycle ===
         void init();
-        // void run();
-        // void shutdown();
+        void run();
+        void shutdown();
 
         // === Client ===
-        // Client* getClient(int fd);
-        // Client* getClient(const std::string& nickname);
-        // void removeClient(int fd);
+        void    acceptClient();
+        // void    receiveClient();
+        // void    disconnectClient();
         
         // === Channel ===
         // Channel *getChannel(std::string nick);
@@ -31,15 +32,17 @@ class Server
         // void    removeChannel(std::string nick);
     
     private:
-        // Members functions
+        // === Socket ===
         void createSocket();
         void bindSocket();
         void listenSocket();
 
     private:
-        int _socketFd;
+    
+        int         _port;
+        std::string _password;
+        int         _socketFd;
+        bool        _run;
         sockaddr_in _address;
-        // int _port;
-        // std::string _password;
-        // std::vector<pollfd> pollfds;
+        std::vector<pollfd> _pollfds;
 };
