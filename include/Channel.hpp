@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: williamguerreiro <williamguerreiro@stud    +#+  +:+       +#+        */
+/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 16:48:32 by williamguer       #+#    #+#             */
-/*   Updated: 2026/07/06 16:48:33 by williamguer      ###   ########.fr       */
+/*   Updated: 2026/07/07 10:42:01 by willda-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ class Channel
         void unsetMode(int flag);
         bool hasMode(int flag) const;
 
-        // Divers
+        // Utils
         const std::string &getName() const;
         size_t getClientCount() const;
         bool isEmpty() const;
