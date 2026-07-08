@@ -99,10 +99,6 @@ void Server::run()
 {
     while (_running)
     {
-        // TODEL: print functions
-        printTitle("SERVER");
-        printPollfds();
-        printClientsByFd();
         
         if (poll(&_pollfds[0], _pollfds.size(), -1) < 0)
         {
@@ -122,6 +118,10 @@ void Server::run()
             // else
             //     receiveClient(_pollfds[i].fd);
         }
+                // TODEL: print functions
+        printTitle("SERVER STATUS");
+        printPollfds();
+        printClientsByFd();
     }
 }
 
@@ -247,22 +247,24 @@ void Server::printPollfds() const
     printSection("Pollfds:");
     for (size_t i = 0; i < _pollfds.size(); i++)
     {
-        std::cout << "[" << i << "]\tfd: " 
-                  << _pollfds[i].fd;
+        std::cout << "[" << i << "]"
+                  << "\t fd: " << _pollfds[i].fd
+                  << "\t event: ";
 
         if (_pollfds[i].events & POLLIN)
-            std::cout << "\t POLLIN";
+            std::cout << "POLLIN";
 
         if (_pollfds[i].revents & POLLOUT)
-            std::cout << "\t POLLOUT";
+            std::cout << "POLLOUT";
 
         if (_pollfds[i].revents & POLLERR)
-            std::cout << "\t POLLERR";
+            std::cout << "POLLERR";
 
         if (_pollfds[i].revents & POLLHUP)
-            std::cout << "\t POLLHUP";
+            std::cout << "POLLHUP";
 
         std::cout << std::endl;
+
     }
     nl(2);
 }
@@ -279,12 +281,12 @@ void Server::printClientsByFd() const
 
         if (it->second)
         {
-            std::cout << " | nick: " << it->second->getNickname()
-                      << " | user: " << it->second->getUsername();
+            std::cout << "\t nick: " << it->second->getNickname()
+                      << "\t user: " << it->second->getUsername();
         }
         else
         {
-            std::cout << " | Client: NULL";
+            std::cout << "\tClient: NULL";
         }
 
         std::cout << std::endl;
