@@ -23,12 +23,12 @@ int main(int ac, char **av)
 {
     if (ac != 3 || !isValidPort(av[1]))
     {
+        // TODO: specify error type
         std::cerr << "Error: bad arguments" << std::endl;
         return EXIT_FAILURE;
     }
     try
     {
-        printLog("INFO", "server initializing...");
         Server server(std::atoi(av[1]), av[2]);
         server.init();
         server.run();
