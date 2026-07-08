@@ -2,6 +2,7 @@
 
 #include <netinet/in.h>
 #include <vector>
+#include <map>
 #include <poll.h>
 
 #include "Client.hpp"
@@ -17,32 +18,41 @@ class Server
         ~Server();
 
         // === Life cycle ===
-        void init();
-        void run();
-        void shutdown();
+        void    init();
+        void    run();
+        void    shutdown();
 
         // === Client ===
         void    acceptClient();
+        void    addClient(int fd, const sockaddr_in& address);
         // void    receiveClient();
-        // void    disconnectClient();
+        // void    removeClient();
+
+        // === Poll ===
+        void    addPollfd(int fd);
+        void    removePollfd(int fd);
         
-        // === Channel ===
-        // Channel *getChannel(std::string nick);
-        // void    createChannel(std::string nick);
-        // void    removeChannel(std::string nick);
-    
     private:
         // === Socket ===
-        void createSocket();
-        void bindSocket();
-        void listenSocket();
+        void    createSocket();
+        void    bindSocket();
+        void    listenSocket();
+
+        // === Print ===
+        void    printPollfds() const;
+        void    printClientsByFd() const;
 
     private:
     
         int         _port;
         std::string _password;
-        int         _socketFd;
-        bool        _run;
+        int         _listenFd;
+        bool        _running;
+        
         sockaddr_in _address;
-        std::vector<pollfd> _pollfds;
-};
+
+        // === Collections === 
+        std::vector<pollfd>             _pollfds;
+        std::map<int, Client*>          _clientsByFd;
+        std::map<std::string, Client*>  _clientsByNick;
+    };
