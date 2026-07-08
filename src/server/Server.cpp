@@ -9,7 +9,6 @@
 #include "Client.hpp"
 #include "Tmp_Log.hpp"
 
-
 // ************************************************************************** //
 //                             Orthodox Canonical Form
 // ************************************************************************** //
@@ -97,6 +96,7 @@ void Server::init()
 
 void Server::run()
 {
+    printServerStatus();
     while (_running)
     {
         
@@ -114,14 +114,14 @@ void Server::run()
                 continue;
 
             if (_pollfds[i].fd == _listenFd)
+            {
                 acceptClient();
-            // else
-            //     receiveClient(_pollfds[i].fd);
+                printServerStatus();
+            }
+            else
+                receiveClient(_pollfds[i].fd);
         }
                 // TODEL: print functions
-        printTitle("SERVER STATUS");
-        printPollfds();
-        printClientsByFd();
     }
 }
 
@@ -223,6 +223,32 @@ void Server::addClient(int fd, const sockaddr_in& address)
     std::cout << "[SERVER] Client " << _clientsByFd[fd] << " connected" << std::endl;
 }
 
+void    Server::receiveClient(int fd)
+{
+    char    buffer[1024];
+
+    int bytes = recv(fd, buffer, sizeof(buffer) -1, 0);
+    
+    if (bytes < 0)
+    {
+        perror("recv");
+        return;   
+    }
+    if (bytes > 0)
+    {
+        buffer[bytes] = '\0';
+        _clientsByFd[fd]->appendBuffer(buffer);
+        std::cout << "recv: " << buffer << std::endl;
+        std::cout << "_buffer: " << _clientsByFd[fd]->getBuffer() << std::endl;
+    }
+    if (bytes == 0)
+    {
+        // TODO: handle disconnect;
+        close(fd);
+        printLog("SERVER", "Client disconnected");
+    }
+}
+
 // ************************************************************************** //
 //                                   Poll
 // ************************************************************************** //
@@ -292,4 +318,12 @@ void Server::printClientsByFd() const
         std::cout << std::endl;
     }
     nl(2);
+}
+
+void    Server::printServerStatus() const
+{
+        nl(1);
+        printTitle("SERVER STATUS");
+        printPollfds();
+        printClientsByFd();
 }

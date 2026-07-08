@@ -25,7 +25,7 @@ class Server
         // === Client ===
         void    acceptClient();
         void    addClient(int fd, const sockaddr_in& address);
-        // void    receiveClient();
+        void    receiveClient(int fd);
         // void    removeClient();
 
         // === Poll ===
@@ -41,6 +41,7 @@ class Server
         // === Print ===
         void    printPollfds() const;
         void    printClientsByFd() const;
+        void    printServerStatus() const;
 
     private:
     
