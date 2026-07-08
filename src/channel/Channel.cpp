@@ -3,163 +3,192 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
+/*   By: williamguerreiro <williamguerreiro@stud    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/06 16:48:28 by williamguer       #+#    #+#             */
-/*   Updated: 2026/07/07 10:41:57 by willda-s         ###   ########.fr       */
+/*   Created: 2026/07/08 17:00:48 by williamguer       #+#    #+#             */
+/*   Updated: 2026/07/08 17:01:11 by williamguer      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
+#include "Client.hpp"
 
-Channel::Channel(const std::string &name) : name(name), topic(""), key(""), userLimit(0), modeFlags(0)
-{}
-
-Channel::~Channel()
-{}
-
-Channel::Channel()
+Channel::Channel(const std::string &name)
+    : _name(name), _topic(""), _key(""), _userLimit(0), _modes(0)
 {
 }
 
-/* ******************** Gestion des membres *********************************** */
+Channel::~Channel()
+{
+}
+
+// ---- Statut interne (privé) ----
+
+bool Channel::hasStatus(Client *client, int flag) const
+{
+    std::map<Client*, int>::const_iterator it = _status.find(client);
+    if (it == _status.end())
+        return false;
+    return (it->second & flag) != 0;
+}
+
+void Channel::setStatus(Client *client, int flag)
+{
+    _status[client] |= flag;
+}
+
+void Channel::unsetStatus(Client *client, int flag)
+{
+    std::map<Client*, int>::iterator it = _status.find(client);
+    if (it == _status.end())
+        return;
+    it->second &= ~flag;
+    if (it->second == 0)
+        _status.erase(it);
+}
+
+// ---- Membres ----
+
 void Channel::addClient(Client *client)
 {
-	members.insert(client);
+    setStatus(client, STATUS_MEMBER);
 }
 
 void Channel::removeClient(Client *client)
 {
-	members.erase(client);
+    unsetStatus(client, STATUS_MEMBER);
+    unsetStatus(client, STATUS_OPERATOR);
+    unsetStatus(client, STATUS_INVITED);
 }
 
-void Channel::isMember(Client *client) const
+bool Channel::isMember(Client *client) const
 {
-	return members.find(client) != members.end();
+    return hasStatus(client, STATUS_MEMBER);
 }
 
-/* ******************** Gestion des operateurs *********************************** */
+// ---- Opérateurs ----
+
 void Channel::addOperator(Client *client)
 {
-	operators.insert(client);
+    setStatus(client, STATUS_OPERATOR);
 }
 
 void Channel::removeOperator(Client *client)
 {
-	operators.erase(client);
+    unsetStatus(client, STATUS_OPERATOR);
 }
 
-void Channel::isOperator(Client *client) const
+bool Channel::isOperator(Client *client) const
 {
-	return operators.find(client) != operators.end();
+    return hasStatus(client, STATUS_OPERATOR);
 }
 
-/* ******************** Gestion des invités *********************************** */
+// ---- Invitations ----
+
 void Channel::addInvited(Client *client)
 {
-	invited.insert(client);
+    setStatus(client, STATUS_INVITED);
+}
+
+bool Channel::isInvited(Client *client) const
+{
+    return hasStatus(client, STATUS_INVITED);
 }
 
 void Channel::removeInvited(Client *client)
 {
-	invited.erase(client);
+    unsetStatus(client, STATUS_INVITED);
 }
 
-void Channel::isInvited(Client *client) const
-{
-	return invited.find(client) != invited.end();
-}
+// ---- Topic ----
 
-/* ******************** Topic *********************************** */
 void Channel::setTopic(const std::string &topic)
 {
-	this->topic = topic;
+    _topic = topic;
 }
 
 const std::string &Channel::getTopic() const
 {
-	return topic;
+    return _topic;
 }
 
-/* ******************** Key *********************************** */
+// ---- Key ----
+
 void Channel::setKey(const std::string &key)
 {
-	this->key = key;
+    _key = key;
+    setMode(MODE_HAS_KEY);
 }
 
 const std::string &Channel::getKey() const
 {
-	return key;
+    return _key;
 }
 
 void Channel::removeKey()
 {
-	key.clear();
+    _key.clear();
+    unsetMode(MODE_HAS_KEY);
 }
 
-/* ******************** User limit *********************************** */
+// ---- User limit ----
+
 void Channel::setUserLimit(int limit)
 {
-	userLimit = limit;
+    _userLimit = limit;
+    setMode(MODE_HAS_LIMIT);
 }
 
-void Channel::getUserLimit() const
+int Channel::getUserLimit() const
 {
-	return userLimit;
+    return _userLimit;
 }
 
 void Channel::removeUserLimit()
 {
-	userLimit = 0;
+    _userLimit = 0;
+    unsetMode(MODE_HAS_LIMIT);
 }
 
-/* ******************** Gestion des modes *********************************** */
+// ---- Modes ----
+
 void Channel::setMode(int flag)
 {
-	modeFlags |= flag;
+    _modes |= flag;
 }
+
 void Channel::unsetMode(int flag)
 {
-	modeFlags &= ~flag;
+    _modes &= ~flag;
 }
 
 bool Channel::hasMode(int flag) const
 {
-	return (modeFlags & flag) != 0;
+    return (_modes & flag) != 0;
 }
 
-/* ******************** Utils *********************************** */
+// ---- Utils ----
+
 const std::string &Channel::getName() const
 {
-	return name;
+    return _name;
 }
 
 size_t Channel::getClientCount() const
 {
-	return members.size();
+    size_t count = 0;
+    std::map<Client*, int>::const_iterator it;
+    for (it = _status.begin(); it != _status.end(); ++it)
+    {
+        if (it->second & STATUS_MEMBER)
+            count++;
+    }
+    return count;
 }
 
 bool Channel::isEmpty() const
 {
-	return members.empty();
+    return getClientCount() == 0;
 }
 
-void Channel::broadcast(const std::string &message, Client *exclude)
-{
-	for (std::set<Client*>::iterator it = members.begin(); it != members.end(); ++it)
-	{
-		if (*it != exclude)
-		{
-			(*it)->sendMessage(message);
-		}
-	}
-}
-std::string Channel::getMemberList() const
-{
-	std::string memberList;
-	for (std::set<Client*>::iterator it = members.begin(); it != members.end(); ++it)
-	{
-		memberList += (*it)->getNickname() + " ";
-	}
-	return memberList;
-}
+//reste broadcast et getmemberslist
