@@ -1,0 +1,6 @@
+// feature/parsing : organiser le parsing des commandes IRC.
+// checker le fonctionnement du  travail du serveurs.
+// checker la comunication client et serveurs.
+//detailler les commande recevable d'entree pour la reception et l'execution server
+// revenir vers dam et will pour des questions.
+// travailler sur une architecture de parsing.
