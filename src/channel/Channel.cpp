@@ -6,9 +6,11 @@
 /*   By: williamguerreiro <williamguerreiro@stud    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:00:48 by williamguer       #+#    #+#             */
-/*   Updated: 2026/07/08 17:01:11 by williamguer      ###   ########.fr       */
+/*   Updated: 2026/07/18 13:54:42 by williamguer      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <sys/socket.h>
 
 #include "Channel.hpp"
 #include "Client.hpp"
@@ -82,7 +84,6 @@ bool Channel::isOperator(Client *client) const
 {
     return hasStatus(client, STATUS_OPERATOR);
 }
-
 // ---- Invitations ----
 
 void Channel::addInvited(Client *client)
@@ -191,4 +192,37 @@ bool Channel::isEmpty() const
     return getClientCount() == 0;
 }
 
-//reste broadcast et getmemberslist
+// ---- Diffusion ----
+//Remplacer ::send par client.sendmessage() 
+void Channel::broadcast(const std::string &message, Client *exclude)
+{
+    std::string full = message + "\r\n";
+
+    std::map<Client*, int>::const_iterator it;
+    for (it = _status.begin(); it != _status.end(); ++it)
+    {
+        if (!(it->second & STATUS_MEMBER))
+            continue;
+        if (it->first == exclude)
+            continue;
+        ::send(it->first->getFd(), full.c_str(), full.size(), 0);
+    }
+}
+
+std::string Channel::getMemberList() const
+{
+    std::string list;
+
+    std::map<Client*, int>::const_iterator it;
+    for (it = _status.begin(); it != _status.end(); ++it)
+    {
+        if (!(it->second & STATUS_MEMBER))
+            continue;
+        if (!list.empty())
+            list += " ";
+        if (it->second & STATUS_OPERATOR)
+            list += "@";
+        list += it->first->getNickname();
+    }
+    return list;
+}

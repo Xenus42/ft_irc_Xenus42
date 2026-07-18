@@ -6,6 +6,7 @@
 #include <poll.h>
 
 #include "Client.hpp"
+#include "Channel.hpp"
 
 class Server
 {
@@ -28,10 +29,14 @@ class Server
         void    receiveClient(int fd);
         // void    removeClient();
 
+        // === Channel ===
+        Channel *getChannel(const std::string &name);
+        Channel *createChannel(const std::string &name);
+
         // === Poll ===
         void    addPollfd(int fd);
         void    removePollfd(int fd);
-        
+
     private:
         // === Socket ===
         void    createSocket();
@@ -56,4 +61,5 @@ class Server
         std::vector<pollfd>             _pollfds;
         std::map<int, Client*>          _clientsByFd;
         std::map<std::string, Client*>  _clientsByNick;
+        std::map<std::string, Channel*> _channels;
     };
