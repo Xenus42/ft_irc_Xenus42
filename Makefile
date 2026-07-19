@@ -9,7 +9,7 @@ vpath %.i include
 #------------------------------------------------#
 NAME		= ircserv
 INCLUDES	= Server.hpp Client.hpp Tmp_Log.hpp Utils.hpp Channel.hpp
-SRC_FILES	= main Server Client Tmp_Log Utils Channel Join
+SRC_FILES	= main Server Client Tmp_Log Utils Channel Join Part
 
 #------------------------------------------------#
 #					DIRECTORY					 #

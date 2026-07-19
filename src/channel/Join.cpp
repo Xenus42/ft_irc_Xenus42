@@ -4,7 +4,9 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 
-static void reply(Client *client, const std::string &line)
+
+//a remplacer par client->sendmessage()
+void reply(Client *client, const std::string &line)
 {
     std::string full = line + "\r\n";
     ::send(client->getFd(), full.c_str(), full.size(), 0);
@@ -25,6 +27,14 @@ Channel *Server::getChannel(const std::string &name)
     return it->second;
 }
 
+void Server::removeChannel(const std::string &name)
+{
+    std::map<std::string, Channel*>::iterator it = _channels.find(name);
+    if (it == _channels.end())
+        return;
+    delete it->second;
+    _channels.erase(it);
+}
 
 // —  JOIN <#channel> [key]
 // (params deja decoupes par le parser : params[0] = nom, params[1] = cle optionnelle)

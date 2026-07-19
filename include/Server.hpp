@@ -32,6 +32,7 @@ class Server
         // === Channel ===
         Channel *getChannel(const std::string &name);
         Channel *createChannel(const std::string &name);
+        void     removeChannel(const std::string &name);
 
         // === Poll ===
         void    addPollfd(int fd);
