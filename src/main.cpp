@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 11:29:19 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 15:32:08 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 15:34:28 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,12 @@ int	main(int ac, char **av)
 		// 6 Parametre IRC avec deux points et espaces
 		// 7 Cas IRC avec un message libre apres des parametres
 		// 8 Autre cas IRC avec cible et message libre
+		// 9 Cas IRC avec plusieurs parametres suivis d'un texte libre
 		const std::string tests[] = {"  JOIN\t\t#general  ", "PASS\t1234\r\n",
 			"JOIN #chan password", "", "josie    alice   boby",
 			"PRIVMSG #chan :hello there", "NOTICE alice :bonjour les amis",
-			"TOPIC #general :nouveau sujet"};
-		for (std::size_t i = 0; i < 8; ++i)
+			"TOPIC #general :nouveau sujet", "MODE #chan +o alice"};
+		for (std::size_t i = 0; i < 9; ++i)
 		{
 			Parsing::Command cmd = parser.parse(tests[i]);
 			std::cout << "input: '" << tests[i] << "'" << std::endl;
