@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 11:29:19 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 16:11:04 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 17:51:55 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,13 @@ int	main(int ac, char **av)
 		// 21 Cas avec une commande MODE et un parametre simple.
 		// 22 Cas avec une commande NOTICE et un parametre simple.
 		// 23 Cas avec une commande WHO et deux parametres simples.
+		// 24 Cas avec une commande PRIVMSG et un texte libre vide.
+		// 25 Cas avec un prefix IRC avant la commande.
+		// 26 Cas avec une commande en minuscules.
+		// 27 Cas avec plusieurs parametres simples et un texte libre.
+		// 28 Cas avec prefixe, plusieurs parametres et un texte libre.
+		// 29 Cas avec prefixe, plusieurs parametres et un texte libre plus long.
+		// 30 Cas avec plusieurs cibles et un texte libre.
 		const std::string tests[] = {"  JOIN\t\t#general  ", "PASS\t1234\r\n",
 			"JOIN #chan password", "", "josie    alice   boby",
 			"PRIVMSG #chan :hello there", "NOTICE alice :bonjour les amis",
@@ -73,9 +80,13 @@ int	main(int ac, char **av)
 			"LIST #chan", "NICK alice", "PRIVMSG bob :hello",
 			"INVITE alice #chan", "TOPIC #chan :new topic", "KICK #chan alice",
 			"USER guest 0 * :Guest", "MODE #chan +i", "NOTICE alice :hello",
-			"WHO #chan alice"};
+			"WHO #chan alice", "PRIVMSG #chan :",
+			":nick!user@host PRIVMSG #chan :hello", "join #chan", "MODE #chan +o alice :hello", 
+            ":alice!user@host MODE #chan +v bob :hello",
+			":bob!user@host PRIVMSG #chan :hello there friend",
+			":carol!user@host PRIVMSG alice bob :hello there"};
 		std::size_t i = 0;
-		while (i < 23)
+		while (i < 30)
 		{
 			Parsing::Command cmd = parser.parse(tests[i]);
 			std::cout << "input: '" << tests[i] << "'" << std::endl;

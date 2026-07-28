@@ -12,7 +12,10 @@ Le parseur fait pour l'instant :
 - garder le premier mot comme nom de commande
 - garder les autres mots comme parametres
 - traiter les parametres precedes de `:` comme un seul parametre de texte libre
+- ignorer un prefixe IRC optionnel au debut d'une ligne, comme `:nick!user@host COMMAND`
+- mettre le nom de commande en majuscules, car les commandes IRC sont insensibles a la casse
 - gerer les lignes vides et les cas limites comme `QUIT :` ou `PART #chan :`
+- conserver un parametre de texte libre vide lorsqu'il est present apres `:`
 - fonctionner dans le mode de test `--parse-test` du programme principal
 
 ## Cas de test de base
@@ -41,6 +44,9 @@ Le mode `--parse-test` dans [src/main.cpp](../src/main.cpp) est utilise pour val
 - 21. un cas avec la commande MODE et un parametre simple : `"MODE #chan +i"`
 - 22. un cas avec la commande NOTICE et un parametre simple : `"NOTICE alice :hello"`
 - 23. un cas avec la commande WHO et deux parametres simples : `"WHO #chan alice"`
+- 24. un cas avec la commande PRIVMSG et un texte libre vide : `"PRIVMSG #chan :"`
+- 25. un cas avec un prefixe IRC avant la commande : `":nick!user@host PRIVMSG #chan :hello"`
+- 26. un cas avec une commande en minuscules : `"join #chan"`
 
 Ces cas sont actuellement consideres comme valides tant que la commande `./ircserv --parse-test` affiche le comportement attendu.
 

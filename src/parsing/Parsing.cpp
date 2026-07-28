@@ -6,9 +6,11 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 10:25:11 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 16:18:28 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 17:19:16 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <cctype>
 
 #include "Parsing.hpp"
 
@@ -38,6 +40,19 @@ static bool	isSeparator(char c)
 	return (c == ' ' || c == '\t' || c == '\r' || c == '\n');
 }
 
+static std::string toUpperCase(const std::string &str)
+{
+	std::string result;
+	std::string::size_type i = 0;
+	while (i < str.size())
+	{
+		result.push_back(static_cast<char>(std::toupper(
+			static_cast<unsigned char>(str[i]))));
+		++i;
+	}
+	return (result);
+}
+
 Parsing::Command Parsing::parse(const std::string &line) const
 {
 	Command cmd;
@@ -45,6 +60,15 @@ Parsing::Command Parsing::parse(const std::string &line) const
 
 	if (input.empty())
 		return (cmd);
+	if (input[0] == ':')
+	{
+		std::string::size_type prefixEnd = input.find_first_of(" \t\r\n", 1);
+		if (prefixEnd == std::string::npos)
+			return (cmd);
+		input = removeSpaces(input.substr(prefixEnd));
+		if (input.empty())
+			return (cmd);
+	}
 
 	std::string currentWord;
 	std::vector<std::string> words;
@@ -74,13 +98,15 @@ Parsing::Command Parsing::parse(const std::string &line) const
 		++i;
 	}
 
-	if (!currentWord.empty())
+	if (textParams)
+		words.push_back(currentWord);
+	else if (!currentWord.empty())
 		words.push_back(currentWord);
 
 	if (words.empty())
 		return (cmd);
 
-	cmd.name = words[0];
+	cmd.name = toUpperCase(words[0]);
 	std::vector<std::string>::size_type j = 1;
 	while (j < words.size())
 	{
