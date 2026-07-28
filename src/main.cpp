@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/07/28 11:29:19 by lebroue           #+#    #+#             */
+/*   Updated: 2026/07/28 11:29:19 by lebroue          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 // lib C++
 #include <cstdlib>  // atoi
 #include <iostream> // std::cout, std::cerr
@@ -26,10 +38,16 @@ int	main(int ac, char **av)
 
 	if (ac == 2 && std::string(av[1]) == "--parse-test") // TEST DU PARSING
 	{
-		Parsing::Command cmd = parser.parse("JOIN #general");
-		std::cout << "command: " << cmd.name << std::endl;
-		for (std::size_t i = 0; i < cmd.params.size(); ++i)
-			std::cout << "param " << i << ": " << cmd.params[i] << std::endl;
+		const std::string tests[] = {"  JOIN\t\t#general  ", "PASS\t1234\r\n"};
+		for (std::size_t i = 0; i < 2; ++i)
+		{
+			Parsing::Command cmd = parser.parse(tests[i]);
+			std::cout << "input: '" << tests[i] << "'" << std::endl;
+			std::cout << "command: " << cmd.name << std::endl;
+			for (std::size_t j = 0; j < cmd.params.size(); ++j)
+				std::cout << "param " << j << ": " << cmd.params[j] << std::endl;
+			std::cout << std::endl;
+		}
 		return (EXIT_SUCCESS);
 	} // FIN TEST DU PARSING
 	if (ac != 3 || !isValidPort(av[1]))
