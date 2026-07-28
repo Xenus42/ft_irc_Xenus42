@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 11:29:19 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 13:39:40 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 14:05:06 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,11 @@ int	main(int ac, char **av)
 		// 3 Commande JOIN avec plusieurs parametres
 		// 4 Ligne vide
 		// 5 Commande avec plusieurs espaces entre mots
+		// 6 Parametre IRC avec deux points et espaces
 		const std::string tests[] = {"  JOIN\t\t#general  ", "PASS\t1234\r\n",
-			"JOIN #chan password", "", "josie    alice   boby"};
-		for (std::size_t i = 0; i < 5; ++i)
+			"JOIN #chan password", "", "josie    alice   boby",
+			"PRIVMSG #chan :hello there"};
+		for (std::size_t i = 0; i < 6; ++i)
 		{
 			Parsing::Command cmd = parser.parse(tests[i]);
 			std::cout << "input: '" << tests[i] << "'" << std::endl;
