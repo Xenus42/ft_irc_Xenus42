@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 11:29:19 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 11:29:19 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 11:32:50 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,9 @@ int	main(int ac, char **av)
 
 	if (ac == 2 && std::string(av[1]) == "--parse-test") // TEST DU PARSING
 	{
+		// TESTS DE BASE POUR LE PARSING
+		// 1 Commande JOIN avec espaces et tabulations autour du parametre
+		// 2 Commande PASS avec un parametre suivi d'un retour a la ligne
 		const std::string tests[] = {"  JOIN\t\t#general  ", "PASS\t1234\r\n"};
 		for (std::size_t i = 0; i < 2; ++i)
 		{
