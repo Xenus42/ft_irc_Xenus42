@@ -6,13 +6,12 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 10:25:11 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 17:19:16 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 18:54:15 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cctype>
-
 #include "Parsing.hpp"
+#include <cctype>
 
 Parsing::Parsing()
 {
@@ -46,8 +45,7 @@ static std::string toUpperCase(const std::string &str)
 	std::string::size_type i = 0;
 	while (i < str.size())
 	{
-		result.push_back(static_cast<char>(std::toupper(
-			static_cast<unsigned char>(str[i]))));
+		result.push_back(static_cast<char>(std::toupper(static_cast<unsigned char>(str[i]))));
 		++i;
 	}
 	return (result);
@@ -64,10 +62,11 @@ Parsing::Command Parsing::parse(const std::string &line) const
 	{
 		std::string::size_type prefixEnd = input.find_first_of(" \t\r\n", 1);
 		if (prefixEnd == std::string::npos)
-			return (cmd);
+			throw std::runtime_error("Invalid IRC prefix: missing command");
+		cmd.prefix = input.substr(1, prefixEnd - 1);
 		input = removeSpaces(input.substr(prefixEnd));
 		if (input.empty())
-			return (cmd);
+			throw std::runtime_error("Invalid IRC line: empty command after prefix");
 	}
 
 	std::string currentWord;

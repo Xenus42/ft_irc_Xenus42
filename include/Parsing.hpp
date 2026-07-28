@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -11,6 +12,7 @@ class Parsing
 
 	struct	Command
 	{
+		std::string prefix;
 		std::string name;
 		std::vector<std::string> params;
 	};

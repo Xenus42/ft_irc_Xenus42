@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 11:29:19 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 17:51:55 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 18:54:11 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ int	main(int ac, char **av)
 		// 26 Cas avec une commande en minuscules.
 		// 27 Cas avec plusieurs parametres simples et un texte libre.
 		// 28 Cas avec prefixe, plusieurs parametres et un texte libre.
-		// 29 Cas avec prefixe, plusieurs parametres et un texte libre plus long.
+		// 29 Cas avec prefixe,plusieurs parametres et un texte libre plus long.
 		// 30 Cas avec plusieurs cibles et un texte libre.
 		const std::string tests[] = {"  JOIN\t\t#general  ", "PASS\t1234\r\n",
 			"JOIN #chan password", "", "josie    alice   boby",
@@ -84,20 +84,30 @@ int	main(int ac, char **av)
 			":nick!user@host PRIVMSG #chan :hello", "join #chan", "MODE #chan +o alice :hello", 
             ":alice!user@host MODE #chan +v bob :hello",
 			":bob!user@host PRIVMSG #chan :hello there friend",
-			":carol!user@host PRIVMSG alice bob :hello there"};
+			":carol!user@host PRIVMSG alice bob :hello there",
+			":nick!user@host NICK alice", "PING :server"};
+		const std::size_t testCount = sizeof(tests) / sizeof(tests[0]);
 		std::size_t i = 0;
-		while (i < 30)
+		while (i < testCount)
 		{
-			Parsing::Command cmd = parser.parse(tests[i]);
-			std::cout << "input: '" << tests[i] << "'" << std::endl;
-			std::cout << "command: " << cmd.name << std::endl;
-			std::size_t j = 0;
-			while (j < cmd.params.size())
+			try
 			{
-				std::cout << "param " << j << ": " << cmd.params[j] << std::endl;
-				++j;
+				Parsing::Command cmd = parser.parse(tests[i]);
+				std::cout << "input: '" << tests[i] << "'" << std::endl;
+				std::cout << "prefix: '" << cmd.prefix << "'" << std::endl;
+				std::cout << "command: " << cmd.name << std::endl;
+				std::size_t j = 0;
+				while (j < cmd.params.size())
+				{
+					std::cout << "param " << j << ": " << cmd.params[j] << std::endl;
+					++j;
+				}
+				std::cout << std::endl;
 			}
-			std::cout << std::endl;
+			catch (const std::exception &e)
+			{
+				std::cerr << "parse error: " << e.what() << std::endl;
+			}
 			++i;
 		}
 		return (EXIT_SUCCESS);
