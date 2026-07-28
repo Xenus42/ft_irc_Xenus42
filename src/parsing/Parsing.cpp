@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 10:25:11 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 10:59:03 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 13:39:47 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,9 @@ static std::string removeSpaces(const std::string &str)
 {
 	std::string::size_type start = 0;
 	std::string::size_type end = str.size();
-	while (start < end && (str[start] == ' ' || str[start] == '\t'))
+	while (start < end && (str[start] == ' ' || str[start] == '\t' || str[start] == '\r' || str[start] == '\n'))
 		++start;
-	while (end > start && (str[end - 1] == ' ' || str[end - 1] == '\t'))
+	while (end > start && (str[end - 1] == ' ' || str[end - 1] == '\t' || str[end - 1] == '\r' || str[end - 1] == '\n'))
 		--end;
 	return (str.substr(start, end - start));
 }
@@ -44,7 +44,7 @@ Parsing::Command Parsing::parse(const std::string &line) const
 
 	for (std::string::size_type i = 0; i < input.size(); ++i)
 	{
-		if (input[i] == ' ' || input[i] == '\t')
+		if (input[i] == ' ' || input[i] == '\t' || input[i] == '\r' || input[i] == '\n')
 		{
 			if (!currentWord.empty())
 			{
