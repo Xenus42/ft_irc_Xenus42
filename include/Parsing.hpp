@@ -22,4 +22,5 @@ class Parsing
 
   private:
 	void trimSpaces(std::string &str) const;
+	bool isKnownCommand(const std::string &name) const;
 };

@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 11:29:19 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 19:12:09 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/29 12:05:57 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,21 +72,29 @@ int	main(int ac, char **av)
 		// 28 Cas avec prefixe, plusieurs parametres et un texte libre.
 		// 29 Cas avec prefixe,plusieurs parametres et un texte libre plus long.
 		// 30 Cas avec plusieurs cibles et un texte libre.
-		const std::string tests[] = {"  JOIN\t\t#general  ", "PASS\t1234\r\n",
-			"JOIN #chan password", "", "josie    alice   boby",
-			"PRIVMSG #chan :hello there", "NOTICE alice :bonjour les amis",
-			"TOPIC #general :nouveau sujet", "MODE #chan +o alice", "QUIT :",
-			"PART #chan :", "KICK #chan alice", "WHO #chan :names",
-			"LIST #chan", "NICK alice", "PRIVMSG bob :hello",
-			"INVITE alice #chan", "TOPIC #chan :new topic", "KICK #chan alice",
-			"USER guest 0 * :Guest", "MODE #chan +i", "NOTICE alice :hello",
-			"WHO #chan alice", "PRIVMSG #chan :",
-			":nick!user@host PRIVMSG #chan :hello", "join #chan", "MODE #chan +o alice :hello", 
-            ":alice!user@host MODE #chan +v bob :hello",
-			":bob!user@host PRIVMSG #chan :hello there friend",
-			":carol!user@host PRIVMSG alice bob :hello there",
-			":nick!user@host NICK alice", "PING :server", "PASS :secret",
-			"JOIN #chan :topic", "QUIT :leaving", "PART #chan :bye", "MODE #chan +k secret"};
+		const std::string tests[] = {
+			"  JOIN\t\t#general  ", "PASS\t1234\r\n",     "JOIN #chan password",
+				"", "josie    alice   boby", "PRIVMSG #chan :hello there",
+				"NOTICE alice :bonjour les amis",
+				"TOPIC #general :nouveau sujet", "MODE #chan +o alice",
+				"QUIT :", "PART #chan :", "KICK #chan alice",
+				"WHO #chan :names", "LIST #chan", "NICK alice",
+				"PRIVMSG bob :hello", "INVITE alice #chan",
+				"TOPIC #chan :new topic", "KICK #chan alice", "USER guest 0 * :Guest",
+                "MODE #chan +i", "NOTICE alice :hello",
+				"WHO #chan alice", "PRIVMSG #chan :",
+				":nick!user@host PRIVMSG #chan :hello", "join #chan",
+				"MODE #chan +o alice :hello", ":alice!user@host MODE #chan +v bob :hello",
+				":bob!user@host PRIVMSG #chan :hello there friend",
+				":carol!user@host PRIVMSG alice bob :hello there",
+				":nick!user@host NICK alice", "PING :server", "PONG :server", "PASS :secret",
+				"JOIN #chan :topic", "QUIT :leaving", "PART #chan :bye",
+				"MODE #chan +k secret",
+				":nick!user@host PRIVMSG #chan :hello there friend",
+				"NOTICE #chan :hello from server",
+				"TOPIC #chan :new topic for channel",
+			    "CAP LS 302",           "AUTHENTICATE PLAIN", "WHOIS alice",
+			    ":server PRIVMSG #chan alice :hello there friend"};
 		const std::size_t testCount = sizeof(tests) / sizeof(tests[0]);
 		std::size_t i = 0;
 		while (i < testCount)

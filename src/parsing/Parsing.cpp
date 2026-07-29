@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 10:25:11 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 19:12:09 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/29 11:57:47 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,8 @@ Parsing::Command Parsing::parse(const std::string &line) const
 		if (prefixEnd == std::string::npos)
 			throw std::runtime_error("Invalid IRC prefix: missing command");
 		cmd.prefix = input.substr(1, prefixEnd - 1);
+		if (cmd.prefix.empty())
+			throw std::runtime_error("Invalid IRC prefix: empty prefix");
 		input = removeSpaces(input.substr(prefixEnd));
 		if (input.empty())
 			throw std::runtime_error("Invalid IRC line: empty command after prefix");
@@ -118,13 +120,19 @@ Parsing::Command Parsing::parse(const std::string &line) const
 
 std::string Parsing::getCommandType(const Command &cmd) const
 {
-	if (cmd.name == "PASS" || cmd.name == "NICK" || cmd.name == "USER"
-		|| cmd.name == "PING" || cmd.name == "JOIN" || cmd.name == "PART"
-		|| cmd.name == "QUIT" || cmd.name == "PRIVMSG" || cmd.name == "NOTICE"
-		|| cmd.name == "TOPIC" || cmd.name == "MODE" || cmd.name == "KICK"
-		|| cmd.name == "WHO" || cmd.name == "LIST" || cmd.name == "INVITE")
+	if (isKnownCommand(cmd.name))
 		return (cmd.name);
 	return ("UNKNOWN");
+}
+
+bool Parsing::isKnownCommand(const std::string &name) const
+{
+	return (name == "PASS" || name == "NICK" || name == "USER" || name == "PING"
+		|| name == "PONG" || name == "JOIN" || name == "PART" || name == "QUIT"
+		|| name == "PRIVMSG" || name == "NOTICE" || name == "TOPIC"
+		|| name == "MODE" || name == "KICK" || name == "WHO" || name == "LIST"
+		|| name == "INVITE" || name == "CAP" || name == "AUTHENTICATE"
+		|| name == "WHOIS");
 }
 
 void Parsing::trimSpaces(std::string &str) const

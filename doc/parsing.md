@@ -17,6 +17,7 @@ Le parseur fait pour l'instant :
 - mettre le nom de commande en majuscules, car les commandes IRC sont insensibles a la casse
 - gerer les lignes vides et les cas limites comme `QUIT :` ou `PART #chan :`
 - conserver un parametre de texte libre vide lorsqu'il est present apres `:`
+- classifier les commandes IRC reconnues via une fonction simple de dispatch interne
 - fonctionner dans le mode de test `--parse-test` du programme principal
 
 ## Cas de test de base
@@ -55,6 +56,11 @@ Le mode `--parse-test` dans [src/main.cpp](../src/main.cpp) est utilise pour val
 - 31. un cas avec un parametre libre pour QUIT : `"QUIT :leaving"`
 - 32. un cas avec un parametre libre pour PART : `"PART #chan :bye"`
 - 33. un cas avec plusieurs parametres pour MODE : `"MODE #chan +k secret"`
+- 34. un cas avec une seconde commande de reponse IRC : `"PONG :server"`
+- 35. un cas avec une commande d'extension CAP : `"CAP LS 302"`
+- 36. un cas avec une commande d'authentification : `"AUTHENTICATE PLAIN"`
+- 37. un cas avec une commande WHOIS : `"WHOIS alice"`
+- 38. un cas avec un prefixe et plusieurs parametres libres : `":server PRIVMSG #chan alice :hello there friend"`
 
 Ces cas sont actuellement consideres comme valides tant que la commande `./ircserv --parse-test` affiche le comportement attendu.
 
