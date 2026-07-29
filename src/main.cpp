@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 11:29:19 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 18:54:11 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 19:12:09 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,8 @@ int	main(int ac, char **av)
             ":alice!user@host MODE #chan +v bob :hello",
 			":bob!user@host PRIVMSG #chan :hello there friend",
 			":carol!user@host PRIVMSG alice bob :hello there",
-			":nick!user@host NICK alice", "PING :server"};
+			":nick!user@host NICK alice", "PING :server", "PASS :secret",
+			"JOIN #chan :topic", "QUIT :leaving", "PART #chan :bye", "MODE #chan +k secret"};
 		const std::size_t testCount = sizeof(tests) / sizeof(tests[0]);
 		std::size_t i = 0;
 		while (i < testCount)
@@ -96,6 +97,7 @@ int	main(int ac, char **av)
 				std::cout << "input: '" << tests[i] << "'" << std::endl;
 				std::cout << "prefix: '" << cmd.prefix << "'" << std::endl;
 				std::cout << "command: " << cmd.name << std::endl;
+				std::cout << "dispatch: " << parser.getCommandType(cmd) << std::endl;
 				std::size_t j = 0;
 				while (j < cmd.params.size())
 				{

@@ -18,6 +18,7 @@ class Parsing
 	};
 
 	Command parse(const std::string &line) const;
+	std::string getCommandType(const Command &cmd) const;
 
   private:
 	void trimSpaces(std::string &str) const;

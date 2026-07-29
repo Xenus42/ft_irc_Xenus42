@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 10:25:11 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/28 18:54:15 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/28 19:12:09 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,6 +114,17 @@ Parsing::Command Parsing::parse(const std::string &line) const
 	}
 
 	return (cmd);
+}
+
+std::string Parsing::getCommandType(const Command &cmd) const
+{
+	if (cmd.name == "PASS" || cmd.name == "NICK" || cmd.name == "USER"
+		|| cmd.name == "PING" || cmd.name == "JOIN" || cmd.name == "PART"
+		|| cmd.name == "QUIT" || cmd.name == "PRIVMSG" || cmd.name == "NOTICE"
+		|| cmd.name == "TOPIC" || cmd.name == "MODE" || cmd.name == "KICK"
+		|| cmd.name == "WHO" || cmd.name == "LIST" || cmd.name == "INVITE")
+		return (cmd.name);
+	return ("UNKNOWN");
 }
 
 void Parsing::trimSpaces(std::string &str) const

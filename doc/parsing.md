@@ -13,6 +13,7 @@ Le parseur fait pour l'instant :
 - garder les autres mots comme parametres
 - traiter les parametres precedes de `:` comme un seul parametre de texte libre
 - ignorer un prefixe IRC optionnel au debut d'une ligne, comme `:nick!user@host COMMAND`
+- conserver ce prefixe dans la structure de commande sous la forme `cmd.prefix`
 - mettre le nom de commande en majuscules, car les commandes IRC sont insensibles a la casse
 - gerer les lignes vides et les cas limites comme `QUIT :` ou `PART #chan :`
 - conserver un parametre de texte libre vide lorsqu'il est present apres `:`
@@ -47,6 +48,13 @@ Le mode `--parse-test` dans [src/main.cpp](../src/main.cpp) est utilise pour val
 - 24. un cas avec la commande PRIVMSG et un texte libre vide : `"PRIVMSG #chan :"`
 - 25. un cas avec un prefixe IRC avant la commande : `":nick!user@host PRIVMSG #chan :hello"`
 - 26. un cas avec une commande en minuscules : `"join #chan"`
+- 27. un cas avec un prefixe sur une commande de changement de surnom : `":nick!user@host NICK alice"`
+- 28. un cas avec une commande PING et un texte libre : `"PING :server"`
+- 29. un cas avec un parametre libre pour PASS : `"PASS :secret"`
+- 30. un cas avec un parametre libre pour JOIN : `"JOIN #chan :topic"`
+- 31. un cas avec un parametre libre pour QUIT : `"QUIT :leaving"`
+- 32. un cas avec un parametre libre pour PART : `"PART #chan :bye"`
+- 33. un cas avec plusieurs parametres pour MODE : `"MODE #chan +k secret"`
 
 Ces cas sont actuellement consideres comme valides tant que la commande `./ircserv --parse-test` affiche le comportement attendu.
 
@@ -55,6 +63,7 @@ Ces cas sont actuellement consideres comme valides tant que la commande `./ircse
 - gerer plusieurs parametres sur une meme ligne [DONE]
 - gerer proprement les lignes vides [DONE]
 - preparer une structure pour la logique propre aux commandes IRC [DONE]
+- conserver le prefixe dans une structure de commande exploitable [DONE]
 - renforcer la logique de parsing sur des cas IRC plus complexes
-- ajouter des tests supplementaires pour les commandes avec plusieurs parametres libres(en cours encore)
+- ajouter des tests supplementaires pour les commandes avec plusieurs parametres libres
 - brancher ce parseur au flux de reception du serveur une fois la logique de parsing stabilisee
