@@ -18,6 +18,8 @@ Le parseur fait pour l'instant :
 - gerer les lignes vides et les cas limites comme `QUIT :` ou `PART #chan :`
 - conserver un parametre de texte libre vide lorsqu'il est present apres `:`
 - classifier les commandes IRC reconnues via une fonction simple de dispatch interne
+- rejeter les prefixes invalides, comme une ligne reduite a `:` seul ou a des espaces apres `:`,
+  en levant une erreur explicite plutot que de produire une commande vide
 - fonctionner dans le mode de test `--parse-test` du programme principal
 
 ## Cas de test de base
@@ -61,6 +63,10 @@ Le mode `--parse-test` dans [src/main.cpp](../src/main.cpp) est utilise pour val
 - 36. un cas avec une commande d'authentification : `"AUTHENTICATE PLAIN"`
 - 37. un cas avec une commande WHOIS : `"WHOIS alice"`
 - 38. un cas avec un prefixe et plusieurs parametres libres : `":server PRIVMSG #chan alice :hello there friend"`
+- 39. un cas invalide avec seulement `:` comme entree : `":"` (prefixe sans commande, leve `std::runtime_error("Invalid IRC prefix: missing command")`)
+- 40. un cas invalide avec `:` suivi uniquement d'espaces : `":   "` (idem, leve la meme exception)
+- 41. un cas invalide avec un prefixe valide mais sans commande : `":nick!user@host"` (idem, leve la meme exception)
+- 42. un cas invalide avec un prefixe valide suivi uniquement d'espaces : `":nick!user@host   "` (idem, leve la meme exception)
 
 Ces cas sont actuellement consideres comme valides tant que la commande `./ircserv --parse-test` affiche le comportement attendu.
 
@@ -70,6 +76,8 @@ Ces cas sont actuellement consideres comme valides tant que la commande `./ircse
 - gerer proprement les lignes vides [DONE]
 - preparer une structure pour la logique propre aux commandes IRC [DONE]
 - conserver le prefixe dans une structure de commande exploitable [DONE]
+- rejeter les prefixes invalides (`:` seul ou suivi uniquement d'espaces) [DONE]
+- rejeter un prefixe valide sans commande derriere [DONE]
 - renforcer la logique de parsing sur des cas IRC plus complexes
 - ajouter des tests supplementaires pour les commandes avec plusieurs parametres libres
 - brancher ce parseur au flux de reception du serveur une fois la logique de parsing stabilisee

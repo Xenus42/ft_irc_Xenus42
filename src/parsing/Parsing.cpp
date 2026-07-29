@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 10:25:11 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/29 11:57:47 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/29 12:17:06 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ Parsing::Command Parsing::parse(const std::string &line) const
 
 	if (input.empty())
 		return (cmd);
+	if (input.size() == 1 && input[0] == ':')
+		throw std::runtime_error("Invalid IRC prefix: missing command");
 	if (input[0] == ':')
 	{
 		std::string::size_type prefixEnd = input.find_first_of(" \t\r\n", 1);
