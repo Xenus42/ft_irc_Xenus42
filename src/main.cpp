@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 11:29:19 by lebroue           #+#    #+#             */
-/*   Updated: 2026/07/29 12:50:05 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/07/29 14:03:52 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,9 @@ int	main(int ac, char **av)
 										":",
 										":   ",
 										":nick!user@host",
-										":nick!user@host   "};
+										":nick!user@host   ",
+										"PRIVMSG #chan : hello there",
+										"NOTICE #chan ::double colon"};
 		const std::size_t testCount = sizeof(tests) / sizeof(tests[0]);
 		std::size_t i = 0;
 		while (i < testCount)

@@ -17,10 +17,28 @@ Le parseur fait pour l'instant :
 - mettre le nom de commande en majuscules, car les commandes IRC sont insensibles a la casse
 - gerer les lignes vides et les cas limites comme `QUIT :` ou `PART #chan :`
 - conserver un parametre de texte libre vide lorsqu'il est present apres `:`
+- conserver le texte libre tel quel apres le premier `:`, sans retirer les espaces
+  ou les `:` supplementaires qu'il contient
 - classifier les commandes IRC reconnues via une fonction simple de dispatch interne
 - rejeter les prefixes invalides, comme une ligne reduite a `:` seul ou a des espaces apres `:`,
   en levant une erreur explicite plutot que de produire une commande vide
 - fonctionner dans le mode de test `--parse-test` du programme principal
+
+## Organisation interne
+
+Le fichier [src/parsing/Parsing.cpp](../src/parsing/Parsing.cpp) est decoupe en petites fonctions statiques,
+chacune avec un role precis, pour rester lisible :
+- `isSeparator` : indique si un caractere separe des mots (espace, tabulation, `\r`, `\n`)
+- `removeSpaceBeginningAndEndString` : enleve les separateurs en debut et en fin de chaine
+- `toUpperCase` : met une chaine en majuscules
+- `findFirstSeparator` : cherche la position du premier separateur a partir d'une position donnee
+- `extractPrefix` : extrait le prefixe optionnel (`:nick!user@host `) et renvoie le reste de la ligne
+- `findTextParamsStart` : cherche la position ou commence le texte libre marque par `:`
+- `splitAndPutSimpleWordsIntoArray` : decoupe une chaine en mots simples separes par des espaces
+- `splitCommandAndArgsToArray` : decoupe la commande et ses parametres, en gerant le texte libre final
+
+`Parsing::parse` orchestre ces fonctions dans l'ordre : nettoyage des espaces, extraction du prefixe,
+decoupage en mots, puis mise en majuscules du nom de commande.
 
 ## Cas de test de base
 
@@ -67,6 +85,8 @@ Le mode `--parse-test` dans [src/main.cpp](../src/main.cpp) est utilise pour val
 - 40. un cas invalide avec `:` suivi uniquement d'espaces : `":   "` (idem, leve la meme exception)
 - 41. un cas invalide avec un prefixe valide mais sans commande : `":nick!user@host"` (idem, leve la meme exception)
 - 42. un cas invalide avec un prefixe valide suivi uniquement d'espaces : `":nick!user@host   "` (idem, leve la meme exception)
+- 43. un texte libre qui commence par un espace juste apres `:` : `"PRIVMSG #chan : hello there"` (le parametre garde l'espace de tete : `" hello there"`)
+- 44. un texte libre qui contient un second `:` : `"NOTICE #chan ::double colon"` (le parametre garde le `:` supplementaire : `":double colon"`)
 
 Ces cas sont actuellement consideres comme valides tant que la commande `./ircserv --parse-test` affiche le comportement attendu.
 
