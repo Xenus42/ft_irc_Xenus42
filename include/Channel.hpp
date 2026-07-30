@@ -6,7 +6,7 @@
 /*   By: williamguerreiro <williamguerreiro@stud    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:01:31 by williamguer       #+#    #+#             */
-/*   Updated: 2026/07/08 17:02:12 by williamguer      ###   ########.fr       */
+/*   Updated: 2026/07/19 12:01:52 by williamguer      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,5 +84,6 @@ private:
     std::map<Client*, int>  _status;
     Channel();
 };
+void reply(Client *client, const std::string &line);
 
 #endif

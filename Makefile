@@ -2,6 +2,7 @@
 #					STRUCTURE					 #
 #------------------------------------------------#
 vpath %.cpp src src/client src/utils src/server src/commands src/parsing
+vpath %.cpp src src/client src/utils src/server src/commands src/channel
 vpath %.i include
 
 #------------------------------------------------#
@@ -10,6 +11,8 @@ vpath %.i include
 NAME		= ircserv
 INCLUDES	= Server.hpp Client.hpp Tmp_Log.hpp Utils.hpp Parsing.hpp
 SRC_FILES	= main Server Client Tmp_Log Utils Parsing
+INCLUDES	= Server.hpp Client.hpp Tmp_Log.hpp Utils.hpp Channel.hpp
+SRC_FILES	= main Server Client Tmp_Log Utils Channel Join Part
 
 #------------------------------------------------#
 #					DIRECTORY					 #
