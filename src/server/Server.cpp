@@ -8,6 +8,11 @@
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Tmp_Log.hpp"
+#include "Parsing.hpp"
+
+// TODEL:
+#include "Commands.hpp"
+#include "Channel.hpp"
 
 // ************************************************************************** //
 //                             Orthodox Canonical Form
@@ -238,6 +243,11 @@ void    Server::receiveClient(int fd)
     {
         buffer[bytes] = '\0';
         _clientsByFd[fd]->appendBuffer(buffer);
+        
+        Parsing parser;
+
+        handleJoin(*this, _clientsByFd[fd], parser.parse(_clientsByFd[fd]->getBuffer()).params);
+        printChannels();
         std::cout << "recv: " << buffer << std::endl;
         std::cout << "_buffer: " << _clientsByFd[fd]->getBuffer() << std::endl;
     }
@@ -320,6 +330,31 @@ void Server::printClientsByFd() const
     nl(2);
 }
 
+void Server::printChannels() const
+{
+    printSection("Channels:");
+
+    for (std::map<std::string, Channel*>::const_iterator it = _channels.begin();
+         it != _channels.end();
+         ++it)
+    {
+        std::cout << "name: " << it->first;
+
+        if (it->second)
+        {
+            std::cout << "\t topic: " << it->second->getTopic()
+                      << "\t members: " << it->second->getClientCount();
+        }
+        else
+        {
+            std::cout << "\tChannel: NULL";
+        }
+
+        std::cout << std::endl;
+    }
+    nl(2);
+}
+
 void    Server::printServerStatus() const
 {
         nl(1);
@@ -327,3 +362,53 @@ void    Server::printServerStatus() const
         printPollfds();
         printClientsByFd();
 }
+
+// ************************************************************************** //
+//                                  Channel
+// ************************************************************************** //
+
+Channel *Server::createChannel(const std::string &name)
+{
+    Channel *channel = new Channel(name);
+    _channels[name] = channel;
+    return channel;
+}
+
+Channel *Server::getChannel(const std::string &name)
+{
+    std::map<std::string, Channel*>::iterator it = _channels.find(name);
+    if (it == _channels.end())
+        return NULL;
+    return it->second;
+}
+
+void Server::removeChannel(const std::string &name)
+{
+    std::map<std::string, Channel*>::iterator it = _channels.find(name);
+    if (it == _channels.end())
+        return;
+    delete it->second;
+    _channels.erase(it);
+}
+
+
+// ************************************************************************** //
+//                                  Command Dispatch
+// ************************************************************************** //
+// void Server::dispatchCommand(Client *client,
+                            //  const Parsing::Command &cmd)
+// {
+    // if (cmd.name == "PASS")
+        // handlePass(client, cmd);
+// 
+    // else if (cmd.name == "NICK")
+        // handleNick(client, cmd);
+
+//     else if (cmd.name == "USER")
+//         handleUser(client, cmd);
+
+//     else if (cmd.name == "JOIN")
+//         handleJoin(client, cmd);
+
+//     ...
+// }

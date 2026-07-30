@@ -4,36 +4,14 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 
+// TODEL:
+#include <iostream>
 
 //a remplacer par client->sendmessage()
 void reply(Client *client, const std::string &line)
 {
     std::string full = line + "\r\n";
     ::send(client->getFd(), full.c_str(), full.size(), 0);
-}
-
-Channel *Server::createChannel(const std::string &name)
-{
-    Channel *channel = new Channel(name);
-    _channels[name] = channel;
-    return channel;
-}
-
-Channel *Server::getChannel(const std::string &name)
-{
-    std::map<std::string, Channel*>::iterator it = _channels.find(name);
-    if (it == _channels.end())
-        return NULL;
-    return it->second;
-}
-
-void Server::removeChannel(const std::string &name)
-{
-    std::map<std::string, Channel*>::iterator it = _channels.find(name);
-    if (it == _channels.end())
-        return;
-    delete it->second;
-    _channels.erase(it);
 }
 
 // —  JOIN <#channel> [key]
@@ -43,8 +21,8 @@ void handleJoin(Server &server, Client *client,
 {
     const std::string nick = client->getNickname();
 
-    if (!client->isAuthenticated())
-        return reply(client, ":ircserv 451 " + nick + " :You have not registered");
+    // if (!client->isAuthenticated())
+        // return reply(client, ":ircserv 451 " + nick + " :You have not registered");
 
     if (params.empty())
         return reply(client, ":ircserv 461 " + nick + " JOIN :Not enough parameters");

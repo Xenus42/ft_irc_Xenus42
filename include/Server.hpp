@@ -7,6 +7,7 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Parsing.hpp"
 
 class Server
 {
@@ -38,6 +39,9 @@ class Server
         void    addPollfd(int fd);
         void    removePollfd(int fd);
 
+        // === Command handling ===
+        // void Server::dispatchCommand(Client *client, const Parsing::Command &cmd);
+
     private:
         // === Socket ===
         void    createSocket();
@@ -48,6 +52,8 @@ class Server
         void    printPollfds() const;
         void    printClientsByFd() const;
         void    printServerStatus() const;
+        void    printChannels() const;
+
 
     private:
     
@@ -55,6 +61,7 @@ class Server
         std::string _password;
         int         _listenFd;
         bool        _running;
+        Parsing     _parser;
         
         sockaddr_in _address;
 
