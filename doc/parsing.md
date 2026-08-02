@@ -26,8 +26,17 @@ Le parseur fait pour l'instant :
 
 ## Organisation interne
 
-Le fichier [src/parsing/Parsing.cpp](../src/parsing/Parsing.cpp) est decoupe en petites fonctions statiques,
-chacune avec un role precis, pour rester lisible :
+Le code est reparti en deux fichiers, tous deux membres de la classe `Parsing` (declares dans
+[include/Parsing.hpp](../include/Parsing.hpp)) :
+
+[src/parsing/Parsing.cpp](../src/parsing/Parsing.cpp) contient la logique principale :
+- `parse` : orchestre les fonctions outils dans l'ordre (nettoyage des espaces, extraction du
+  prefixe, decoupage en mots, mise en majuscules du nom de commande)
+- `getCommandType` : renvoie le nom de commande si elle est reconnue, sinon `"UNKNOWN"`
+- `isKnownCommand` : verifie si un nom de commande fait partie des commandes IRC gerees
+
+[src/parsing/Parsing_Utils.cpp](../src/parsing/Parsing_Utils.cpp) contient les petites fonctions
+outils, chacune avec un role precis :
 - `isSeparator` : indique si un caractere separe des mots (espace, tabulation, `\r`, `\n`)
 - `removeSpaceBeginningAndEndString` : enleve les separateurs en debut et en fin de chaine
 - `toUpperCase` : met une chaine en majuscules
@@ -37,8 +46,8 @@ chacune avec un role precis, pour rester lisible :
 - `splitAndPutSimpleWordsIntoArray` : decoupe une chaine en mots simples separes par des espaces
 - `splitCommandAndArgsToArray` : decoupe la commande et ses parametres, en gerant le texte libre final
 
-`Parsing::parse` orchestre ces fonctions dans l'ordre : nettoyage des espaces, extraction du prefixe,
-decoupage en mots, puis mise en majuscules du nom de commande.
+Toutes ces methodes sont `public` (aucune n'est `static` ni `private`) : `Parsing` doit etre
+instanciee pour les utiliser (`Parsing parser; parser.parse(line);`).
 
 ## Cas de test de base
 
