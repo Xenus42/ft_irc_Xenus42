@@ -12,7 +12,8 @@ Parsing::Command Parsing::parse(const std::string &line) const
 {
 	Command cmd;
 
-	std::string input = removeSpaceBeginningAndEndString(line);
+	std::string input = line;
+	// std::string input = removeSpaceBeginningAndEndString(line);
 	if (input.empty())
 		return (cmd);
 	if (input.size() == 1 && input[0] == ':')

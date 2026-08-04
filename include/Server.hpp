@@ -40,7 +40,7 @@ class Server
         void    removePollfd(int fd);
 
         // === Command handling ===
-        // void Server::dispatchCommand(Client *client, const Parsing::Command &cmd);
+        void    dispatchCommand(Client *client, const Parsing::Command &cmd);
 
     private:
         // === Socket ===

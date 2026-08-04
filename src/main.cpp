@@ -138,6 +138,7 @@ int	main(int ac, char **av)
 		}
 		return (EXIT_SUCCESS);
 	} // FIN TEST DU PARSING
+	
 	if (ac != 3 || !isValidPort(av[1]))
 	{
 		// TODO: specify error type

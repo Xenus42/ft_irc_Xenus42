@@ -28,8 +28,9 @@ class Client
         void setAuthenticated(bool value);
 
         // === Buffer ===
-        void appendBuffer(const std::string& data);
+        void appendBuffer(const char *data, size_t len);
         void clearBuffer();
+        bool extractLine(std::string &line);
 
     private:
         int             _fd;

@@ -120,12 +120,24 @@ void Client::setAuthenticated(bool authenticated)
 //                              Buffer
 // ************************************************************************** //
 
-void Client::appendBuffer(const std::string &data)
+void Client::appendBuffer(const char *data, size_t len)
 {
-    _buffer += data;
+    _buffer.append(data, len);
 }
 
 void Client::clearBuffer()
 {
     _buffer.clear();
+}
+
+bool Client::extractLine(std::string &line)
+{
+    size_t pos = _buffer.find("\r\n");
+
+    if (pos == std::string::npos)
+        return false;
+
+    line = _buffer.substr(0, pos);
+    _buffer.erase(0, pos + 2);
+    return true;
 }

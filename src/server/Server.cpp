@@ -192,32 +192,38 @@ void Server::addClient(int fd, const sockaddr_in &address)
 
 void Server::receiveClient(int fd)
 {
-	char	buffer[1024];
-	int		bytes;
-		Parsing parser;
 
-	bytes = recv(fd, buffer, sizeof(buffer) - 1, 0);
+	char buffer[1024];
+
+	ssize_t bytes = recv(fd, buffer, sizeof(buffer), 0);
+	
 	if (bytes < 0)
 	{
 		perror("recv");
 		return ;
 	}
-	if (bytes > 0)
-	{
-		buffer[bytes] = '\0';
-		_clientsByFd[fd]->appendBuffer(buffer);
-		handleJoin(*this, _clientsByFd[fd],
-			parser.parse(_clientsByFd[fd]->getBuffer()).params);
-		printChannels();
-		std::cout << "recv: " << buffer << std::endl;
-		std::cout << "_buffer: " << _clientsByFd[fd]->getBuffer() << std::endl;
-	}
+
 	if (bytes == 0)
 	{
 		// TODO: handle disconnect;
 		close(fd);
 		printLog("SERVER", "Client disconnected");
+		return ;
 	}
+	
+	Client *client = _clientsByFd[fd];
+	
+	client->appendBuffer(buffer, bytes);
+	
+	std::string line;
+	
+	while (client->extractLine(line))
+	{
+	    Parsing::Command cmd = _parser.parse(line);
+	
+	    dispatchCommand(client, cmd);
+	}
+
 }
 
 // ************************************************************************** //
@@ -350,20 +356,9 @@ void Server::removeChannel(const std::string &name)
 // ************************************************************************** //
 //                                  Command Dispatch
 // ************************************************************************** //
-// void Server::dispatchCommand(Client *client,
-//  const Parsing::Command &cmd)
-// {
-// if (cmd.name == "PASS")
-// handlePass(client, cmd);
-//
-// else if (cmd.name == "NICK")
-// handleNick(client, cmd);
 
-//     else if (cmd.name == "USER")
-//         handleUser(client, cmd);
-
-//     else if (cmd.name == "JOIN")
-//         handleJoin(client, cmd);
-
-//     ...
-// }
+void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
+{
+	if (cmd.name == "JOIN")
+		handleJoin(*this, client, cmd.params);
+}
