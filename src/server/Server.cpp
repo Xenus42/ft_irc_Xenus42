@@ -243,6 +243,15 @@ void Server::addPollfd(int fd)
 }
 
 // ************************************************************************** //
+//                                   Getters
+// ************************************************************************** //
+
+std::string Server::getPassword() const
+{
+	return (_password);
+}
+
+// ************************************************************************** //
 //                                   Print
 // ************************************************************************** //
 
@@ -366,6 +375,12 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleJoin(*this, client, cmd.params);
 	else if (cmd.name == "TOPIC")
 		handleTopic(*this, client, cmd.params);
+	else if (cmd.name == "PASS")
+		handlePass(*this, client, cmd.params);
+	else if (cmd.name == "NICK")
+		handleNick(*this, client, cmd.params);
+	else if (cmd.name == "USER")
+		handleUser(*this, client, cmd.params);
 	else
 	{
 		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;

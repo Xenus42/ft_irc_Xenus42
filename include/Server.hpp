@@ -43,6 +43,9 @@ class Server
         // === Command handling ===
         void    dispatchCommand(Client *client, const Parsing::Command &cmd);
 
+        // === Getters ===
+        std::string getPassword() const;
+
     private:
         // === Socket ===
         void    createSocket();
