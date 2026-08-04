@@ -8,6 +8,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Parsing.hpp"
+#include "Commands.hpp"
 
 class Server
 {

@@ -77,7 +77,6 @@ void Server::init()
 
 void Server::run()
 {
-	printServerStatus();
 	while (_running)
 	{
 		if (poll(&_pollfds[0], _pollfds.size(), -1) < 0)
@@ -93,11 +92,13 @@ void Server::run()
 			if (_pollfds[i].fd == _listenFd)
 			{
 				acceptClient();
-				printServerStatus();
+				// printServerStatus();
 			}
 			else
+			{
 				receiveClient(_pollfds[i].fd);
-			printServerStatus();	
+				printServerStatus();
+			}
 		}
 		// TODEL: print functions
 	}
@@ -363,4 +364,10 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 {
 	if (cmd.name == "JOIN")
 		handleJoin(*this, client, cmd.params);
+	else if (cmd.name == "TOPIC")
+		handleTopic(*this, client, cmd.params);
+	else
+	{
+		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;
+	}
 }
