@@ -97,6 +97,7 @@ void Server::run()
 			}
 			else
 				receiveClient(_pollfds[i].fd);
+			printServerStatus();	
 		}
 		// TODEL: print functions
 	}
@@ -321,6 +322,7 @@ void Server::printServerStatus() const
 	printTitle("SERVER STATUS");
 	printPollfds();
 	printClientsByFd();
+	printChannels();
 }
 
 // ************************************************************************** //
