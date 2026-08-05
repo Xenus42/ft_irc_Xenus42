@@ -1,16 +1,38 @@
 #include "Server.hpp"
+#include "Tmp_Log.hpp"
+
+static bool isValidNickname(std::string nickName)
+{
+    if (nickName.length() > 30)
+        return (false);
+    return (true);
+}
 
 void handleNick(Server &server, Client *client, const std::vector<std::string> &params)
 {
     if (params.empty())
     {
-        // Handle error: No nickname provided
+        reply(client, ":ircserv 431 :No nickname given");        
         return;
     }
-    
-    const std::string &newNick = params[0];
-    client->setNickname(newNick);
-    (void)server;
 
-    // Send success response to client
+    std::string nick = params[0];
+
+    if (!isValidNickname(nick))
+    {
+        // TODO: check if reply message is ok
+        reply(client, ":ircserv 432 :" + nick + ":Erroneous nickname");
+        return;
+    }
+
+    if (server.getClientByNick(nick))
+    {
+        reply(client, ":ircserv 432 :" + nick + ":Nickname is already in use");
+        return;
+    }
+
+    const std::string &newNick = nick;
+
+    client->setNickname(newNick);
+    // TODO: Send success response to client
 }

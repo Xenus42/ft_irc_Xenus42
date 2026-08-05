@@ -45,6 +45,7 @@ class Server
 
         // === Getters ===
         std::string getPassword() const;
+        Client *getClientByNick(std::string nick);
 
     private:
         // === Socket ===
@@ -66,7 +67,7 @@ class Server
         int         _listenFd;
         bool        _running;
         Parsing     _parser;
-        
+
         sockaddr_in _address;
 
         // === Collections === 

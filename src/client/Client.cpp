@@ -92,6 +92,11 @@ bool Client::isAuthenticated() const
     return (_authenticated);
 }
 
+bool Client::isRegistered() const
+{
+    return (!_nickname.empty() && !_username.empty() && !_hostname.empty());
+}
+
 // ************************************************************************** //
 //                              Setters
 // ************************************************************************** //

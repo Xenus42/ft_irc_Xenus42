@@ -251,6 +251,16 @@ std::string Server::getPassword() const
 	return (_password);
 }
 
+Client *Server::getClientByNick(std::string nick)
+{
+	std::map<std::string, Client *>::iterator it = _clientsByNick.find(nick);
+
+	if (it == _clientsByNick.end())
+    	return NULL;
+
+	return it->second;;
+}
+
 // ************************************************************************** //
 //                                   Print
 // ************************************************************************** //
