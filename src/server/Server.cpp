@@ -366,6 +366,8 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleJoin(*this, client, cmd.params);
 	else if (cmd.name == "TOPIC")
 		handleTopic(*this, client, cmd.params);
+	else if (cmd.name == "MODE")
+		handleMode(*this, client, cmd.params);
 	else
 	{
 		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;
