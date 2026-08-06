@@ -50,7 +50,8 @@ class Server
 
         // === Communication ===
         void    sendMessage(Client *client, const std::string &message);
-
+        void    sendWelcome(Client *client);
+        
     private:
         // === Socket ===
         void    createSocket();

@@ -1,11 +1,31 @@
 #include "Server.hpp"
 #include "Tmp_Log.hpp"
 
-static bool isValidNickname(std::string nickName)
+static bool isValidNickname(const std::string &nick)
 {
-    if (nickName.length() > 30)
-        return (false);
-    return (true);
+    if (nick.empty() || nick.size() > 9)
+        return false;
+
+    if (!isalpha(nick[0]) &&
+        nick[0] != '[' &&
+        nick[0] != ']' &&
+        nick[0] != '\\' &&
+        nick[0] != '`' &&
+        nick[0] != '_' &&
+        nick[0] != '^' &&
+        nick[0] != '{' &&
+        nick[0] != '|')
+        return false;
+
+    for (size_t i = 1; i < nick.size(); i++)
+    {
+        if (!isalnum(nick[i]) &&
+            nick[i] != '-' &&
+            nick[i] != '_')
+            return false;
+    }
+
+    return true;
 }
 
 void handleNick(Server &server, Client *client, const std::vector<std::string> &params)
@@ -32,5 +52,7 @@ void handleNick(Server &server, Client *client, const std::vector<std::string> &
     }
 
     server.changeNickname(client, nick);
-    // TODO: Send success response to client
+    
+    if (client->isRegistered())
+        server.sendWelcome(client);
 }
