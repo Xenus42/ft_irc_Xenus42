@@ -15,7 +15,6 @@ void reply(Client *client, const std::string &line)
 }
 
 // —  JOIN <#channel> [key]
-// (params deja decoupes par le parser : params[0] = nom, params[1] = cle optionnelle)
 void handleJoin(Server &server, Client *client,
                           const std::vector<std::string> &params)
 {

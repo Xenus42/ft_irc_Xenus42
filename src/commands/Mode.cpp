@@ -1,6 +1,7 @@
 #include "Server.hpp"
 #include <sstream>
 #include <iostream>
+#include <cstdlib>
 
 struct modechange
 {
@@ -90,6 +91,45 @@ static std::string channelModeReply(Channel *channel, bool isMember)
 	return (modes + args);
 }
 
+bool ApplyMode(Client *client, Channel *channel, const modechange &mc)
+{
+	const std::string nick = client->getNickname();
+	switch(mc.mode)
+	{
+		case 't':
+			if (mc.add)
+				channel->setMode(MODE_TOPIC_RESTRICTED);
+			channel->unsetMode(MODE_TOPIC_RESTRICTED);
+			return true;
+		case 'i':
+			if (mc.add)
+				channel->setMode(MODE_INVITE_ONLY);
+			channel->unsetMode(MODE_INVITE_ONLY);
+			return true;
+		case 'l':
+		{
+			if (!mc.add)
+				return channel->removeUserLimit(), true;
+			long limit = std::atol(mc.arg.c_str());
+			if (limit <= 0)
+				return false;
+			return channel->setUserLimit(limit), true;
+		}
+		case 'k':
+			if (!mc.add)
+				return channel->removeKey(), true;
+			if(mc.arg.empty())
+				return false;
+			return channel->setKey(mc.arg), true;
+		// case 'o':
+		// target = getclientbynick(mc.arg)
+		//if !target && !ismember alors reply 441
+		// setoperator(target)
+	}
+	reply(client, ":ircserv 472 " + nick + " " + std::string(1, mc.mode) + " :is unknown mode char to me");
+	return false;
+}
+
 void handleMode(Server &server, Client *client, const std::vector<std::string> &params)
 {
 	std::cerr << "handleMode called" << std::endl;
@@ -118,4 +158,24 @@ void handleMode(Server &server, Client *client, const std::vector<std::string> &
 	std::vector<std::string> args(params.begin() + 2, params.end());
 	std::vector<modechange> vecmode = parseModeString(client, params[1], args);
 	
+	std::string modes, modeargs;
+	char sign = '\0';
+	for (size_t i = 0; i < vecmode.size(); i++)
+	{
+		const modechange &mc = vecmode[i];
+		if (!ApplyMode(client, channel, mc))
+			continue;
+		const char cur = (mc.add ? '+' : '-');
+		if (sign != cur)
+		{
+			sign = cur;
+			modes += sign;
+		}
+		modes += mc.mode;
+		if (mc.mode == 'o' || (mc.add && (mc.mode == 'k' || mc.mode == 'l')))
+				modeargs += " " + mc.arg;
+	}
+	const std::string prefix = nick + "!" + client->getUsername() + "@" + client->getHostname();
+	if (!modes.empty())
+		channel->broadcast(":" + prefix + " MODE " + channel->getName() + " " + modes + modeargs);
 }
