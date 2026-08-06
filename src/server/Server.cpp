@@ -114,6 +114,13 @@ void Server::shutdown()
 	}
 	_running = false;
 }
+// ************************************************************************** //
+//                                   Communication
+// ************************************************************************** //
+void sendMessage(Client *client, const std::string &message)
+{
+	send(client->getFd(), message.c_str(), message.size(), 0);
+}
 
 // ************************************************************************** //
 //                                   Socket
@@ -226,6 +233,21 @@ void Server::receiveClient(int fd)
 	    dispatchCommand(client, cmd);
 	}
 
+}
+
+void Server::changeNickname(Client *client, const std::string &newNick)
+{
+    const std::string &oldNick = client->getNickname();
+
+    if (oldNick == newNick)
+        return;
+
+    if (!oldNick.empty())
+        _clientsByNick.erase(oldNick);
+
+    client->setNickname(newNick);
+
+    _clientsByNick[newNick] = client;
 }
 
 // ************************************************************************** //

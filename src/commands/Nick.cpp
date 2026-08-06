@@ -31,8 +31,6 @@ void handleNick(Server &server, Client *client, const std::vector<std::string> &
         return;
     }
 
-    const std::string &newNick = nick;
-
-    client->setNickname(newNick);
+    server.changeNickname(client, nick);
     // TODO: Send success response to client
 }
