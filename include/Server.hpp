@@ -31,6 +31,7 @@ class Server
         void    addClient(int fd, const sockaddr_in& address);
         void    receiveClient(int fd);
         void    disconnectClient(Client *client);
+        void    changeNickname(Client *client, const std::string &newNick);
 
         // === Channel ===
         Channel *getChannel(const std::string &name);
