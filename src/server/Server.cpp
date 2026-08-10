@@ -116,6 +116,36 @@ void Server::shutdown()
 }
 
 // ************************************************************************** //
+//                                   Communication
+// ************************************************************************** //
+
+void Server::sendMessage(Client *client, const std::string &message)
+{
+	send(client->getFd(), message.c_str(), message.size(), 0);
+}
+
+void Server::sendWelcome(Client *client)
+{
+    const std::string nick = client->getNickname();
+
+    sendMessage(client,
+        ":ircserv 001 " + nick +
+        " :Welcome to the IRC Network\r\n");
+
+    sendMessage(client,
+        ":ircserv 002 " + nick +
+        " :Your host is ircserv\r\n");
+
+    sendMessage(client,
+        ":ircserv 003 " + nick +
+        " :This server was created today\r\n");
+
+	// TODO: check message excepted
+    sendMessage(client,
+        ":ircserv 004 " + nick +
+        " ircserv 1.0 io\r\n");
+}
+// ************************************************************************** //
 //                                   Socket
 // ************************************************************************** //
 
@@ -228,6 +258,21 @@ void Server::receiveClient(int fd)
 
 }
 
+void Server::changeNickname(Client *client, const std::string &newNick)
+{
+    const std::string &oldNick = client->getNickname();
+
+    if (oldNick == newNick)
+        return;
+
+    if (!oldNick.empty())
+        _clientsByNick.erase(oldNick);
+
+    client->setNickname(newNick);
+
+    _clientsByNick[newNick] = client;
+}
+
 // ************************************************************************** //
 //                                   Poll
 // ************************************************************************** //
@@ -240,6 +285,25 @@ void Server::addPollfd(int fd)
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	_pollfds.push_back(pfd);
+}
+
+// ************************************************************************** //
+//                                   Getters
+// ************************************************************************** //
+
+std::string Server::getPassword() const
+{
+	return (_password);
+}
+
+Client *Server::getClientByNick(std::string nick)
+{
+	std::map<std::string, Client *>::iterator it = _clientsByNick.find(nick);
+
+	if (it == _clientsByNick.end())
+    	return NULL;
+
+	return it->second;;
 }
 
 // ************************************************************************** //
@@ -366,6 +430,12 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleJoin(*this, client, cmd.params);
 	else if (cmd.name == "TOPIC")
 		handleTopic(*this, client, cmd.params);
+	else if (cmd.name == "PASS")
+		handlePass(*this, client, cmd.params);
+	else if (cmd.name == "NICK")
+		handleNick(*this, client, cmd.params);
+	else if (cmd.name == "USER")
+		handleUser(*this, client, cmd.params);
 	else
 	{
 		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;

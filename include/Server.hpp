@@ -25,10 +25,11 @@ class Server
         void    run();
         void    shutdown();
 
-        // === Client ===
+        // === Client management ===
         void    acceptClient();
         void    addClient(int fd, const sockaddr_in& address);
         void    receiveClient(int fd);
+        void    changeNickname(Client *client, const std::string &newNick);
         // void    removeClient();
 
         // === Channel ===
@@ -43,6 +44,14 @@ class Server
         // === Command handling ===
         void    dispatchCommand(Client *client, const Parsing::Command &cmd);
 
+        // === Getters ===
+        std::string getPassword() const;
+        Client *getClientByNick(std::string nick);
+
+        // === Communication ===
+        void    sendMessage(Client *client, const std::string &message);
+        void    sendWelcome(Client *client);
+        
     private:
         // === Socket ===
         void    createSocket();
@@ -63,7 +72,7 @@ class Server
         int         _listenFd;
         bool        _running;
         Parsing     _parser;
-        
+
         sockaddr_in _address;
 
         // === Collections === 

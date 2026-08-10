@@ -92,6 +92,11 @@ bool Client::isAuthenticated() const
     return (_authenticated);
 }
 
+bool Client::isRegistered() const
+{
+    return (!_nickname.empty() && !_username.empty() && !_hostname.empty());
+}
+
 // ************************************************************************** //
 //                              Setters
 // ************************************************************************** //
@@ -115,6 +120,21 @@ void Client::setAuthenticated(bool authenticated)
 {
     _authenticated = authenticated;
 }
+
+void Client::setServerName(const std::string &serverName)
+{
+    _servername = serverName;
+}
+
+void Client::setRealName(const std::string &realName)
+{
+    _realname = realName;
+}
+void Client::setPassword(const std::string &password)
+{
+    _password = password;
+}
+
 
 // ************************************************************************** //
 //                              Buffer
