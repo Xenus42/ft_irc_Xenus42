@@ -10,6 +10,7 @@
 #include "Parsing.hpp"
 #include "Commands.hpp"
 
+// TODO: Change public methods to private if they are not used outside of the Server class. 
 class Server
 {
     public:
@@ -29,8 +30,7 @@ class Server
         void    acceptClient();
         void    addClient(int fd, const sockaddr_in& address);
         void    receiveClient(int fd);
-        void    changeNickname(Client *client, const std::string &newNick);
-        // void    removeClient();
+        void    disconnectClient(Client *client);
 
         // === Channel ===
         Channel *getChannel(const std::string &name);

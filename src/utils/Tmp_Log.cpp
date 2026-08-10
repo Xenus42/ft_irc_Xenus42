@@ -16,7 +16,7 @@ void    printTitle(std::string title)
 
 void    printLog(std::string logLevel, std::string message)
 {
-    std::cout << "[" << logLevel << std::setw(3) << "] " << message << std::endl;
+    std::cout << "[" << logLevel << std::setw(2) << "] " << message << std::endl;
 }
 
 void    printSection(std::string section)

@@ -189,7 +189,7 @@ void Server::listenSocket()
 		throw std::runtime_error(std::string("listen: ")
 			+ std::strerror(errno));
 	}
-	std::cout << "[INFO ] Listening on port " << _port << std::endl;
+	std::cout << "[INFO  ] Listening on port " << _port << std::endl;
 }
 
 // ************************************************************************** //
@@ -237,9 +237,7 @@ void Server::receiveClient(int fd)
 
 	if (bytes == 0)
 	{
-		// TODO: handle disconnect;
-		close(fd);
-		printLog("SERVER", "Client disconnected");
+		disconnectClient(_clientsByFd[fd]);
 		return ;
 	}
 	
@@ -255,7 +253,30 @@ void Server::receiveClient(int fd)
 	
 	    dispatchCommand(client, cmd);
 	}
+}
 
+void Server::disconnectClient(Client *client)
+{
+	if (!client)
+		return;
+
+	int fd = client->getFd();
+	
+	_clientsByFd.erase(fd);
+
+	if (client->isAuthenticated())
+	{
+		std::string nickname = client->getNickname();
+		_clientsByNick.erase(nickname);
+	}
+
+	removePollfd(fd);
+
+	close(fd);
+
+	delete client;
+
+	printLog("SERVER", "Client disconnected and cleaned up");
 }
 
 void Server::changeNickname(Client *client, const std::string &newNick)
@@ -285,6 +306,18 @@ void Server::addPollfd(int fd)
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	_pollfds.push_back(pfd);
+}
+
+void Server::removePollfd(int fd)
+{
+	for (std::vector<pollfd>::iterator it = _pollfds.begin(); it != _pollfds.end(); ++it)
+	{
+		if (it->fd == fd)
+		{
+			_pollfds.erase(it);
+			return ;
+		}
+	}
 }
 
 // ************************************************************************** //
