@@ -3,7 +3,6 @@
 
 void handleTopic(Server &server, Client *client,const std::vector<std::string> &params)
 {
-	
 	const std::string nick = client->getNickname();
 	if (params.empty())
 		 return reply(client, ":ircserv 461 " + nick + " TOPIC :Not enough parameters");
