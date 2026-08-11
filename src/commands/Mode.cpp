@@ -91,7 +91,7 @@ static std::string channelModeReply(Channel *channel, bool isMember)
 	return (modes + args);
 }
 
-bool ApplyMode(Client *client, Channel *channel, const modechange &mc)
+bool ApplyMode(Server &server, Client *client, Channel *channel, const modechange &mc)
 {
 	const std::string nick = client->getNickname();
 	switch(mc.mode)
@@ -121,10 +121,17 @@ bool ApplyMode(Client *client, Channel *channel, const modechange &mc)
 			if(mc.arg.empty())
 				return false;
 			return channel->setKey(mc.arg), true;
-		// case 'o':
-		// target = getclientbynick(mc.arg)
-		//if !target && !ismember alors reply 441
-		// setoperator(target)
+		case 'o':
+		{
+			Client *target = server.getClientByNick(mc.arg);
+			if (target == NULL)
+				return reply(client, ":ircserv 401 " + nick + " " + mc.arg + " :No such nick/channel"), false;
+			if (!channel->isMember(target))
+				return reply(client, ":ircserv 441 " + nick + " " + mc.arg + " " + channel->getName() + " :They aren't on that channel"), false;
+			if (mc.add)
+				return channel->addOperator(target), true;
+			return channel->removeOperator(target), true;
+		}
 	}
 	reply(client, ":ircserv 472 " + nick + " " + std::string(1, mc.mode) + " :is unknown mode char to me");
 	return false;
@@ -132,7 +139,6 @@ bool ApplyMode(Client *client, Channel *channel, const modechange &mc)
 
 void handleMode(Server &server, Client *client, const std::vector<std::string> &params)
 {
-	std::cerr << "handleMode called" << std::endl;
 	const std::string nick = client->getNickname();
 
 	if (params.empty())
@@ -163,7 +169,7 @@ void handleMode(Server &server, Client *client, const std::vector<std::string> &
 	for (size_t i = 0; i < vecmode.size(); i++)
 	{
 		const modechange &mc = vecmode[i];
-		if (!ApplyMode(client, channel, mc))
+		if (!ApplyMode(server, client, channel, mc))
 			continue;
 		const char cur = (mc.add ? '+' : '-');
 		if (sign != cur)

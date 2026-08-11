@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Server.hpp"
 #include <string>
 #include <netinet/in.h>
 
@@ -38,6 +39,8 @@ class Client
         // === Registration ===
         bool isRegistered() const;
         bool hasPassword() const;
+
+		friend class Server;
 
     private:
         int             _fd;

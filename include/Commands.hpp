@@ -11,3 +11,4 @@ void handlePass(Server &server, Client *client, const std::vector<std::string> &
 void handleNick(Server &server, Client *client, const std::vector<std::string> &params);
 void handleUser(Server &server, Client *client, const std::vector<std::string> &params);
 void handleMode(Server &server, Client *client, const std::vector<std::string> &params);
+void handleInvite(Server &server, Client *client, const std::vector<std::string> &params);
