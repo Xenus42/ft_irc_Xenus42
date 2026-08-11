@@ -4,13 +4,20 @@
 #include <vector>
 #include <map>
 #include <poll.h>
+#include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <stdio.h>
+#include <unistd.h>
 
 #include "Client.hpp"
-#include "Channel.hpp"
 #include "Parsing.hpp"
-#include "Commands.hpp"
+#include "Tmp_Log.hpp"
 
-// TODO: Change public methods to private if they are not used outside of the Server class. 
+//TODEL:
+#include "Commands.hpp"
+#include "Channel.hpp"
+
 class Server
 {
     public:
@@ -30,8 +37,8 @@ class Server
         void    acceptClient();
         void    addClient(int fd, const sockaddr_in& address);
         void    receiveClient(int fd);
-        void    disconnectClient(Client *client);
         void    changeNickname(Client *client, const std::string &newNick);
+        // void    removeClient();
 
         // === Channel ===
         Channel *getChannel(const std::string &name);
@@ -47,7 +54,7 @@ class Server
 
         // === Getters ===
         std::string getPassword() const;
-        Client *getClientByNick(std::string nick);
+        Client *getClientByNick(const std::string nick);
 
         // === Communication ===
         void    sendMessage(Client *client, const std::string &message);
