@@ -13,10 +13,10 @@ void handleInvite(Server &server, Client *client, const std::vector<std::string>
 	Channel *channel = server.getChannel(channelName);
 	if (channel == NULL)
 		return reply(client, ":ircserv 403 " + nick + " " + channelName + " :No such channel");
-	if (targetNick == nick)
-		return reply(client, ":ircserv 442 " + nick + " " + channelName + " :You cannot invite yourself");
 	if (targetClient == NULL)
 		return reply(client, ":ircserv 401 " + nick + " " + targetNick + " :No such nick/channel");
+	if (!channel->isMember(client))
+		return reply(client, ":ircserv 442 " + nick + " " + channelName + " :You're not on that channel");
 	if (channel->hasMode(MODE_INVITE_ONLY) && !channel->isOperator(client))
 		return reply(client, ":ircserv 482 " + nick + " " + channelName + " :You're not channel operator");
 	if (channel->isMember(targetClient))
