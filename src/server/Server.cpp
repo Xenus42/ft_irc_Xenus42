@@ -126,24 +126,14 @@ void Server::sendMessage(Client *client, const std::string &message)
 
 void Server::sendWelcome(Client *client)
 {
-    const std::string nick = client->getNickname();
-
-    sendMessage(client,
-        ":ircserv 001 " + nick +
-        " :Welcome to the IRC Network\r\n");
-
-    sendMessage(client,
-        ":ircserv 002 " + nick +
-        " :Your host is ircserv\r\n");
-
-    sendMessage(client,
-        ":ircserv 003 " + nick +
-        " :This server was created today\r\n");
-
+	const std::string nick = client->getNickname();
+	sendMessage(client, ":ircserv 001 " + nick
+		+ " :Welcome to the IRC Network\r\n");
+	sendMessage(client, ":ircserv 002 " + nick + " :Your host is ircserv\r\n");
+	sendMessage(client, ":ircserv 003 " + nick
+		+ " :This server was created today\r\n");
 	// TODO: check message excepted
-    sendMessage(client,
-        ":ircserv 004 " + nick +
-        " ircserv 1.0 io\r\n");
+	sendMessage(client, ":ircserv 004 " + nick + " ircserv 1.0 io\r\n");
 }
 // ************************************************************************** //
 //                                   Socket
@@ -224,74 +214,59 @@ void Server::addClient(int fd, const sockaddr_in &address)
 
 void Server::receiveClient(int fd)
 {
+	char	buffer[1024];
+	ssize_t	bytes;
+	Client	*client;
 
-	char buffer[1024];
-
-	ssize_t bytes = recv(fd, buffer, sizeof(buffer), 0);
-	
+	bytes = recv(fd, buffer, sizeof(buffer), 0);
 	if (bytes < 0)
 	{
 		perror("recv");
 		return ;
 	}
-
 	if (bytes == 0)
 	{
 		disconnectClient(_clientsByFd[fd]);
 		return ;
 	}
-	
-	Client *client = _clientsByFd[fd];
-	
+	client = _clientsByFd[fd];
 	client->appendBuffer(buffer, bytes);
-	
 	std::string line;
-	
 	while (client->extractLine(line))
 	{
-	    Parsing::Command cmd = _parser.parse(line);
-	
-	    dispatchCommand(client, cmd);
+		Parsing::Command cmd = _parser.parse(line);
+		dispatchCommand(client, cmd);
 	}
 }
 
 void Server::disconnectClient(Client *client)
 {
+	int		fd;
+	delete	client;
+
 	if (!client)
-		return;
-
-	int fd = client->getFd();
-	
+		return ;
+	fd = client->getFd();
 	_clientsByFd.erase(fd);
-
 	if (client->isAuthenticated())
 	{
 		std::string nickname = client->getNickname();
 		_clientsByNick.erase(nickname);
 	}
-
 	removePollfd(fd);
-
 	close(fd);
-
-	delete client;
-
 	printLog("SERVER", "Client disconnected and cleaned up");
 }
 
 void Server::changeNickname(Client *client, const std::string &newNick)
 {
-    const std::string &oldNick = client->getNickname();
-
-    if (oldNick == newNick)
-        return;
-
-    if (!oldNick.empty())
-        _clientsByNick.erase(oldNick);
-
-    client->setNickname(newNick);
-
-    _clientsByNick[newNick] = client;
+	const std::string &oldNick = client->getNickname();
+	if (oldNick == newNick)
+		return ;
+	if (!oldNick.empty())
+		_clientsByNick.erase(oldNick);
+	client->setNickname(newNick);
+	_clientsByNick[newNick] = client;
 }
 
 // ************************************************************************** //
@@ -332,11 +307,10 @@ std::string Server::getPassword() const
 Client *Server::getClientByNick(std::string nick)
 {
 	std::map<std::string, Client *>::iterator it = _clientsByNick.find(nick);
-
 	if (it == _clientsByNick.end())
-    	return NULL;
-
-	return it->second;;
+		return (NULL);
+	return (it->second);
+	;
 }
 
 // ************************************************************************** //
@@ -452,7 +426,6 @@ void Server::removeChannel(const std::string &name)
 	delete it->second;
 	_channels.erase(it);
 }
-
 // ************************************************************************** //
 //                                  Command Dispatch
 // ************************************************************************** //
@@ -471,6 +444,8 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleUser(*this, client, cmd.params);
 	else if (cmd.name == "MODE")
 		handleMode(*this, client, cmd.params);
+	else if (cmd.name == "PRIVMSG")
+		handlePrivmsg(*this, client, cmd.params);
 	else
 	{
 		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;

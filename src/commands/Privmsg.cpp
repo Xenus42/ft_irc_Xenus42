@@ -3,11 +3,11 @@
 #include "Server.hpp"
 
 // —  PRIVMSG <target> <message>
-// TODO: gerer les messages prives (cible = nickname).
 void	handlePrivmsg(Server &server, Client *client,
 		const std::vector<std::string> &params)
 {
 	Channel	*channel;
+	Client	*dest;
 
 	const std::string nick = client->getNickname();
 	// 451: pas encore authentifie -> commande refusee tant que non enregistre
@@ -23,6 +23,8 @@ void	handlePrivmsg(Server &server, Client *client,
 		return (reply(client, ":ircserv 412 " + nick + " :No text to send"));
 	const std::string target = params[0];
 	const std::string message = params[1];
+	const std::string prefix = nick + "!" + client->getUsername() + "@"
+		+ client->getHostname();
 	// cible = #channel : diffuser aux membres, sauf a l'expediteur
 	if (!target.empty() && target[0] == '#')
 	{
@@ -35,9 +37,15 @@ void	handlePrivmsg(Server &server, Client *client,
 		if (!channel->isMember(client))
 			return (reply(client, ":ircserv 404 " + nick + " " + target
 					+ " :Cannot send to channel"));
-		const std::string prefix = nick + "!" + client->getUsername() + "@"
-			+ client->getHostname();
 		channel->broadcast(":" + prefix + " PRIVMSG " + target + " :" + message,
 			client);
+		return ;
 	}
+	// cible = nickname : message prive direct
+	dest = server.getClientByNick(target);
+	// 401: aucun client connecte sous ce pseudo
+	if (dest == NULL)
+		return (reply(client, ":ircserv 401 " + nick + " " + target
+				+ " :No such nick/channel"));
+	reply(dest, ":" + prefix + " PRIVMSG " + target + " :" + message);
 }
