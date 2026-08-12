@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Server.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/08/12 14:48:40 by lebroue           #+#    #+#             */
+/*   Updated: 2026/08/12 14:58:44 by lebroue          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Client.hpp"
 #include "Parsing.hpp"
 #include "Server.hpp"
@@ -446,6 +458,8 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleMode(*this, client, cmd.params);
 	else if (cmd.name == "PRIVMSG")
 		handlePrivmsg(*this, client, cmd.params);
+	else if (cmd.name == "NOTICE")
+		handleNotice(*this, client, cmd.params);
 	else
 	{
 		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;
