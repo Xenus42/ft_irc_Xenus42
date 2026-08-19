@@ -10,6 +10,8 @@ class	Server;
 
 void	handleJoin(Server &server, Client *client,
 			const std::vector<std::string> &params);
+void	handlePart(Server &server, Client *client,
+			const std::vector<std::string> &params);
 void	handleTopic(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handlePass(Server &server, Client *client,

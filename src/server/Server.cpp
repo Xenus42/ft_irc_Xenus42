@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/12 14:48:40 by lebroue           #+#    #+#             */
-/*   Updated: 2026/08/12 14:58:44 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/08/19 17:51:05 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -444,8 +444,12 @@ void Server::removeChannel(const std::string &name)
 
 void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 {
+	// debug print by leo
+	std::cout << "[DEBUG ] dispatch cmd='" << cmd.name << "'" << std::endl;
 	if (cmd.name == "JOIN")
 		handleJoin(*this, client, cmd.params);
+	else if (cmd.name == "PART")
+		handlePart(*this, client, cmd.params);
 	else if (cmd.name == "TOPIC")
 		handleTopic(*this, client, cmd.params);
 	else if (cmd.name == "PASS")
