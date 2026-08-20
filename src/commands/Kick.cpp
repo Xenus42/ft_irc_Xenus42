@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "Server.hpp"
 
 void handleKick(Server &server, Client *client, const std::vector<std::string> &params)
 {
@@ -22,7 +23,7 @@ void handleKick(Server &server, Client *client, const std::vector<std::string> &
 	if (!channel->isMember(targetClient))
 		return reply(client, ":ircserv 441 " + nick + " " + targetNick + " " + channelName + " :They aren't on that channel");
 	channel->broadcast(":" + nick + "!" + client->getUsername() + "@" + client->getHostname() + " KICK " + channelName + " " + targetNick + " :" + reason);
-	channel->removeMember(targetClient);
+	channel->removeClient(targetClient);
 
 	if (channel->isEmpty())
 		server.removeChannel(channelName);

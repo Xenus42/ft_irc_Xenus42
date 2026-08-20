@@ -20,7 +20,7 @@ void handleJoin(Server &server, Client *client,
 {
     const std::string nick = client->getNickname();
 
-    if (!client->isAuthenticated()) //client->isregistered() ?
+    if (!client->isRegistered())
         return reply(client, ":ircserv 451 " + nick + " :You have not registered");
 
     if (params.empty())

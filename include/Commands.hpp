@@ -16,3 +16,4 @@ void handleUser(Server &server, Client *client, const std::vector<std::string> &
 void handleMode(Server &server, Client *client, const std::vector<std::string> &params);
 void handleInvite(Server &server, Client *client, const std::vector<std::string> &params);
 void handlePrivmsg(Server &server, Client *client,const std::vector<std::string> &params);
+void handleKick(Server &server, Client *client, const std::vector<std::string> &params);
