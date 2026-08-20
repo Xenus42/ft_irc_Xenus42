@@ -26,3 +26,5 @@ void	handleNotice(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handleWho(Server &server, Client *client,
 			const std::vector<std::string> &params);
+void	handleWhois(Server &server, Client *client,
+			const std::vector<std::string> &params);
