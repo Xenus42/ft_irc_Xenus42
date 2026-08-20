@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: williamguerreiro <williamguerreiro@stud    +#+  +:+       +#+        */
+/*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:00:48 by williamguer       #+#    #+#             */
-/*   Updated: 2026/07/18 13:54:42 by williamguer      ###   ########.fr       */
+/*   Updated: 2026/08/20 19:38:22 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,4 +225,17 @@ std::string Channel::getMemberList() const
         list += it->first->getNickname();
     }
     return list;
+}
+
+std::vector<Client *> Channel::getMembers() const
+{
+    std::vector<Client *> members;
+
+    std::map<Client*, int>::const_iterator it;
+    for (it = _status.begin(); it != _status.end(); ++it)
+    {
+        if (it->second & STATUS_MEMBER)
+            members.push_back(it->first);
+    }
+    return members;
 }
