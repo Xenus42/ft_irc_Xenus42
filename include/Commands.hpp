@@ -7,6 +7,7 @@
 
 // TODEL: del Class Server ??
 class	Server;
+class	Client;
 
 void handleJoin(Server &server, Client *client, const std::vector<std::string> &params);
 void handleTopic(Server &server, Client *client, const std::vector<std::string> &params);

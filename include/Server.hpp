@@ -40,10 +40,7 @@ class Server
         void    processPollEvents();
 
         // === Getters ===
-        std::string Server::getPassword() const
-        {
-        	return (_password);
-        }
+        std::string getPassword() const;
 
 
     // ************************************************************************** //
@@ -116,9 +113,6 @@ class Server
     // ************************************************************************** //
     //                                  Server Utils
     // ************************************************************************** //
-
-        // === Getters ===
-        std::string getPassword() const;
         
         // === Print ===
         void    printPollfds() const;
