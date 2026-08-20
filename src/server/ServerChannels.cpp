@@ -1,24 +1,34 @@
-#include "Client.hpp"
-#include "Parsing.hpp"
 #include "Server.hpp"
-#include "Tmp_Log.hpp"
-#include <cerrno>
-#include <cstring>
-#include <iostream>
-#include <stdio.h>
-#include <unistd.h>
-
-// TODEL:
-#include "Channel.hpp"
-#include "Commands.hpp"
-
-// ServerChannels.cpp
-// ├── getChannel()
-// ├── createChannel()
-// └── removeChannel()
-
 
 // ************************************************************************** //
-//                             Orthodox Canonical Form
+//                            Channel lifecycle
 // ************************************************************************** //
 
+Channel *Server::createChannel(const std::string &name)
+{
+	Channel	*channel = new Channel(name);
+	
+    _channels[name] = channel;
+	return (channel);
+}
+
+Channel *Server::getChannel(const std::string &name)
+{
+	std::map<std::string, Channel *>::iterator it = _channels.find(name);
+	
+    if (it == _channels.end())
+		return (NULL);
+
+	return (it->second);
+}
+
+void Server::removeChannel(const std::string &name)
+{
+	std::map<std::string, Channel *>::iterator it = _channels.find(name);
+	
+    if (it == _channels.end())
+		return ;
+	
+    delete it->second;
+	_channels.erase(it);
+}

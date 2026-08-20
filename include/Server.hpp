@@ -21,7 +21,12 @@
 class Server
 {
     public:
-        // === OCF ===
+
+    // ************************************************************************** //
+    //                                  Server Main
+    // ************************************************************************** //
+
+        // === Constructors ===
         Server();
         Server(int _port, std::string password);
         Server(const Server &other);
@@ -32,49 +37,97 @@ class Server
         void    init();
         void    run();
         void    shutdown();
+        void    processPollEvents();
 
-        // === Client management ===
-        void    acceptClient();
-        void    addClient(int fd, const sockaddr_in& address);
-        void    receiveClient(int fd);
-        void    changeNickname(Client *client, const std::string &newNick);
-        // void    removeClient();
+        // === Getters ===
+        std::string Server::getPassword() const
+        {
+        	return (_password);
+        }
 
-        // === Channel ===
+
+    // ************************************************************************** //
+    //                                  Server Channels
+    // ************************************************************************** //
+
         Channel *getChannel(const std::string &name);
         Channel *createChannel(const std::string &name);
         void     removeChannel(const std::string &name);
+    
 
-        // === Poll ===
-        void    addPollfd(int fd);
-        void    removePollfd(int fd);
+	// ************************************************************************** //
+    //                                  Server Clients
+    // ************************************************************************** //
 
-        // === Command handling ===
-        void    dispatchCommand(Client *client, const Parsing::Command &cmd);
+		// === Client lifecycle ===
+        void    addClient(int fd, const sockaddr_in& address);
+		void	disconnectClient(Client *client);
+        void    disconnectAllClients();
+		
+        // === Client Identity ===
+        void    changeNickname(Client *client, const std::string &newNick);
+		Client *getClientByNick(const std::string &nick);
+        void    removeClientFromChannels(Client *client);
 
-        // === Getters ===
-        std::string getPassword() const;
-        Client *getClientByNick(const std::string nick);
-
-        // === Communication ===
-        void    sendMessage(Client *client, const std::string &message);
-        void    sendWelcome(Client *client);
+        // === Client Indexes ===
+        void    addClientByFd(Client *client);
+        Client *getClientByFd(int fd);
+        void    removeClientByFd(Client *client);
         
-    private:
+        void    addClientByNick(Client *client);
+        void    removeClientByNick(Client *client);
+
+
+    // ************************************************************************** //
+    //                                  Server Commands
+    // ************************************************************************** //
+
+        void dispatchCommand(Client *client, const Parsing::Command &cmd);
+
+
+	// ************************************************************************** //
+    //                                  Server Network
+    // ************************************************************************** //
+
         // === Socket ===
+    private:    
         void    createSocket();
         void    bindSocket();
         void    listenSocket();
+		
+        // === Poll ===
+    public:
+        void    addPollfd(int fd);
+        void    removePollfd(int fd);
 
+        // === Client I/O ===
+        void    acceptClient();
+        void    receiveClient(int fd);
+
+
+    // ************************************************************************** //
+    //                                  Server Communication
+    // ************************************************************************** //
+
+	    void    sendMessage(Client *client, const std::string &message);
+        void    sendWelcome(Client *client);
+    
+
+    // ************************************************************************** //
+    //                                  Server Utils
+    // ************************************************************************** //
+
+        // === Getters ===
+        std::string getPassword() const;
+        
         // === Print ===
         void    printPollfds() const;
         void    printClientsByFd() const;
         void    printServerStatus() const;
         void    printChannels() const;
 
-
+        
     private:
-    
         int         _port;
         std::string _password;
         int         _listenFd;

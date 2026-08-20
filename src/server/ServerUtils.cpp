@@ -1,14 +1,5 @@
 #include "Server.hpp"
 
-// ServerUtils.cpp
-// ├── Communication
-// │   ├── sendMessage()
-// │   └── sendWelcome()
-// │
-// └── éventuellement
-//     ├── broadcast()
-//     └── broadcastToChannel()
-
 // ************************************************************************** //
 //                                   Print
 // ************************************************************************** //
@@ -16,25 +7,36 @@
 void Server::printPollfds() const
 {
 	printSection("Pollfds:");
+
 	for (size_t i = 0; i < _pollfds.size(); i++)
 	{
 		std::cout << "[" << i << "]"
-					<< "\t fd: " << _pollfds[i].fd << "\t event: ";
+				  << "\tfd: " << _pollfds[i].fd
+				  << "\tevents: ";
 
 		if (_pollfds[i].events & POLLIN)
-			std::cout << "POLLIN";
+			std::cout << "POLLIN ";
+
+		std::cout << "\trevents: ";
+
+		if (_pollfds[i].revents & POLLIN)
+			std::cout << "POLLIN ";
 
 		if (_pollfds[i].revents & POLLOUT)
-			std::cout << "POLLOUT";
+			std::cout << "POLLOUT ";
 
 		if (_pollfds[i].revents & POLLERR)
-			std::cout << "POLLERR";
+			std::cout << "POLLERR ";
 
 		if (_pollfds[i].revents & POLLHUP)
-			std::cout << "POLLHUP";
+			std::cout << "POLLHUP ";
+
+		if (_pollfds[i].revents & POLLNVAL)
+			std::cout << "POLLNVAL ";
 
 		std::cout << std::endl;
 	}
+
 	nl(2);
 }
 

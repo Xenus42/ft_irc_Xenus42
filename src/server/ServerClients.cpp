@@ -1,36 +1,17 @@
 #include "Server.hpp"
 
-// ServerClients.cpp
-// ├── Client lifecycle
-// │   ├── addClient()
-// │   └── disconnectClient()
-// │
-// ├── Client identity
-// │   ├── changeNickname()
-// │   ├── getClientByNick()
-// │   └── getClientByFd()
-// │
-// ├── Client indexes
-// │   ├── addClientByFd()
-// │   ├── removeClientByFd()
-// │   ├── addClientByNick()
-// │   └── removeClientByNick()
-// │
-// └── Channel cleanup
-//     └── removeClientfromChannels()
-
 // ************************************************************************** //
 //                                  Client lifecycle
 // ************************************************************************** //
 
 void Server::addClient(int fd, const sockaddr_in &address)
 {
-	Client	*client;
+	Client	*client = new Client(fd, address);
 
-	client = new Client(fd, address);
-	_clientsByFd[fd] = client;
+	addClientByFd(client);
 	addPollfd(fd);
-	std::cout << "[SERVER] Client " << _clientsByFd[fd] << " connected" << std::endl;
+	
+	std::cout << "[SERVER] Client " << fd << " connected" << std::endl;
 }
 
 void Server::disconnectClient(Client *client)
@@ -39,54 +20,32 @@ void Server::disconnectClient(Client *client)
 		return;
 
 	int fd = client->getFd();
-	
-	_clientsByFd.erase(fd);
 
-	if (client->isAuthenticated())
-	{
-		std::string nickname = client->getNickname();
-		_clientsByNick.erase(nickname);
-	}
-
+	removeClientFromChannels(client);
+	removeClientByNick(client);
+	removeClientByFd(client);
 	removePollfd(fd);
 
 	close(fd);
-
 	delete client;
 
 	printLog("SERVER", "Client disconnected and cleaned up");
 }
 
-// ************************************************************************** //
-//                                  Client Identity
-// ************************************************************************** //
-
-void Server::changeNickname(Client *client, const std::string &newNick)
+void Server::disconnectAllClients()
 {
-    const std::string &oldNick = client->getNickname();
-
-    if (oldNick == newNick)
-        return;
-
-    if (!oldNick.empty())
-        _clientsByNick.erase(oldNick);
-
-    client->setNickname(newNick);
-
-    _clientsByNick[newNick] = client;
+	for (std::map<int, Client *>::iterator it = _clientsByFd.begin(); it != _clientsByFd.end(); ++it)
+	{
+		Client *client = it->second;
+		disconnectClient(client);
+	}
 }
 
-Client *Server::getClientByNick(const std::string &nick)
-{
-	std::map<std::string, Client *>::iterator it = _clientsByNick.find(nick);
+// ************************************************************************** //
+//                                  Client Channels
+// ************************************************************************** //
 
-	if (it == _clientsByNick.end())
-    	return NULL;
-
-	return it->second;;
-}
-
-void Server::removeClientfromChannels(Client *client)
+void Server::removeClientFromChannels(Client *client)
 {
     for (std::map<std::string, Channel *>::iterator it = _channels.begin(); it != _channels.end(); ++it)
     {
@@ -102,12 +61,86 @@ void Server::removeClientfromChannels(Client *client)
     }
 }
 
+
+// ************************************************************************** //
+//                                  Client Identity
+// ************************************************************************** //
+
+void Server::changeNickname(Client *client, const std::string &newNick)
+{
+    if (!client)
+        return;
+
+    const std::string &oldNick = client->getNickname();
+
+    if (oldNick == newNick)
+        return;
+
+    removeClientByNick(client);
+
+    client->setNickname(newNick);
+
+    addClientByNick(client);
+}
+
 // ************************************************************************** //
 //                                  Client Indexes
 // ************************************************************************** //
 
-// void Server::addClientByFd(Client *client);
-// void Server::removeClientByFd(Client *client);
+void Server::addClientByFd(Client *client)
+{
+	if (!client)
+		return;
 
-// void Server::addClientByNick(Client *client);
-// void Server::removeClientByNick(Client *client);
+	_clientsByFd[client->getFd()] = client;
+}
+
+Client *Server::getClientByFd(int fd)
+{
+	std::map<int, Client *>::iterator it = _clientsByFd.find(fd);
+
+	if (it == _clientsByFd.end())
+		return NULL;
+
+	return it->second;
+}
+
+void Server::removeClientByFd(Client *client)
+{
+	if (!client)
+		return;
+
+	_clientsByFd.erase(client->getFd());
+}
+
+void Server::addClientByNick(Client *client)
+{
+	if (!client)
+		return;
+
+	const std::string &nick = client->getNickname();
+	
+	if (!nick.empty())
+		_clientsByNick[nick] = client;
+}
+
+Client *Server::getClientByNick(const std::string &nick)
+{
+	std::map<std::string, Client *>::iterator it = _clientsByNick.find(nick);
+
+	if (it == _clientsByNick.end())
+		return NULL;
+
+	return it->second;;
+}
+
+void Server::removeClientByNick(Client *client)
+{
+	if (!client)
+		return;
+
+	const std::string &nick = client->getNickname();
+	
+	if (!nick.empty())
+		_clientsByNick.erase(nick);
+}

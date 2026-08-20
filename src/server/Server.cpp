@@ -1,18 +1,5 @@
 #include "Server.hpp"
 
-// Server.cpp
-// ├── OCF
-// │   ├── Server()
-// │   ├── Server(int, string)
-// │   ├── Server(const Server&)
-// │   ├── operator=()
-// │   └── ~Server()
-// │
-// └── Life cycle
-//     ├── init()
-//     ├── run()
-//     └── shutdown()
-
 // ************************************************************************** //
 //                             Orthodox Canonical Form
 // ************************************************************************** //
@@ -64,16 +51,21 @@ Server::~Server()
 
 void Server::init()
 {
-	pollfd	serverPoll;
+	try
+	{
+		createSocket();
+		bindSocket();
+		listenSocket();
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << "[ERROR ] " << e.what() << std::endl;
+		shutdown();
+		throw;
+	}
 
-	createSocket();
-	bindSocket();
-	listenSocket();
 	_running = true;
-	serverPoll.fd = _listenFd;
-	serverPoll.events = POLLIN;
-	serverPoll.revents = 0;
-	_pollfds.push_back(serverPoll);
+	addPollfd(_listenFd);
 }
 
 void Server::run()
@@ -82,26 +74,12 @@ void Server::run()
 	{
 		if (poll(&_pollfds[0], _pollfds.size(), -1) < 0)
 		{
+			if (errno == EINTR)
+				continue;
 			shutdown();
-			perror("poll");
+			std::cerr << "[ERROR] poll: " << std::strerror(errno) << std::endl;
 		}
-		// TODEL: Pour chaque port sur ecoute:
-		for (size_t i = 0; i < _pollfds.size(); i++)
-		{
-			if (!(_pollfds[i].revents & POLLIN))
-				continue ;
-			if (_pollfds[i].fd == _listenFd)
-			{
-				acceptClient();
-				// printServerStatus();
-			}
-			else
-			{
-				receiveClient(_pollfds[i].fd);
-				printServerStatus();
-			}
-		}
-		// TODEL: print functions
+		processPollEvents();
 	}
 }
 
@@ -109,9 +87,18 @@ void Server::shutdown()
 {
 	if (_listenFd != -1)
 	{
-		// close all clients;
-		close(_listenFd);
+		disconnectAllClients();
 		_listenFd = -1;
 	}
 	_running = false;
+}
+
+
+// ************************************************************************** //
+//                                   Getters
+// ************************************************************************** //
+
+std::string Server::getPassword() const
+{
+	return (_password);
 }
