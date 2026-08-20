@@ -24,3 +24,5 @@ void	handlePrivmsg(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handleNotice(Server &server, Client *client,
 			const std::vector<std::string> &params);
+void	handleWho(Server &server, Client *client,
+			const std::vector<std::string> &params);
