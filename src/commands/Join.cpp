@@ -1,6 +1,5 @@
 #include <sys/socket.h>
 #include <string>
-#include "Server.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
 
@@ -10,8 +9,9 @@
 //a remplacer par client->sendmessage()
 void reply(Client *client, const std::string &line)
 {
+	Server serv;
     std::string full = line + "\r\n";
-    ::send(client->getFd(), full.c_str(), full.size(), 0);
+	serv.sendMessage(client, full);
 }
 
 // —  JOIN <#channel> [key]
@@ -20,8 +20,8 @@ void handleJoin(Server &server, Client *client,
 {
     const std::string nick = client->getNickname();
 
-    // if (!client->isAuthenticated())
-        // return reply(client, ":ircserv 451 " + nick + " :You have not registered");
+    if (!client->isAuthenticated()) //client->isregistered() ?
+        return reply(client, ":ircserv 451 " + nick + " :You have not registered");
 
     if (params.empty())
         return reply(client, ":ircserv 461 " + nick + " JOIN :Not enough parameters");

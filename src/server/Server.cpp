@@ -446,6 +446,8 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleMode(*this, client, cmd.params);
 	else if (cmd.name == "PRIVMSG")
 		handlePrivmsg(*this, client, cmd.params);
+	else if (cmd.name == "INVITE")
+		handleInvite(*this, client, cmd.params);
 	else
 	{
 		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;

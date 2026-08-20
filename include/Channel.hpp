@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: williamguerreiro <williamguerreiro@stud    +#+  +:+       +#+        */
+/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:01:31 by williamguer       #+#    #+#             */
-/*   Updated: 2026/07/19 12:01:52 by williamguer      ###   ########.fr       */
+/*   Updated: 2026/08/11 13:44:33 by willda-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define CHANNEL_HPP
 #include <string>
 #include <map>
+#include <set>
 
 enum ChannelModeFlags
 {
@@ -82,6 +83,7 @@ private:
     int                     _userLimit;
     int                     _modes;
     std::map<Client*, int>  _status;
+	std::set<Client*> 		_invited;
     Channel();
 };
 void reply(Client *client, const std::string &line);

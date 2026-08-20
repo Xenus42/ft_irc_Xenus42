@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: williamguerreiro <williamguerreiro@stud    +#+  +:+       +#+        */
+/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:00:48 by williamguer       #+#    #+#             */
-/*   Updated: 2026/07/18 13:54:42 by williamguer      ###   ########.fr       */
+/*   Updated: 2026/08/11 13:36:57 by willda-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "Client.hpp"
 
 Channel::Channel(const std::string &name)
-    : _name(name), _topic(""), _key(""), _userLimit(0), _modes(0)
+    : _name(name), _topic(""), _key(""), _userLimit(0), _modes(0), _status(), _invited()
 {
 }
 
@@ -88,17 +88,19 @@ bool Channel::isOperator(Client *client) const
 
 void Channel::addInvited(Client *client)
 {
-    setStatus(client, STATUS_INVITED);
+    _invited.insert(client);
+	setStatus(client, STATUS_INVITED);
 }
 
 bool Channel::isInvited(Client *client) const
 {
-    return hasStatus(client, STATUS_INVITED);
+    return _invited.find(client) != _invited.end();
 }
 
 void Channel::removeInvited(Client *client)
 {
-    unsetStatus(client, STATUS_INVITED);
+    _invited.erase(client);
+	unsetStatus(client, STATUS_INVITED);
 }
 
 // ---- Topic ----
