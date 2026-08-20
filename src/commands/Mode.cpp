@@ -99,17 +99,22 @@ bool ApplyMode(Server &server, Client *client, Channel *channel, const modechang
 		case 't':
 			if (mc.add)
 				channel->setMode(MODE_TOPIC_RESTRICTED);
-			channel->unsetMode(MODE_TOPIC_RESTRICTED);
+			else
+				channel->unsetMode(MODE_TOPIC_RESTRICTED);
 			return true;
 		case 'i':
 			if (mc.add)
 				channel->setMode(MODE_INVITE_ONLY);
-			channel->unsetMode(MODE_INVITE_ONLY);
+			else
+				channel->unsetMode(MODE_INVITE_ONLY);
 			return true;
 		case 'l':
 		{
 			if (!mc.add)
 				return channel->removeUserLimit(), true;
+			for (int i = 0; mc.arg[i]; i++)
+				if (!isdigit(mc.arg[i]))
+					return false;
 			long limit = std::atol(mc.arg.c_str());
 			if (limit <= 0)
 				return false;
