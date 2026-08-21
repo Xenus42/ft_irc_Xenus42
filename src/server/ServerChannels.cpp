@@ -32,3 +32,8 @@ void Server::removeChannel(const std::string &name)
     delete it->second;
 	_channels.erase(it);
 }
+
+const std::map<std::string, Channel *> &Server::getChannels() const
+{
+    return _channels;
+}
