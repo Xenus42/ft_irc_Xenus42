@@ -18,3 +18,8 @@ void handleMode(Server &server, Client *client, const std::vector<std::string> &
 void handleInvite(Server &server, Client *client, const std::vector<std::string> &params);
 void handlePrivmsg(Server &server, Client *client,const std::vector<std::string> &params);
 void handleKick(Server &server, Client *client, const std::vector<std::string> &params);
+void handleNotice(Server &server, Client *client, const std::vector<std::string> &params);
+void handleWho(Server &server, Client *client, const std::vector<std::string> &params);
+void handleWhois(Server &server, Client *client, const std::vector<std::string> &params);
+void handleList(Server &server, Client *client, const std::vector<std::string> &params);
+

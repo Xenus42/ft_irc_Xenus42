@@ -228,3 +228,16 @@ std::string Channel::getMemberList() const
     }
     return list;
 }
+
+std::vector<Client *> Channel::getMembers() const
+{
+    std::vector<Client *> members;
+
+    std::map<Client*, int>::const_iterator it;
+    for (it = _status.begin(); it != _status.end(); ++it)
+    {
+        if (it->second & STATUS_MEMBER)
+            members.push_back(it->first);
+    }
+    return members;
+}
