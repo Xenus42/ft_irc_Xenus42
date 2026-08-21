@@ -28,3 +28,5 @@ void	handleWho(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handleWhois(Server &server, Client *client,
 			const std::vector<std::string> &params);
+void	handleList(Server &server, Client *client,
+			const std::vector<std::string> &params);

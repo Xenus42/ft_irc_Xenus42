@@ -6,7 +6,7 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/12 14:48:40 by lebroue           #+#    #+#             */
-/*   Updated: 2026/08/20 20:13:45 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/08/21 15:43:02 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -464,6 +464,8 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleWho(*this, client, cmd.params);
 	else if (cmd.name == "WHOIS")
 		handleWhois(*this, client, cmd.params);
+	else if (cmd.name == "LIST")
+		handleList(*this, client, cmd.params);
 	else
 	{
 		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;
