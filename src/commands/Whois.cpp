@@ -17,5 +17,11 @@ void	handleWhois(Server &server, Client *client,
 	if (target == NULL)
 		return (reply(client, ":ircserv 401 " + nick + " " + targetNick
 				+ " :No such nick/channel"));
-	// TODO: envoyer 311 (whoisuser), 312 (whoisserver), 318 (end of whois)
+	reply(client, ":ircserv 311 " + nick + " " + targetNick + " "
+		+ target->getUsername() + " " + target->getHostname() + " * :"
+		+ target->getUsername());
+	reply(client, ":ircserv 312 " + nick + " " + targetNick
+		+ " ircserv :ft_irc server");
+	reply(client, ":ircserv 318 " + nick + " " + targetNick
+		+ " :End of WHOIS list");
 }
