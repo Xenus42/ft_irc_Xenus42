@@ -7,6 +7,7 @@
 
 // TODEL: del Class Server ??
 class	Server;
+class	Client;
 
 void	handleJoin(Server &server, Client *client,
 			const std::vector<std::string> &params);
@@ -19,6 +20,10 @@ void	handleNick(Server &server, Client *client,
 void	handleUser(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handleMode(Server &server, Client *client,
+			const std::vector<std::string> &params);
+void	handleInvite(Server &server, Client *client,
+			const std::vector<std::string> &params);
+void	handleKick(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handlePrivmsg(Server &server, Client *client,
 			const std::vector<std::string> &params);

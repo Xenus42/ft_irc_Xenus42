@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
+/*   By: williamguer <williamguer@student.42.fr>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:01:31 by williamguer       #+#    #+#             */
-/*   Updated: 2026/08/20 19:38:02 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/08/21 17:06:43 by williamguer      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CHANNEL_HPP
 # define CHANNEL_HPP
 # include <map>
+# include <set>
 # include <string>
 # include <vector>
 
@@ -84,6 +85,7 @@ class Channel
 	int _userLimit;
 	int _modes;
 	std::map<Client *, int> _status;
+	std::set<Client *> _invited;
 	Channel();
 };
 void	reply(Client *client, const std::string &line);
