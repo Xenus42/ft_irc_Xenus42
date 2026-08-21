@@ -1,7 +1,10 @@
 #include "Server.hpp"
 #include <sstream>
 #include <iostream>
+#include <climits>
 #include <cstdlib>
+#include <cerrno>
+#include <cctype>
 
 struct modechange
 {
@@ -112,19 +115,23 @@ bool ApplyMode(Server &server, Client *client, Channel *channel, const modechang
 		{
 			if (!mc.add)
 				return channel->removeUserLimit(), true;
-			for (int i = 0; mc.arg[i]; i++)
-				if (!isdigit(mc.arg[i]))
-					return false;
-			long limit = std::atol(mc.arg.c_str());
-			if (limit <= 0)
-				return false;
-			return channel->setUserLimit(limit), true;
+			if (mc.arg.empty())
+				return reply(client, ":ircserv 461 " + nick + " MODE :Not enough parameters"), false;
+			for (size_t i = 0; i < mc.arg.size(); i++)
+				if (!isdigit(static_cast<unsigned char>(mc.arg[i])))
+					return reply(client, ":ircserv 461 " + nick + " MODE :Not enough parameters"), false;
+			errno = 0;
+			char *end = NULL;
+			long limit = std::strtol(mc.arg.c_str(), &end, 10);
+			if (errno == ERANGE || *end != '\0' || limit <= 0 || limit > INT_MAX)
+				return reply(client, ":ircserv 461 " + nick + " MODE :Not enough parameters"), false;
+			return channel->setUserLimit(static_cast<int>(limit)), true;
 		}
 		case 'k':
 			if (!mc.add)
 				return channel->removeKey(), true;
 			if(mc.arg.empty())
-				return false;
+				return reply(client, ":ircserv 461 " + nick + " MODE :Not enough parameters"), false;
 			return channel->setKey(mc.arg), true;
 		case 'o':
 		{
@@ -168,7 +175,7 @@ void handleMode(Server &server, Client *client, const std::vector<std::string> &
 
 	std::vector<std::string> args(params.begin() + 2, params.end());
 	std::vector<modechange> vecmode = parseModeString(client, params[1], args);
-	
+
 	std::string modes, modeargs;
 	char sign = '\0';
 	for (size_t i = 0; i < vecmode.size(); i++)
