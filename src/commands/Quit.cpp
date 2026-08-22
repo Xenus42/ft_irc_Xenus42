@@ -7,8 +7,8 @@ void	handleQuit(Server &server, Client *client,
 {
 	(void)server;
 	(void)client;
-	(void)params;
-	// TODO: recuperer la raison (params[0] ou "Client Quit" par defaut)
+	const std::string reason = params.empty() ? "Client Quit" : params[0];
+	(void)reason;
 	// TODO: parcourir server.getChannels(), diffuser un message QUIT
 	// aux channels dont le client est membre
 	// TODO: appeler server.disconnectClient(client) pour fermer proprement
