@@ -35,5 +35,7 @@ void	handleWhois(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handlePing(Server &server, Client *client,
 			const std::vector<std::string> &params);
+void	handleQuit(Server &server, Client *client,
+			const std::vector<std::string> &params);
 void	handleList(Server &server, Client *client,
 			const std::vector<std::string> &params);
