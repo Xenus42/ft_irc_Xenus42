@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wdauser <wdauser@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:01:31 by williamguer       #+#    #+#             */
-/*   Updated: 2026/08/11 13:44:33 by willda-s         ###   ########.fr       */
+/*   Updated: 2026/08/22 02:02:09 by wdauser          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,7 @@
 #include <string>
 #include <map>
 #include <set>
-# include <string>
-# include <vector>
+#include <vector>
 
 enum	ChannelModeFlags
 {
@@ -28,8 +27,7 @@ enum	ChannelModeFlags
 enum	ClientChannelStatus
 {
 	STATUS_MEMBER = 1 << 0,
-	STATUS_OPERATOR = 1 << 1,
-	STATUS_INVITED = 1 << 2
+	STATUS_OPERATOR = 1 << 1
 };
 
 class	Client;

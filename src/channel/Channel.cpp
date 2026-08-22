@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wdauser <wdauser@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:00:48 by williamguer       #+#    #+#             */
-/*   Updated: 2026/08/11 13:36:57 by willda-s         ###   ########.fr       */
+/*   Updated: 2026/08/22 02:00:33 by wdauser          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,9 +58,9 @@ void Channel::addClient(Client *client)
 
 void Channel::removeClient(Client *client)
 {
-    unsetStatus(client, STATUS_MEMBER);
-    unsetStatus(client, STATUS_OPERATOR);
-    unsetStatus(client, STATUS_INVITED);
+	unsetStatus(client, STATUS_MEMBER);
+	unsetStatus(client, STATUS_OPERATOR);
+	_invited.erase(client);
 }
 
 bool Channel::isMember(Client *client) const
@@ -72,6 +72,8 @@ bool Channel::isMember(Client *client) const
 
 void Channel::addOperator(Client *client)
 {
+	if (!isMember(client))
+		return;
     setStatus(client, STATUS_OPERATOR);
 }
 
@@ -89,7 +91,6 @@ bool Channel::isOperator(Client *client) const
 void Channel::addInvited(Client *client)
 {
     _invited.insert(client);
-	setStatus(client, STATUS_INVITED);
 }
 
 bool Channel::isInvited(Client *client) const
@@ -100,7 +101,6 @@ bool Channel::isInvited(Client *client) const
 void Channel::removeInvited(Client *client)
 {
     _invited.erase(client);
-	unsetStatus(client, STATUS_INVITED);
 }
 
 // ---- Topic ----
@@ -179,23 +179,16 @@ const std::string &Channel::getName() const
 
 size_t Channel::getClientCount() const
 {
-    size_t count = 0;
-    std::map<Client*, int>::const_iterator it;
-    for (it = _status.begin(); it != _status.end(); ++it)
-    {
-        if (it->second & STATUS_MEMBER)
-            count++;
-    }
-    return count;
+	return _status.size();
 }
 
 bool Channel::isEmpty() const
 {
-    return getClientCount() == 0;
+    return _status.empty();
 }
 
 // ---- Diffusion ----
-//Remplacer ::send par client.sendmessage() 
+//Remplacer ::send par client.sendmessage()
 void Channel::broadcast(const std::string &message, Client *exclude)
 {
     std::string full = message + "\r\n";
@@ -203,8 +196,6 @@ void Channel::broadcast(const std::string &message, Client *exclude)
     std::map<Client*, int>::const_iterator it;
     for (it = _status.begin(); it != _status.end(); ++it)
     {
-        if (!(it->second & STATUS_MEMBER))
-            continue;
         if (it->first == exclude)
             continue;
         ::send(it->first->getFd(), full.c_str(), full.size(), 0);
@@ -218,8 +209,6 @@ std::string Channel::getMemberList() const
     std::map<Client*, int>::const_iterator it;
     for (it = _status.begin(); it != _status.end(); ++it)
     {
-        if (!(it->second & STATUS_MEMBER))
-            continue;
         if (!list.empty())
             list += " ";
         if (it->second & STATUS_OPERATOR)
@@ -231,13 +220,10 @@ std::string Channel::getMemberList() const
 
 std::vector<Client *> Channel::getMembers() const
 {
-    std::vector<Client *> members;
+	std::vector<Client *> members;
 
-    std::map<Client*, int>::const_iterator it;
-    for (it = _status.begin(); it != _status.end(); ++it)
-    {
-        if (it->second & STATUS_MEMBER)
-            members.push_back(it->first);
-    }
-    return members;
+	std::map<Client*, int>::const_iterator it;
+	for (it = _status.begin(); it != _status.end(); ++it)
+		members.push_back(it->first);
+	return members;
 }

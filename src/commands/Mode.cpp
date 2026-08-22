@@ -123,7 +123,7 @@ bool ApplyMode(Server &server, Client *client, Channel *channel, const modechang
 			errno = 0;
 			char *end = NULL;
 			long limit = std::strtol(mc.arg.c_str(), &end, 10);
-			if (errno == ERANGE || *end != '\0' || limit <= 0 || limit > INT_MAX)
+			if (errno == ERANGE || limit <= 0 || limit > INT_MAX)
 				return reply(client, ":ircserv 461 " + nick + " MODE :Not enough parameters"), false;
 			return channel->setUserLimit(static_cast<int>(limit)), true;
 		}
