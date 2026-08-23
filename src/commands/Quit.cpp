@@ -6,7 +6,6 @@
 void	handleQuit(Server &server, Client *client,
 		const std::vector<std::string> &params)
 {
-	(void)server;
 	const std::string reason = params.empty() ? "Client Quit" : params[0];
 	const std::string prefix = client->getNickname() + "!"
 		+ client->getUsername() + "@" + client->getHostname();
@@ -18,5 +17,7 @@ void	handleQuit(Server &server, Client *client,
 		if (it->second->isMember(client))
 			it->second->broadcast(msg, client);
 	}
-	// TODO: appeler server.disconnectClient(client) pour fermer proprement
+	reply(client, "ERROR :Closing Link: " + client->getNickname() + " ("
+		+ reason + ")");
+	server.disconnectClient(client);
 }
