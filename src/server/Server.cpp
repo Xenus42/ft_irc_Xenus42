@@ -63,7 +63,6 @@ void Server::init()
 		shutdown();
 		throw;
 	}
-
 	_running = true;
 	addPollfd(_listenFd);
 }
@@ -75,7 +74,7 @@ void Server::run()
 		if (poll(&_pollfds[0], _pollfds.size(), -1) < 0)
 		{
 			if (errno == EINTR)
-				continue;
+				continue ;
 			shutdown();
 			std::cerr << "[ERROR] poll: " << std::strerror(errno) << std::endl;
 		}
@@ -92,7 +91,6 @@ void Server::shutdown()
 	}
 	_running = false;
 }
-
 
 // ************************************************************************** //
 //                                   Getters
