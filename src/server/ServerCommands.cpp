@@ -18,6 +18,12 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleUser(*this, client, cmd.params);
 	else if (cmd.name == "MODE")
 		handleMode(*this, client, cmd.params);
+	else if (cmd.name == "INVITE")
+		handleInvite(*this, client, cmd.params);
+	else if (cmd.name == "KICK")
+		handleKick(*this, client, cmd.params);
+	else if (cmd.name == "PRIVMSG")
+		handlePrivmsg(*this, client, cmd.params);
 	else if (cmd.name == "NOTICE")
 		handleNotice(*this, client, cmd.params);
 	else if (cmd.name == "WHO")
