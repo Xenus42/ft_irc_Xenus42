@@ -30,6 +30,8 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handlePing(*this, client, cmd.params);
 	else if (cmd.name == "QUIT")
 		handleQuit(*this, client, cmd.params);
+	else if (cmd.name == "CAP")
+		handleCap(*this, client, cmd.params);
 	else
 	{
 		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;
