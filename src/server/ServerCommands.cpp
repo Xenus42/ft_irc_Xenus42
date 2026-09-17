@@ -8,6 +8,8 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 {
 	if (cmd.name == "JOIN")
 		handleJoin(*this, client, cmd.params);
+	else if (cmd.name == "PART")
+		handlePart(*this, client, cmd.params);
 	else if (cmd.name == "TOPIC")
 		handleTopic(*this, client, cmd.params);
 	else if (cmd.name == "PASS")
