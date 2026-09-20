@@ -197,5 +197,5 @@ void handleMode(Server &server, Client *client, const std::vector<std::string> &
 	}
 	const std::string prefix = nick + "!" + client->getUsername() + "@" + client->getHostname();
 	if (!modes.empty())
-		channel->broadcast(":" + prefix + " MODE " + channel->getName() + " " + modes + modeargs);
+		channel->broadcast(server, ":" + prefix + " MODE " + channel->getName() + " " + modes + modeargs);
 }

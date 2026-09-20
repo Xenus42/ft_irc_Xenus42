@@ -31,6 +31,7 @@ enum	ClientChannelStatus
 };
 
 class	Client;
+class	Server;
 
 class Channel
 {
@@ -68,7 +69,7 @@ class Channel
 	const std::string &getName() const;
 	size_t getClientCount() const;
 	bool isEmpty() const;
-	void broadcast(const std::string &message, Client *exclude = NULL);
+	void broadcast(Server &server, const std::string &message, Client *exclude = NULL);
 	std::string getMemberList() const;
 	std::vector<Client *> getMembers() const;
 

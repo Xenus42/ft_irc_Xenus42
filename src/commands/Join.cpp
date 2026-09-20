@@ -63,7 +63,7 @@ void handleJoin(Server &server, Client *client,
         channel->addOperator(client);
 
     const std::string prefix = nick + "!" + client->getUsername() + "@" + client->getHostname();
-    channel->broadcast(":" + prefix + " JOIN " + name);
+    channel->broadcast(server, ":" + prefix + " JOIN " + name);
 
     if (!channel->getTopic().empty())
         reply(client, ":ircserv 332 " + nick + " " + name + " :" + channel->getTopic());

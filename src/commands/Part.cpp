@@ -32,7 +32,7 @@ void handlePart(Server &server, Client *client,
     std::string       msg    = ":" + prefix + " PART " + name;
     if (!reason.empty())
         msg += " :" + reason;
-    channel->broadcast(msg);
+    channel->broadcast(server, msg);
 
     channel->removeClient(client);
 

@@ -27,7 +27,7 @@ void	handleNotice(Server &server, Client *client,
 			return ;
 		if (!channel->isMember(client))
 			return ;
-		channel->broadcast(":" + prefix + " NOTICE " + target + " :" + message,
+		channel->broadcast(server, ":" + prefix + " NOTICE " + target + " :" + message,
 			client);
 		return ;
 	}

@@ -31,5 +31,5 @@ void handleTopic(Server &server, Client *client,const std::vector<std::string> &
 	channel->setTopic(params[1]);
 	const std::string prefix = nick + "!" + client->getUsername() + "@" + client->getHostname();
 	const std::string msg = ":" + prefix + " TOPIC " + name + " :" + params[1];
-	channel->broadcast(msg);
+	channel->broadcast(server, msg);
 }	

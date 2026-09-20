@@ -37,7 +37,7 @@ void	handlePrivmsg(Server &server, Client *client,
 		if (!channel->isMember(client))
 			return (reply(client, ":ircserv 404 " + nick + " " + target
 					+ " :Cannot send to channel"));
-		channel->broadcast(":" + prefix + " PRIVMSG " + target + " :" + message,
+		channel->broadcast(server, ":" + prefix + " PRIVMSG " + target + " :" + message,
 			client);
 		return ;
 	}
