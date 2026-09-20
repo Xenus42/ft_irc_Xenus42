@@ -6,7 +6,6 @@
 // TODEL:
 #include <iostream>
 
-//a remplacer par client->sendmessage()
 void reply(Client *client, const std::string &line)
 {
 	Server serv;

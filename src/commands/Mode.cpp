@@ -94,7 +94,7 @@ static std::string channelModeReply(Channel *channel, bool isMember)
 	return (modes + args);
 }
 
-bool ApplyMode(Server &server, Client *client, Channel *channel, const modechange &mc)
+static bool ApplyMode(Server &server, Client *client, Channel *channel, const modechange &mc)
 {
 	const std::string nick = client->getNickname();
 	switch(mc.mode)

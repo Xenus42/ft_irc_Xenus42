@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wdauser <wdauser@student.42.fr>            +#+  +:+       +#+        */
+/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:01:31 by williamguer       #+#    #+#             */
-/*   Updated: 2026/08/22 02:02:09 by wdauser          ###   ########.fr       */
+/*   Updated: 2026/09/20 18:15:24 by willda-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,5 @@ class Channel
 	std::set<Client*> 		_invited;
     Channel();
 };
-void	reply(Client *client, const std::string &line);
 
 #endif
