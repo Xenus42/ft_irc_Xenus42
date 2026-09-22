@@ -43,3 +43,5 @@ void	handleCap(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handleList(Server &server, Client *client,
 			const std::vector<std::string> &params);
+
+void	reply(Client *client, const std::string &line);

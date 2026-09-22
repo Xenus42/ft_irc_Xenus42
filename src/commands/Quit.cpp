@@ -15,7 +15,7 @@ void	handleQuit(Server &server, Client *client,
 	for (it = channels.begin(); it != channels.end(); ++it)
 	{
 		if (it->second->isMember(client))
-			it->second->broadcast(msg, client);
+			it->second->broadcast(server, msg, client);
 	}
 	reply(client, "ERROR :Closing Link: " + client->getNickname() + " ("
 		+ reason + ")");

@@ -8,7 +8,7 @@ void handleTopic(Server &server, Client *client,const std::vector<std::string> &
 		 return reply(client, ":ircserv 461 " + nick + " TOPIC :Not enough parameters");
 
 	const std::string name = params[0];
-	
+
 	Channel *channel = server.getChannel(name);
 	if (channel == NULL)
 		return reply(client, ":ircserv 403 " + nick + " " + name + " :No such channel");
@@ -20,9 +20,9 @@ void handleTopic(Server &server, Client *client,const std::vector<std::string> &
 	{
 		const std::string &topic = channel->getTopic();
 		if (topic.empty())
-		return reply(client, ":ircserv 331 " + nick + " " + name + " :No topic is set");
-	else
-		return reply(client, ":ircserv 332 " + nick + " " + name + " :" + topic);
+			return reply(client, ":ircserv 331 " + nick + " " + name + " :No topic is set");
+		else
+			return reply(client, ":ircserv 332 " + nick + " " + name + " :" + topic);
 	}
 
 	if (channel->hasMode(MODE_TOPIC_RESTRICTED) && !channel->isOperator(client))
@@ -31,5 +31,5 @@ void handleTopic(Server &server, Client *client,const std::vector<std::string> &
 	channel->setTopic(params[1]);
 	const std::string prefix = nick + "!" + client->getUsername() + "@" + client->getHostname();
 	const std::string msg = ":" + prefix + " TOPIC " + name + " :" + params[1];
-	channel->broadcast(msg);
-}	
+	channel->broadcast(server, msg);
+}

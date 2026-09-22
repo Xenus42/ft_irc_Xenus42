@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wdauser <wdauser@student.42.fr>            +#+  +:+       +#+        */
+/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:01:31 by williamguer       #+#    #+#             */
-/*   Updated: 2026/08/22 02:02:09 by wdauser          ###   ########.fr       */
+/*   Updated: 2026/09/20 18:15:24 by willda-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ enum	ClientChannelStatus
 };
 
 class	Client;
+class	Server;
 
 class Channel
 {
@@ -68,7 +69,7 @@ class Channel
 	const std::string &getName() const;
 	size_t getClientCount() const;
 	bool isEmpty() const;
-	void broadcast(const std::string &message, Client *exclude = NULL);
+	void broadcast(Server &server, const std::string &message, Client *exclude = NULL);
 	std::string getMemberList() const;
 	std::vector<Client *> getMembers() const;
 
@@ -87,6 +88,5 @@ class Channel
 	std::set<Client*> 		_invited;
     Channel();
 };
-void	reply(Client *client, const std::string &line);
 
 #endif

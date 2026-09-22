@@ -6,7 +6,6 @@
 // TODEL:
 #include <iostream>
 
-//a remplacer par client->sendmessage()
 void reply(Client *client, const std::string &line)
 {
 	Server serv;
@@ -63,7 +62,7 @@ void handleJoin(Server &server, Client *client,
         channel->addOperator(client);
 
     const std::string prefix = nick + "!" + client->getUsername() + "@" + client->getHostname();
-    channel->broadcast(":" + prefix + " JOIN " + name);
+    channel->broadcast(server, ":" + prefix + " JOIN " + name);
 
     if (!channel->getTopic().empty())
         reply(client, ":ircserv 332 " + nick + " " + name + " :" + channel->getTopic());
