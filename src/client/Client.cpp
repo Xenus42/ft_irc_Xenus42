@@ -4,52 +4,37 @@
 //                             Orthodox Canonical Form
 // ************************************************************************** //
 
-Client::Client()
-    : _fd(-1),
-      _address(),
-      _nickname(""),
-      _username(""),
-      _hostname(""),
-      _buffer(""),
-      _authenticated(false)
+Client::Client() : _fd(-1), _address(), _nickname(""), _username(""),
+	_hostname(""), _buffer(""), _authenticated(false)
 {
 }
 
-Client::Client(int fd, const sockaddr_in& address)
-    : _fd(fd),
-      _address(address),
-      _nickname(""),
-      _username(""),
-      _hostname(""),
-      _buffer(""),
-      _authenticated(false)
+Client::Client(int fd, const sockaddr_in &address) : _fd(fd), _address(address),
+	_nickname(""), _username(""), _hostname(""), _buffer(""),
+	_authenticated(false)
 {
 }
 
-Client::Client(const Client &other)
-    : _fd(other._fd),
-      _address(other._address),
-      _nickname(other._nickname),
-      _username(other._username),
-      _hostname(other._hostname),
-      _buffer(other._buffer),
-      _authenticated(other._authenticated)
+Client::Client(const Client &other) : _fd(other._fd), _address(other._address),
+	_nickname(other._nickname), _username(other._username),
+	_hostname(other._hostname), _buffer(other._buffer),
+	_authenticated(other._authenticated)
 {
 }
 
 Client &Client::operator=(const Client &other)
 {
-    if (this != &other)
-    {
-        _fd = other._fd;
-        _address = other._address;
-        _nickname = other._nickname;
-        _username = other._username;
-        _hostname = other._hostname;
-        _buffer = other._buffer;
-        _authenticated = other._authenticated;
-    }
-    return (*this);
+	if (this != &other)
+	{
+		_fd = other._fd;
+		_address = other._address;
+		_nickname = other._nickname;
+		_username = other._username;
+		_hostname = other._hostname;
+		_buffer = other._buffer;
+		_authenticated = other._authenticated;
+	}
+	return (*this);
 }
 
 Client::~Client()
@@ -62,37 +47,37 @@ Client::~Client()
 
 int Client::getFd() const
 {
-    return (_fd);
+	return (_fd);
 }
 
 const std::string &Client::getNickname() const
 {
-    return (_nickname);
+	return (_nickname);
 }
 
 const std::string &Client::getUsername() const
 {
-    return (_username);
+	return (_username);
 }
 
 const std::string &Client::getHostname() const
 {
-    return (_hostname);
+	return (_hostname);
 }
 
 const std::string &Client::getBuffer() const
 {
-    return (_buffer);
+	return (_buffer);
 }
 
 bool Client::isAuthenticated() const
 {
-    return (_authenticated);
+	return (_authenticated);
 }
 
 bool Client::isRegistered() const
 {
-    return (!_nickname.empty() && !_username.empty() && !_hostname.empty());
+	return (!_nickname.empty() && !_username.empty() && !_hostname.empty());
 }
 
 // ************************************************************************** //
@@ -101,65 +86,70 @@ bool Client::isRegistered() const
 
 void Client::setNickname(const std::string &nickname)
 {
-    _nickname = nickname;
+	_nickname = nickname;
 }
 
 void Client::setUsername(const std::string &username)
 {
-    _username = username;
+	_username = username;
 }
 
 void Client::setHostname(const std::string &hostname)
 {
-    _hostname = hostname;
+	_hostname = hostname;
 }
 
 void Client::setAuthenticated(bool authenticated)
 {
-    _authenticated = authenticated;
+	_authenticated = authenticated;
 }
 
 void Client::setServerName(const std::string &serverName)
 {
-    _servername = serverName;
+	_servername = serverName;
 }
 
 void Client::setRealName(const std::string &realName)
 {
-    _realname = realName;
+	_realname = realName;
 }
 void Client::setPassword(const std::string &password)
 {
-    _password = password;
+	_password = password;
 }
-
 
 // ************************************************************************** //
 //                              Buffer
 // ************************************************************************** //
 
-static const size_t MAX_LINE_LENGTH = 512; // RFC 1459: taille max d'une ligne IRC, CRLF compris
+static const size_t	MAX_LINE_LENGTH = 512;
+		// RFC 1459: taille max d'une ligne IRC, CRLF compris
 
 void Client::appendBuffer(const char *data, size_t len)
 {
-    _buffer.append(data, len);
-    if (_buffer.size() > MAX_LINE_LENGTH && _buffer.find("\r\n") == std::string::npos)
-        _buffer.erase(MAX_LINE_LENGTH); // pas de CRLF au-dela de la limite : on borne la memoire
+	_buffer.append(data, len);
+	if (_buffer.size() > MAX_LINE_LENGTH
+		&& _buffer.find('\n') == std::string::npos)
+		_buffer.erase(MAX_LINE_LENGTH);
+			// pas de fin de ligne au-dela de la limite : on borne la memoire
 }
 
 void Client::clearBuffer()
 {
-    _buffer.clear();
+	_buffer.clear();
 }
 
 bool Client::extractLine(std::string &line)
 {
-    size_t pos = _buffer.find("\r\n");
+	size_t pos = _buffer.find('\n');
 
-    if (pos == std::string::npos)
-        return false;
+	if (pos == std::string::npos)
+		return (false);
 
-    line = _buffer.substr(0, pos);
-    _buffer.erase(0, pos + 2);
-    return true;
+	size_t end = pos;
+	if (end > 0 && _buffer[end - 1] == '\r') // le \r est optionnel (cas nc)
+		--end;
+	line = _buffer.substr(0, end);
+	_buffer.erase(0, pos + 1);
+	return (true);
 }
