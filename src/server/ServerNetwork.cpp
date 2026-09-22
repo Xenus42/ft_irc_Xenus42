@@ -57,91 +57,63 @@ void Server::addPollfd(int fd)
 	_pollfds.push_back(pfd);
 }
 
-// void Server::processPollEvents()
-// {
-// 	for (size_t i = 0; i < _pollfds.size();)
-// 	{
-// 		short revents = _pollfds[i].revents;
-
-// 		// Le FD est invalide.
-// 		if (revents & POLLNVAL)
-// 		{
-// 			if (_pollfds[i].fd == _listenFd)
-// 				shutdown();
-// 			else
-// 				disconnectClient(getClientByFd(_pollfds[i].fd));
-// 			continue ;
-// 		}
-
-// 		// Erreur sur le FD.
-// 		if (revents & POLLERR)
-// 		{
-// 			if (_pollfds[i].fd == _listenFd)
-// 				shutdown();
-// 			else
-// 				disconnectClient(getClientByFd(_pollfds[i].fd));
-// 			continue ;
-// 		}
-
-// 		// Socket d'écoute : nouvelle connexion.
-// 		if (_pollfds[i].fd == _listenFd)
-// 		{
-// 			if (revents & POLLIN)
-// 				acceptClient();
-
-// 			++i;
-// 			continue ;
-// 		}
-
-// 		// Client : données disponibles.
-// 		if (revents & POLLIN)
-// 		{
-// 			int fd = _pollfds[i].fd;
-
-// 			receiveClient(fd);
-
-// 			// Le client existe toujours ?
-// 			// Si oui, on passe au suivant.
-// 			if (i < _pollfds.size() && _pollfds[i].fd == fd)
-// 				++i;
-
-// 			continue ;
-// 		}
-
-// 		// Connexion fermée sans données à lire.
-// 		if (revents & POLLHUP)
-// 		{
-// 			disconnectClient(getClientByFd(_pollfds[i].fd));
-// 			continue ;
-// 		}
-
-// 		++i;
-// 	}
-// }
-
 void Server::processPollEvents()
 {
-	int	fd;
+	short	revents;
+	int		fd;
 
 	for (size_t i = 0; i < _pollfds.size();)
 	{
-		if (!(_pollfds[i].revents & POLLIN))
+		revents = _pollfds[i].revents;
+		// Fd not open
+		if (revents & POLLNVAL)
 		{
+			if (_pollfds[i].fd == _listenFd)
+			{
+				_running = false;
+				return ;
+			}
+			else
+				disconnectClient(getClientByFd(_pollfds[i].fd));
+			continue ;
+		}
+		// Error on fd
+		if (revents & POLLERR)
+		{
+			if (_pollfds[i].fd == _listenFd)
+			{
+				_running = false;
+				return ;
+			}
+			else
+				disconnectClient(getClientByFd(_pollfds[i].fd));
+			continue ;
+		}
+		// New client connection
+		if (_pollfds[i].fd == _listenFd)
+		{
+			if (revents & POLLIN)
+				acceptClient();
 			++i;
 			continue ;
 		}
-		if (_pollfds[i].fd == _listenFd)
-		{
-			acceptClient();
-			++i;
-		}
-		else
+		// Data available to read from client
+		if (revents & POLLIN)
 		{
 			fd = _pollfds[i].fd;
 			receiveClient(fd);
+			// If client still exist, continue on next client
 			if (i < _pollfds.size() && _pollfds[i].fd == fd)
 				++i;
+			continue ;
 		}
+		// Connection closed without data to read
+		if (revents & POLLHUP)
+		{
+			disconnectClient(getClientByFd(_pollfds[i].fd));
+			continue ;
+		}
+		++i;
 	}
 }
 

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "Client.hpp"
 #include "Parsing.hpp"
@@ -20,24 +21,27 @@
 
 class Server
 {
-    public:
-
+    
     // ************************************************************************** //
     //                                  Server Main
     // ************************************************************************** //
-
+    
         // === Constructors ===
-        Server();
-        Server(int _port, std::string password);
+    private:
         Server(const Server &other);
         Server &operator=(const Server &other);
-        ~Server();
 
+    public:
+        Server();
+        Server(int _port, std::string password);
+        ~Server();
+        
         // === Life cycle ===
         void    init();
         void    run();
         void    shutdown();
         void    processPollEvents();
+        static void    signalHandler(int sig);
 
         // === Getters ===
         std::string getPassword() const;
@@ -127,6 +131,7 @@ class Server
         int         _listenFd;
         bool        _running;
         Parsing     _parser;
+        static volatile sig_atomic_t    _signal;
 
 	sockaddr_in _address;
 

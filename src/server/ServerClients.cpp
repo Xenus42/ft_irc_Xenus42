@@ -34,11 +34,11 @@ void Server::disconnectClient(Client *client)
 
 void Server::disconnectAllClients()
 {
-	for (std::map<int, Client *>::iterator it = _clientsByFd.begin(); it != _clientsByFd.end(); ++it)
-	{
-		Client *client = it->second;
-		disconnectClient(client);
-	}
+	while (!_clientsByFd.empty())
+    {
+        Client *client = _clientsByFd.begin()->second;
+        disconnectClient(client);
+    }
 }
 
 // ************************************************************************** //
@@ -47,20 +47,31 @@ void Server::disconnectAllClients()
 
 void Server::removeClientFromChannels(Client *client)
 {
-    for (std::map<std::string, Channel *>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+    if (!client)
+        return;
+
+    std::map<std::string, Channel *>::iterator it = _channels.begin();
+
+    while (it != _channels.end())
     {
         Channel *channel = it->second;
+        ++it;
+
         if (channel->isInvited(client))
             channel->removeInvited(client);
+
         if (channel->isMember(client))
         {
             channel->removeClient(client);
+
             if (channel->isEmpty())
-                removeChannel(channel->getName());
+            {
+                const std::string name = channel->getName();
+                removeChannel(name);
+            }
         }
     }
 }
-
 
 // ************************************************************************** //
 //                                  Client Identity

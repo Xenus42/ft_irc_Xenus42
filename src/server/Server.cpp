@@ -43,6 +43,7 @@ Server &Server::operator=(const Server &other)
 
 Server::~Server()
 {
+	shutdown();
 }
 
 // ************************************************************************** //
@@ -51,8 +52,11 @@ Server::~Server()
 
 void Server::init()
 {
+	_signal = false;
 	try
 	{
+		signal(SIGINT, signalHandler);
+		signal(SIGQUIT, signalHandler);
 		createSocket();
 		bindSocket();
 		listenSocket();
@@ -67,29 +71,61 @@ void Server::init()
 	addPollfd(_listenFd);
 }
 
+volatile sig_atomic_t Server::_signal = 0;
+
+void	Server::signalHandler(int sig)
+{
+	(void)sig;
+	_signal = 1;
+}
+
 void Server::run()
 {
-	while (_running)
-	{
-		if (poll(&_pollfds[0], _pollfds.size(), -1) < 0)
-		{
-			if (errno == EINTR)
-				continue ;
-			shutdown();
-			std::cerr << "[ERROR] poll: " << std::strerror(errno) << std::endl;
-		}
-		processPollEvents();
-	}
+    while (_running && !_signal)
+    {
+        if (_pollfds.empty())
+            break;
+
+        int result = poll(&_pollfds[0], _pollfds.size(), 1000);
+
+        if (result < 0)
+        {
+            if (errno == EINTR)
+                continue;
+
+            std::cerr << "[ERROR] poll: " << std::strerror(errno) << std::endl;
+            break;
+        }
+
+        if (_signal)
+            break;
+
+        if (result > 0)
+            processPollEvents();
+    }
+
+    shutdown();
 }
 
 void Server::shutdown()
 {
-	if (_listenFd != -1)
-	{
-		disconnectAllClients();
-		_listenFd = -1;
-	}
-	_running = false;
+    _running = false;
+
+    disconnectAllClients();
+
+    while (!_channels.empty())
+    {
+        const std::string name = _channels.begin()->first;
+        removeChannel(name);
+    }
+
+    _pollfds.clear();
+
+    if (_listenFd != -1)
+    {
+        close(_listenFd);
+        _listenFd = -1;
+    }
 }
 
 // ************************************************************************** //

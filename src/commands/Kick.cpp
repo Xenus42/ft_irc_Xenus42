@@ -22,7 +22,7 @@ void handleKick(Server &server, Client *client, const std::vector<std::string> &
 		return reply(client, ":ircserv 482 " + nick + " " + channelName + " :You're not channel operator");
 	if (!channel->isMember(targetClient))
 		return reply(client, ":ircserv 441 " + nick + " " + targetNick + " " + channelName + " :They aren't on that channel");
-	channel->broadcast(":" + nick + "!" + client->getUsername() + "@" + client->getHostname() + " KICK " + channelName + " " + targetNick + " :" + reason);
+	channel->broadcast(server, ":" + nick + "!" + client->getUsername() + "@" + client->getHostname() + " KICK " + channelName + " " + targetNick + " :" + reason);
 	channel->removeClient(targetClient);
 
 	if (channel->isEmpty())

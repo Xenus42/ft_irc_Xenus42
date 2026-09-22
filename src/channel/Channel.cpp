@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wdauser <wdauser@student.42.fr>            +#+  +:+       +#+        */
+/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:00:48 by williamguer       #+#    #+#             */
-/*   Updated: 2026/09/17 17:28:30 by wdauser          ###   ########.fr       */
+/*   Updated: 2026/09/20 18:07:33 by willda-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
 #include "Client.hpp"
-#include <sys/socket.h>
+#include "Server.hpp"
 
 Channel::Channel(const std::string &name) : _name(name), _topic(""), _key(""),
 	_userLimit(0), _modes(0), _status(), _invited()
@@ -187,8 +187,7 @@ bool Channel::isEmpty() const
 }
 
 // ---- Diffusion ----
-//Remplacer ::send par client.sendmessage()
-void Channel::broadcast(const std::string &message, Client *exclude)
+void Channel::broadcast(Server &server, const std::string &message, Client *exclude)
 {
     std::string full = message + "\r\n";
 
@@ -197,7 +196,7 @@ void Channel::broadcast(const std::string &message, Client *exclude)
     {
         if (it->first == exclude)
             continue;
-        ::send(it->first->getFd(), full.c_str(), full.size(), 0);
+        server.sendMessage(it->first, full);
     }
 }
 
