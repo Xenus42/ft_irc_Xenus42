@@ -56,6 +56,9 @@ std::string::size_type Parsing::findFirstSeparator(const std::string &str,
 std::string Parsing::extractPrefix(const std::string &input,
 	std::string &prefix) const
 {
+
+// Extrait le prefixe optionnel (":nick!user@host ") en debut de ligne et
+// renvoie le reste de la ligne (commande + parametres). Leve une exception
 	std::string commandPart;
 	if (input[0] != ':')
 		return (input);

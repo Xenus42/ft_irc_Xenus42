@@ -138,9 +138,13 @@ void Client::setPassword(const std::string &password)
 //                              Buffer
 // ************************************************************************** //
 
+static const size_t MAX_LINE_LENGTH = 512; // RFC 1459: taille max d'une ligne IRC, CRLF compris
+
 void Client::appendBuffer(const char *data, size_t len)
 {
     _buffer.append(data, len);
+    if (_buffer.size() > MAX_LINE_LENGTH && _buffer.find("\r\n") == std::string::npos)
+        _buffer.erase(MAX_LINE_LENGTH); // pas de CRLF au-dela de la limite : on borne la memoire
 }
 
 void Client::clearBuffer()

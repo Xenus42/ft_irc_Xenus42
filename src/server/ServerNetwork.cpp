@@ -6,16 +6,15 @@
 
 void Server::createSocket()
 {
-	_listenFd = socket(AF_INET, SOCK_STREAM, 0);
+	int	opt;
 
+	_listenFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_listenFd < 0)
 	{
 		throw std::runtime_error(std::string("socket: ")
 			+ std::strerror(errno));
 	}
-	
-	int opt = 1;
-	
+	opt = 1;
 	if (setsockopt(_listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 	{
 		throw std::runtime_error(std::string("setsockopt: ")
@@ -28,7 +27,6 @@ void Server::bindSocket()
 	_address.sin_family = AF_INET;
 	_address.sin_addr.s_addr = INADDR_ANY;
 	_address.sin_port = htons(_port);
-
 	if (bind(_listenFd, (sockaddr *)&_address, sizeof(_address)) < 0)
 	{
 		throw std::runtime_error(std::string("bind: ") + std::strerror(errno));
@@ -42,7 +40,6 @@ void Server::listenSocket()
 		throw std::runtime_error(std::string("listen: ")
 			+ std::strerror(errno));
 	}
-	
 	std::cout << "[INFO  ] Listening on port " << _port << std::endl;
 }
 
@@ -57,7 +54,6 @@ void Server::addPollfd(int fd)
 	pfd.fd = fd;
 	pfd.events = POLLIN;
 	pfd.revents = 0;
-
 	_pollfds.push_back(pfd);
 }
 
@@ -74,7 +70,7 @@ void Server::addPollfd(int fd)
 // 				shutdown();
 // 			else
 // 				disconnectClient(getClientByFd(_pollfds[i].fd));
-// 			continue;
+// 			continue ;
 // 		}
 
 // 		// Erreur sur le FD.
@@ -84,7 +80,7 @@ void Server::addPollfd(int fd)
 // 				shutdown();
 // 			else
 // 				disconnectClient(getClientByFd(_pollfds[i].fd));
-// 			continue;
+// 			continue ;
 // 		}
 
 // 		// Socket d'écoute : nouvelle connexion.
@@ -94,7 +90,7 @@ void Server::addPollfd(int fd)
 // 				acceptClient();
 
 // 			++i;
-// 			continue;
+// 			continue ;
 // 		}
 
 // 		// Client : données disponibles.
@@ -109,14 +105,14 @@ void Server::addPollfd(int fd)
 // 			if (i < _pollfds.size() && _pollfds[i].fd == fd)
 // 				++i;
 
-// 			continue;
+// 			continue ;
 // 		}
 
 // 		// Connexion fermée sans données à lire.
 // 		if (revents & POLLHUP)
 // 		{
 // 			disconnectClient(getClientByFd(_pollfds[i].fd));
-// 			continue;
+// 			continue ;
 // 		}
 
 // 		++i;
@@ -125,26 +121,26 @@ void Server::addPollfd(int fd)
 
 void Server::processPollEvents()
 {
+	int	fd;
+
 	for (size_t i = 0; i < _pollfds.size();)
 	{
-    	if (!(_pollfds[i].revents & POLLIN))
-    	{
+		if (!(_pollfds[i].revents & POLLIN))
+		{
 			++i;
-    	    continue;
-    	}
-
-    	if (_pollfds[i].fd == _listenFd)
-    	{
-    	    acceptClient();
-    	    ++i;
-    	}
-    	else
-    	{
-        	int fd = _pollfds[i].fd;
-        	receiveClient(fd);
-		
-        	if (i < _pollfds.size() && _pollfds[i].fd == fd)
-        	    ++i;
+			continue ;
+		}
+		if (_pollfds[i].fd == _listenFd)
+		{
+			acceptClient();
+			++i;
+		}
+		else
+		{
+			fd = _pollfds[i].fd;
+			receiveClient(fd);
+			if (i < _pollfds.size() && _pollfds[i].fd == fd)
+				++i;
 		}
 	}
 }
@@ -172,47 +168,54 @@ void Server::acceptClient()
 	int			clientFd;
 
 	len = sizeof(clientAddr);
-	
 	clientFd = accept(_listenFd, (sockaddr *)&clientAddr, &len);
 	if (clientFd < 0)
 	{
 		std::cerr << "[ERROR] accept: " << std::strerror(errno) << std::endl;
 		return ;
 	}
-
 	addClient(clientFd, clientAddr);
 }
 
 void Server::receiveClient(int fd)
 {
-    char buffer[1024];
+	char buffer[1024];
 
-    ssize_t bytes = recv(fd, buffer, sizeof(buffer), 0);
+	ssize_t bytes = recv(fd, buffer, sizeof(buffer), 0);
 
-    if (bytes < 0)
-    {
-        std::cerr << "[ERROR] recv: " << std::strerror(errno) << std::endl;
-        return;
-    }
+	if (bytes < 0)
+	{
+		std::cerr << "[ERROR] recv: " << std::strerror(errno) << std::endl;
+		return ;
+	}
 
-    if (bytes == 0)
-    {
-        disconnectClient(getClientByFd(fd));
-        return;
-    }
+	if (bytes == 0)
+	{
+		disconnectClient(getClientByFd(fd));
+		return ;
+	}
 
-    Client *client = getClientByFd(fd);
+	Client *client = getClientByFd(fd);
 
-    if (!client)
-        return;
+	if (!client)
+		return ;
 
-    client->appendBuffer(buffer, bytes);
+	client->appendBuffer(buffer, bytes);
 
-    std::string line;
+	std::string line;
 
-    while (client->extractLine(line))
-    {
-        Parsing::Command cmd = _parser.parse(line);
-        dispatchCommand(client, cmd);
-    }
+	while (client->extractLine(line))
+	{
+		try
+		{
+			Parsing::Command cmd = _parser.parse(line);
+			dispatchCommand(client, cmd);
+		}
+		catch (const std::exception &e)
+		{
+			const std::string target = client->getNickname().empty() ? "*" : client->getNickname();
+			sendMessage(client, ":ircserv 421 " + target + " :" + e.what()
+				+ "\r\n");
+		}
+	}
 }

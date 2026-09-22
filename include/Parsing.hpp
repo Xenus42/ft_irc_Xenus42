@@ -28,8 +28,7 @@ class Parsing
 	std::string toUpperCase(const std::string &str) const;
 	std::string::size_type findFirstSeparator(const std::string &str,
 		std::string::size_type from) const;
-	std::string extractPrefix(const std::string &input,
-		std::string &prefix) const;
+	std::string extractPrefix(const std::string &input, std::string &prefix) const;
 	std::string::size_type findTextParamsStart(const std::string &input) const;
 	std::vector<std::string> splitAndPutSimpleWordsIntoArray(const std::string &input) const;
 	std::vector<std::string> splitCommandAndArgsToArray(const std::string &input) const;
