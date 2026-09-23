@@ -1,9 +1,9 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "Server.hpp"
+#include "Utils.hpp"
 #include <sstream>
 
-// Decoupe une liste "#a,#b,#c" en noms individuels.
 static std::vector<std::string> splitComma(const std::string &str)
 {
 	std::vector<std::string> result;
@@ -15,28 +15,6 @@ static std::vector<std::string> splitComma(const std::string &str)
 		start = comma + 1;
 	}
 	result.push_back(str.substr(start));
-	return (result);
-}
-
-// Normalise un nom selon le casemapping IRC, pour comparer avec la cle de
-// _channels (deja normalisee par Server::getChannel).
-static std::string toIrcUpper(const std::string &str)
-{
-	unsigned char	c;
-
-	std::string result = str;
-	for (std::string::size_type i = 0; i < result.size(); ++i)
-	{
-		c = static_cast<unsigned char>(result[i]);
-		if (c >= 'a' && c <= 'z')
-			result[i] = static_cast<char>(c - 'a' + 'A');
-		else if (c == '{')
-			result[i] = '[';
-		else if (c == '}')
-			result[i] = ']';
-		else if (c == '|')
-			result[i] = '\\';
-	}
 	return (result);
 }
 
@@ -56,7 +34,6 @@ void	handleList(Server &server, Client *client,
 	std::map<std::string, Channel *>::const_iterator it;
 	for (it = channels.begin(); it != channels.end(); ++it)
 	{
-		// filtre optionnel : LIST #a,#b ne montre que ces channels
 		matches = filter.empty();
 		for (std::vector<std::string>::size_type i = 0; !matches
 			&& i < filter.size(); ++i)

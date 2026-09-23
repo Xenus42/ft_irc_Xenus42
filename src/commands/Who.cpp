@@ -21,15 +21,15 @@ void	handleWho(Server &server, Client *client,
 		return (reply(client, ":ircserv 315 " + nick + " " + name
 				+ " :End of WHO list"));
 	std::vector<Client *> members = channel->getMembers();
-	// une ligne 352 par membre du channel
+	// one 352 line per channel member
 	for (size_t i = 0; i < members.size(); i++)
 	{
 		member = members[i];
-		// format 352 : <chan> <user> <host> <server> <nick> <flags> :<hopcount> <realname>
+		// format 352: <chan> <user> <host> <server> <nick> <flags> :<hopcount> <realname>
 		reply(client, ":ircserv 352 " + nick + " " + name + " "
 			+ member->getUsername() + " " + member->getHostname() + " ircserv "
 			+ member->getNickname() + " H :0 " + member->getUsername());
 	}
-	// une seule ligne 315 de fin, apres toute la boucle
+	// single closing 315 line, after the whole loop
 	reply(client, ":ircserv 315 " + nick + " " + name + " :End of WHO list");
 }

@@ -1,7 +1,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 
-// CAP arrive avant NICK/USER : pas de nickname assigne, on utilise "*".
+// CAP arrives before NICK/USER: no nickname assigned yet, use "*".
 void	handleCap(Server &server, Client *client,
 		const std::vector<std::string> &params)
 {
@@ -13,5 +13,5 @@ void	handleCap(Server &server, Client *client,
 	const std::string subCommand = params[0];
 	if (subCommand == "LS")
 		return (reply(client, ":ircserv CAP " + nick + " LS :"));
-	// CAP END: fin de negociation, aucune reponse attendue.
+	// CAP END: end of negotiation, no reply expected.
 }

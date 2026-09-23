@@ -3,19 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:01:31 by williamguer       #+#    #+#             */
-/*   Updated: 2026/09/20 18:15:24 by willda-s         ###   ########.fr       */
+/*   Updated: 2026/09/23 19:49:28 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CHANNEL_HPP
-#define CHANNEL_HPP
-#include <string>
-#include <map>
-#include <set>
-#include <vector>
+# define CHANNEL_HPP
+# include <map>
+# include <set>
+# include <string>
+# include <vector>
 
 enum	ChannelModeFlags
 {
@@ -38,11 +38,11 @@ class Channel
   public:
 	Channel(const std::string &name);
 	~Channel();
-	// Gestion des membres
+	// Member management
 	void addClient(Client *client);
 	void removeClient(Client *client);
 	bool isMember(Client *client) const;
-	// Gestion des opérateurs
+	// Operator management
 	void addOperator(Client *client);
 	void removeOperator(Client *client);
 	bool isOperator(Client *client) const;
@@ -69,24 +69,25 @@ class Channel
 	const std::string &getName() const;
 	size_t getClientCount() const;
 	bool isEmpty() const;
-	void broadcast(Server &server, const std::string &message, Client *exclude = NULL);
+	void broadcast(Server &server, const std::string &message,
+		Client *exclude = NULL);
 	std::string getMemberList() const;
 	std::vector<Client *> getMembers() const;
 
   private:
-	// Statut interne d'un client (bits STATUS_*)
+	// Internal client status (STATUS_* bits)
 	bool hasStatus(Client *client, int flag) const;
 	void setStatus(Client *client, int flag);
 	void unsetStatus(Client *client, int flag);
 
-    std::string             _name;
-    std::string             _topic;
-    std::string             _key;
-    int                     _userLimit;
-    int                     _modes;
-    std::map<Client*, int>  _status;
-	std::set<Client*> 		_invited;
-    Channel();
+	std::string _name;
+	std::string _topic;
+	std::string _key;
+	int _userLimit;
+	int _modes;
+	std::map<Client *, int> _status;
+	std::set<Client *> _invited;
+	Channel();
 };
 
 #endif

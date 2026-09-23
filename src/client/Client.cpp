@@ -70,7 +70,7 @@ const std::string &Client::getInBuffer() const
 	return (_inBuffer);
 }
 
-std::string	&Client::getOutBuffer()
+std::string &Client::getOutBuffer()
 {
 	return (_outBuffer);
 }
@@ -125,7 +125,7 @@ void Client::setRealName(const std::string &realName)
 // ************************************************************************** //
 
 static const size_t	MAX_LINE_LENGTH = 512;
-		// RFC 1459: taille max d'une ligne IRC, CRLF compris
+// RFC 1459: max IRC line length, CRLF included
 
 void Client::appendInBuffer(const char *data, size_t len)
 {
@@ -133,7 +133,7 @@ void Client::appendInBuffer(const char *data, size_t len)
 	if (_inBuffer.size() > MAX_LINE_LENGTH
 		&& _inBuffer.find('\n') == std::string::npos)
 		_inBuffer.erase(MAX_LINE_LENGTH);
-			// pas de fin de ligne au-dela de la limite : on borne la memoire
+	// no line ending beyond the limit: bound memory usage
 }
 
 void Client::appendOutBuffer(const std::string &message)
@@ -154,7 +154,7 @@ bool Client::extractLine(std::string &line)
 		return (false);
 
 	size_t end = pos;
-	if (end > 0 && _inBuffer[end - 1] == '\r') // le \r est optionnel (cas nc)
+	if (end > 0 && _inBuffer[end - 1] == '\r') // \r is optional (nc case)
 		--end;
 	line = _inBuffer.substr(0, end);
 	_inBuffer.erase(0, pos + 1);

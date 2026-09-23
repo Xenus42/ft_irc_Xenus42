@@ -11,6 +11,6 @@ void	handlePing(Server &server, Client *client,
 		return (reply(client, ":ircserv 409 " + nick
 				+ " :No origin specified"));
 	reply(client, ":ircserv PONG ircserv :" + params[0]);
-	// TODO: pas de PING keepalive envoye par le serveur pour l'instant,
-	// gere seulement le PING recu du client
+	// TODO: no PING keepalive sent by the server for now,
+	// only handles PING received from the client
 }

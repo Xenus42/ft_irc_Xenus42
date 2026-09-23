@@ -1,26 +1,5 @@
 #include "Server.hpp"
-
-// Normalise un nom de channel selon le casemapping IRC (RFC 1459) : insensible
-// a la casse, avec le scrambling []\ <-> {}|.
-static std::string toIrcUpper(const std::string &str)
-{
-	unsigned char	c;
-
-	std::string result = str;
-	for (std::string::size_type i = 0; i < result.size(); ++i)
-	{
-		c = static_cast<unsigned char>(result[i]);
-		if (c >= 'a' && c <= 'z')
-			result[i] = static_cast<char>(c - 'a' + 'A');
-		else if (c == '{')
-			result[i] = '[';
-		else if (c == '}')
-			result[i] = ']';
-		else if (c == '|')
-			result[i] = '\\';
-	}
-	return (result);
-}
+#include "Utils.hpp"
 
 // ************************************************************************** //
 //                            Channel lifecycle

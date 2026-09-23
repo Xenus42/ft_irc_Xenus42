@@ -16,7 +16,7 @@ void	reply(Client *client, const std::string &line)
 	serv->sendMessage(client, line + "\r\n");
 }
 
-// Decoupe une liste "a,b,c" en elements individuels.
+// Splits a "a,b,c" list into individual elements.
 static std::vector<std::string> splitComma(const std::string &str)
 {
 	std::vector<std::string> result;
@@ -31,7 +31,7 @@ static std::vector<std::string> splitComma(const std::string &str)
 	return (result);
 }
 
-// Rejoint une seule commande JOIN sur un channel donne (nom + cle optionnelle).
+// Joins a single channel for one JOIN command (name + optional key).
 static void	joinOne(Server &server, Client *client, const std::string &nick,
 		const std::string &name, const std::string &key)
 {
