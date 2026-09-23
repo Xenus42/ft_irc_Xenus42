@@ -1,7 +1,7 @@
 #include "Channel.hpp"
 #include "Server.hpp"
 
-// Decoupe une liste "a,b,c" en pseudos individuels.
+// Splits a "a,b,c" list into individual nicknames.
 static std::vector<std::string> splitComma(const std::string &str)
 {
 	std::vector<std::string> result;

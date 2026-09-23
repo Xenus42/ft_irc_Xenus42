@@ -4,7 +4,7 @@
 #include <string>
 #include <sys/socket.h>
 
-// Decoupe une liste "#a,#b,#c" en noms individuels.
+// Splits a "#a,#b,#c" list into individual names.
 static std::vector<std::string> splitComma(const std::string &str)
 {
 	std::vector<std::string> result;

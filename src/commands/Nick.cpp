@@ -1,7 +1,7 @@
 #include "Server.hpp"
 #include "Tmp_Log.hpp"
 
-// Caracteres "special" autorises dans un nick (RFC 2812), a toute position.
+// "Special" characters allowed in a nick (RFC 2812), at any position.
 static bool	isSpecial(unsigned char c)
 {
 	return (c == '[' || c == ']' || c == '\\' || c == '^' || c == '_'
@@ -50,7 +50,7 @@ void	handleNick(Server &server, Client *client,
 	Client *existing = server.getClientByNick(nick);
 	if (existing == client)
 		return ;
-			// meme nick (casse eventuellement differente) : no-op silencieux
+			// same nick (possibly different case): silent no-op
 
 	if (existing)
 	{

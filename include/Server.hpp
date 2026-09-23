@@ -43,7 +43,7 @@ class Server
 	void processPollEvents();
 	static void signalHandler(int sig);
 
-	// === Instance (pour reply() hors classe) ===
+	// === Instance (for reply() outside the class) ===
 	static Server *getInstance();
 
 	// === Getters ===
