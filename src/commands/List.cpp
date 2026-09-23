@@ -25,9 +25,6 @@ void	handleList(Server &server, Client *client,
 	bool	matches;
 
 	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
-	if (!client->isAuthenticated())
-		return (reply(client, ":ircserv 451 " + nick
-				+ " :You have not registered"));
 	reply(client, ":ircserv 321 " + nick + " Channel :Users  Name");
 	const std::vector<std::string> filter = params.empty() ? std::vector<std::string>() : splitComma(params[0]);
 	const std::map<std::string, Channel *> &channels = server.getChannels();

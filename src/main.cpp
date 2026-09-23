@@ -22,7 +22,9 @@
 
 int	main(int ac, char **av)
 {
-	if (ac != 3 || !isValidPort(av[1]))
+	Parsing	parser;
+
+	if (ac != 3 || !isValidPort(av[1]) || !isValidPassword(av[2]))
 	{
 		// TODO: specify error type
 		std::cerr << "Error: bad arguments" << std::endl;

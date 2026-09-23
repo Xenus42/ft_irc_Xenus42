@@ -25,10 +25,6 @@ void	handlePrivmsg(Server &server, Client *client,
 	Client	*dest;
 
 	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
-	// 451: not authenticated yet -> command refused until registered
-	if (!client->isAuthenticated())
-		return (reply(client, ":ircserv 451 " + nick
-				+ " :You have not registered"));
 	// 411: no parameter at all -> no target (nick/#channel) given
 	if (params.empty())
 		return (reply(client, ":ircserv 411 " + nick

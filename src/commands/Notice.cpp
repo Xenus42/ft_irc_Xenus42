@@ -25,8 +25,6 @@ void	handleNotice(Server &server, Client *client,
 	Client	*dest;
 
 	const std::string nick = client->getNickname();
-	if (!client->isAuthenticated())
-		return ;
 	if (params.empty())
 		return ;
 	if (params.size() < 2 || params[1].empty())

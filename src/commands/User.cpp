@@ -48,9 +48,14 @@ static bool isValidServername(const std::string &serverName)
 
 void handleUser(Server &server, Client *client, const std::vector<std::string> &params)
 {
+    const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
+
+    if (client->isRegistered())
+        return reply(client, ":ircserv 462 " + nick + " :You may not reregister");
+
     if (params.size() < 4)
     {
-        reply(client, ":ircserv 461 USER :Not enough parameters");
+        reply(client, ":ircserv 461 " + nick + " USER :Not enough parameters");
         return;
     }
 
@@ -60,13 +65,13 @@ void handleUser(Server &server, Client *client, const std::vector<std::string> &
     const std::string &servername = params[2];
     const std::string &realname = params[3];
 
+
     if (!isValidUsername(username) ||
         !isValidRealname(realname) ||
         !isValidHostname(hostname) ||
         !isValidServername(servername))
     {
-        //TODO: Send appropriate error message to client
-        reply(client, ":ircserv 461 USER :Invalid parameters");
+        reply(client, ":ircserv 461 " + nick + " USER :Invalid parameters");
         return;
     }
     client->setUsername(username);
@@ -74,6 +79,6 @@ void handleUser(Server &server, Client *client, const std::vector<std::string> &
     client->setServerName(servername);
     client->setRealName(realname);
 
-    if (client->isAuthenticated())
+    if (client->isRegistered())
         server.sendWelcome(client);
 }
