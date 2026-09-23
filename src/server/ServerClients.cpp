@@ -39,7 +39,6 @@ void Server::addClient(int fd, const sockaddr_in &address)
 void Server::disconnectClient(Client *client)
 {
 	int		fd;
-	delete	client;
 
 	if (!client)
 		return ;
@@ -49,6 +48,7 @@ void Server::disconnectClient(Client *client)
 	removeClientByFd(client);
 	removePollfd(fd);
 	close(fd);
+	delete	client;
 	printLog("SERVER", "Client disconnected and cleaned up");
 }
 
