@@ -43,9 +43,6 @@ class Server
 	void processPollEvents();
 	static void signalHandler(int sig);
 
-	// === Instance (for reply() outside the class) ===
-	static Server *getInstance();
-
 	// === Getters ===
 	std::string getPassword() const;
 
@@ -142,7 +139,6 @@ class Server
 	bool _running;
 	Parsing _parser;
 	static volatile sig_atomic_t _signal;
-	static Server *_instance;
 
 	sockaddr_in _address;
 

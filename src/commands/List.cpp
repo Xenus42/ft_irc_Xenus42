@@ -25,7 +25,7 @@ void	handleList(Server &server, Client *client,
 	bool	matches;
 
 	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
-	reply(client, ":ircserv 321 " + nick + " Channel :Users  Name");
+	server.sendMessage(client, ":ircserv 321 " + nick + " Channel :Users  Name");
 	const std::vector<std::string> filter = params.empty() ? std::vector<std::string>() : splitComma(params[0]);
 	const std::map<std::string, Channel *> &channels = server.getChannels();
 	std::map<std::string, Channel *>::const_iterator it;
@@ -39,8 +39,8 @@ void	handleList(Server &server, Client *client,
 			continue ;
 		std::ostringstream count;
 		count << it->second->getClientCount();
-		reply(client, ":ircserv 322 " + nick + " " + it->second->getName() + " "
+		server.sendMessage(client, ":ircserv 322 " + nick + " " + it->second->getName() + " "
 			+ count.str() + " :" + it->second->getTopic());
 	}
-	reply(client, ":ircserv 323 " + nick + " :End of LIST");
+	server.sendMessage(client, ":ircserv 323 " + nick + " :End of LIST");
 }

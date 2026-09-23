@@ -159,7 +159,7 @@ void Server::acceptClient()
 
 	len = sizeof(clientAddr);
 	clientFd = accept(_listenFd, (sockaddr *)&clientAddr, &len);
-	
+
 	if (clientFd < 0)
 	{
 		std::cerr << "[ERROR] accept: " << std::strerror(errno) << std::endl;
@@ -186,10 +186,10 @@ void Server::receiveClient(int fd)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return ;
-	
+
 		std::cerr << "[ERROR] recv: "
 			<< std::strerror(errno) << std::endl;
-	
+
 		disconnectClient(getClientByFd(fd));
 		return ;
 	}
@@ -221,8 +221,7 @@ void Server::receiveClient(int fd)
 		catch (const std::exception &e)
 		{
 			const std::string target = client->getNickname().empty() ? "*" : client->getNickname();
-			sendMessage(client, ":ircserv 421 " + target + " :" + e.what()
-				+ "\r\n");
+			sendMessage(client, ":ircserv 421 " + target + " :" + e.what());
 		}
 	}
 }

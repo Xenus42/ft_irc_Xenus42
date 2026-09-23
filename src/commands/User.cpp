@@ -16,7 +16,7 @@ static bool isValidUsername(const std::string &userName)
         return (false);
     if (userName.find('\n') != std::string::npos)
         return (false);
-    return (true);   
+    return (true);
 }
 
 static bool isValidRealname(const std::string &realname)
@@ -28,7 +28,7 @@ static bool isValidRealname(const std::string &realname)
     if (realname.find('\r') != std::string::npos)
         return (false);
     if (realname.find('\n') != std::string::npos)
-        return (false);    
+        return (false);
     return (true);
 }
 

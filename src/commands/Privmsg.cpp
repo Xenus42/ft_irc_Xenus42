@@ -27,11 +27,11 @@ void	handlePrivmsg(Server &server, Client *client,
 	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 	// 411: no parameter at all -> no target (nick/#channel) given
 	if (params.empty())
-		return (reply(client, ":ircserv 411 " + nick
+		return (server.sendMessage(client, ":ircserv 411 " + nick
 				+ " :No recipient given (PRIVMSG)"));
 	// 412: target given but message (params[1]) missing or empty
 	if (params.size() < 2 || params[1].empty())
-		return (reply(client, ":ircserv 412 " + nick + " :No text to send"));
+		return (server.sendMessage(client, ":ircserv 412 " + nick + " :No text to send"));
 	const std::vector<std::string> targets = splitComma(params[0]);
 	const std::string message = params[1];
 	const std::string prefix = nick + "!" + client->getUsername() + "@"
@@ -46,14 +46,14 @@ void	handlePrivmsg(Server &server, Client *client,
 			// 401: channel does not exist
 			if (channel == NULL)
 			{
-				reply(client, ":ircserv 401 " + nick + " " + target
+				server.sendMessage(client, ":ircserv 401 " + nick + " " + target
 					+ " :No such nick/channel");
 				continue ;
 			}
 			// 404: sender is not a member of the channel
 			if (!channel->isMember(client))
 			{
-				reply(client, ":ircserv 404 " + nick + " " + target
+				server.sendMessage(client, ":ircserv 404 " + nick + " " + target
 					+ " :Cannot send to channel");
 				continue ;
 			}
@@ -66,10 +66,10 @@ void	handlePrivmsg(Server &server, Client *client,
 		// 401: no client connected under this nickname
 		if (dest == NULL)
 		{
-			reply(client, ":ircserv 401 " + nick + " " + target
+			server.sendMessage(client, ":ircserv 401 " + nick + " " + target
 				+ " :No such nick/channel");
 			continue ;
 		}
-		reply(dest, ":" + prefix + " PRIVMSG " + target + " :" + message);
+		server.sendMessage(dest, ":" + prefix + " PRIVMSG " + target + " :" + message);
 	}
 }

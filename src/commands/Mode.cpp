@@ -35,7 +35,7 @@ static bool	takesArg(char mode, bool add)
 MODE #douv +i -> modechange{add: +, mode: 'i', arg: ""}
 MODE #douv +ol-k bob 42 -> modechange{+, o, "bob"}, {+, l, "42"}, {-, k, ""}
 */
-static std::vector<modechange> parseModeString(Client *client,
+static std::vector<modechange> parseModeString(Server &server, Client *client,
 	const std::string &modes, const std::vector<std::string> &args)
 {
 	bool	add;
@@ -52,7 +52,7 @@ static std::vector<modechange> parseModeString(Client *client,
 		else if (modes[i] == '-')
 			add = false;
 		else if (!isValidMode(modes[i]))
-			reply(client, ":ircserv 472 " + nick + " " + modes[i]
+			server.sendMessage(client, ":ircserv 472 " + nick + " " + modes[i]
 				+ " :is unknown mode char to me");
 		else
 		{
@@ -66,7 +66,7 @@ static std::vector<modechange> parseModeString(Client *client,
 				}
 				else if (!(tmp.mode == 'k' && !tmp.add))
 				{
-					reply(client, ":ircserv 461 " + nick
+					server.sendMessage(client, ":ircserv 461 " + nick
 						+ " MODE :Not enough parameters");
 					continue ;
 				}
@@ -128,11 +128,11 @@ static bool	ApplyMode(Server &server, Client *client, Channel *channel,
 		if (!mc.add)
 			return (channel->removeUserLimit(), true);
 		if (mc.arg.empty())
-			return (reply(client, ":ircserv 461 " + nick
+			return (server.sendMessage(client, ":ircserv 461 " + nick
 					+ " MODE :Not enough parameters"), false);
 		for (size_t i = 0; i < mc.arg.size(); i++)
 			if (!isdigit(static_cast<unsigned char>(mc.arg[i])))
-				return (reply(client, ":ircserv 461 " + nick
+				return (server.sendMessage(client, ":ircserv 461 " + nick
 						+ " MODE :Not enough parameters"), false);
 		errno = 0;
 		end = NULL;
@@ -145,20 +145,20 @@ static bool	ApplyMode(Server &server, Client *client, Channel *channel,
 		if (!mc.add)
 			return (channel->removeKey(), true);
 		if (mc.arg.empty())
-			return (reply(client, ":ircserv 461 " + nick
+			return (server.sendMessage(client, ":ircserv 461 " + nick
 					+ " MODE :Not enough parameters"), false);
 		if (channel->hasMode(MODE_HAS_KEY))
-			return (reply(client, ":ircserv 467 " + nick + " "
+			return (server.sendMessage(client, ":ircserv 467 " + nick + " "
 					+ channel->getName() + " :Channel key already set"), false);
 		return (channel->setKey(mc.arg), true);
 	case 'o':
 	{
 		target = server.getClientByNick(mc.arg);
 		if (target == NULL)
-			return (reply(client, ":ircserv 401 " + nick + " " + mc.arg
+			return (server.sendMessage(client, ":ircserv 401 " + nick + " " + mc.arg
 					+ " :No such nick/channel"), false);
 		if (!channel->isMember(target))
-			return (reply(client, ":ircserv 441 " + nick + " " + mc.arg + " "
+			return (server.sendMessage(client, ":ircserv 441 " + nick + " " + mc.arg + " "
 					+ channel->getName() + " :They aren't on that channel"),
 				false);
 		if (mc.add)
@@ -166,7 +166,7 @@ static bool	ApplyMode(Server &server, Client *client, Channel *channel,
 		return (channel->removeOperator(target), true);
 	}
 	}
-	reply(client, ":ircserv 472 " + nick + " " + std::string(1, mc.mode)
+	server.sendMessage(client, ":ircserv 472 " + nick + " " + std::string(1, mc.mode)
 		+ " :is unknown mode char to me");
 	return (false);
 }
@@ -179,27 +179,27 @@ void	handleMode(Server &server, Client *client,
 
 	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 	if (params.empty())
-		return (reply(client, ":ircserv 461 " + nick
+		return (server.sendMessage(client, ":ircserv 461 " + nick
 				+ " MODE :Not enough parameters"));
 	if (params[0].empty() || (params[0][0] != '#' && params[0][0] != '&'))
-		return (reply(client, ":ircserv 502 " + nick
+		return (server.sendMessage(client, ":ircserv 502 " + nick
 				+ " :Cannot change mode for other users"));
 	const std::string name = params[0];
 	channel = server.getChannel(name);
 	if (channel == NULL)
-		return (reply(client, ":ircserv 403 " + nick + " " + name
+		return (server.sendMessage(client, ":ircserv 403 " + nick + " " + name
 				+ " :No such channel"));
 	if (params.size() < 2 || params[1].empty())
-		return (reply(client, ":ircserv 324 " + nick + " " + name + " "
+		return (server.sendMessage(client, ":ircserv 324 " + nick + " " + name + " "
 				+ channelModeReply(channel, channel->isMember(client))));
 	if (!channel->isMember(client))
-		return (reply(client, ":ircserv 442 " + nick + " " + name
+		return (server.sendMessage(client, ":ircserv 442 " + nick + " " + name
 				+ " :You're not on that channel"));
 	else if (!channel->isOperator(client))
-		return (reply(client, ":ircserv 482 " + nick + " " + name
+		return (server.sendMessage(client, ":ircserv 482 " + nick + " " + name
 				+ " :You're not channel operator"));
 	std::vector<std::string> args(params.begin() + 2, params.end());
-	std::vector<modechange> vecmode = parseModeString(client, params[1], args);
+	std::vector<modechange> vecmode = parseModeString(server, client, params[1], args);
 	std::string modes, modeargs;
 	sign = '\0';
 	for (size_t i = 0; i < vecmode.size(); i++)
