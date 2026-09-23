@@ -24,7 +24,7 @@ void	handlePrivmsg(Server &server, Client *client,
 	Channel	*channel;
 	Client	*dest;
 
-	const std::string nick = client->getNickname();
+	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 	// 451: pas encore authentifie -> commande refusee tant que non enregistre
 	if (!client->isAuthenticated())
 		return (reply(client, ":ircserv 451 " + nick

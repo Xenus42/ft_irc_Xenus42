@@ -23,7 +23,7 @@ void	handleWhois(Server &server, Client *client,
 {
 	Client	*target;
 
-	const std::string nick = client->getNickname();
+	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 	if (!client->isAuthenticated())
 		return (reply(client, ":ircserv 451 " + nick
 				+ " :You have not registered"));

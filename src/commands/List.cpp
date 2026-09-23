@@ -23,7 +23,7 @@ static std::vector<std::string> splitComma(const std::string &str)
 void	handleList(Server &server, Client *client,
 		const std::vector<std::string> &params)
 {
-	const std::string nick = client->getNickname();
+	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 	if (!client->isAuthenticated())
 		return (reply(client, ":ircserv 451 " + nick
 				+ " :You have not registered"));
