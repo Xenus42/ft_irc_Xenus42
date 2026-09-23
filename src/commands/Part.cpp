@@ -1,41 +1,63 @@
-#include <sys/socket.h>
-#include <string>
-
-#include "Server.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
+#include "Server.hpp"
+#include <string>
+#include <sys/socket.h>
 
-// handlePart  —  PART <#channel> [:reason]
-void handlePart(Server &server, Client *client,
-                const std::vector<std::string> &params)
+// Decoupe une liste "#a,#b,#c" en noms individuels.
+static std::vector<std::string> splitComma(const std::string &str)
 {
-    const std::string nick = client->getNickname();
+	std::vector<std::string> result;
+	std::string::size_type start = 0;
+	std::string::size_type comma;
+	while ((comma = str.find(',', start)) != std::string::npos)
+	{
+		result.push_back(str.substr(start, comma - start));
+		start = comma + 1;
+	}
+	result.push_back(str.substr(start));
+	return (result);
+}
 
-    if (!client->isRegistered())
-        return reply(client, ":ircserv 451 " + nick + " :You have not registered");
+// handlePart  —  PART <#channel>{,<#channel>} [:reason]
+void	handlePart(Server &server, Client *client,
+		const std::vector<std::string> &params)
+{
+	Channel	*channel;
 
-    if (params.empty())
-        return reply(client, ":ircserv 461 " + nick + " PART :Not enough parameters");
-
-    const std::string name   = params[0];
-    const std::string reason = (params.size() > 1) ? params[1] : "";
-
-    Channel *channel = server.getChannel(name);
-    if (channel == NULL)
-        return reply(client, ":ircserv 403 " + nick + " " + name + " :No such channel");
-
-    if (!channel->isMember(client))
-        return reply(client, ":ircserv 442 " + nick + " " + name
-                     + " :You're not on that channel");
-
-    const std::string prefix = nick + "!" + client->getUsername() + "@" + client->getHostname();
-    std::string       msg    = ":" + prefix + " PART " + name;
-    if (!reason.empty())
-        msg += " :" + reason;
-    channel->broadcast(server, msg);
-
-    channel->removeClient(client);
-
-    if (channel->isEmpty())
-        server.removeChannel(name);
+	const std::string nick = client->getNickname();
+	if (!client->isRegistered())
+		return (reply(client, ":ircserv 451 " + nick
+				+ " :You have not registered"));
+	if (params.empty())
+		return (reply(client, ":ircserv 461 " + nick
+				+ " PART :Not enough parameters"));
+	const std::string reason = (params.size() > 1) ? params[1] : "";
+	const std::vector<std::string> names = splitComma(params[0]);
+	for (std::vector<std::string>::size_type i = 0; i < names.size(); ++i)
+	{
+		const std::string &name = names[i];
+		channel = server.getChannel(name);
+		if (channel == NULL)
+		{
+			reply(client, ":ircserv 403 " + nick + " " + name
+				+ " :No such channel");
+			continue ;
+		}
+		if (!channel->isMember(client))
+		{
+			reply(client, ":ircserv 442 " + nick + " " + name
+				+ " :You're not on that channel");
+			continue ;
+		}
+		const std::string prefix = nick + "!" + client->getUsername() + "@"
+			+ client->getHostname();
+		std::string msg = ":" + prefix + " PART " + name;
+		if (!reason.empty())
+			msg += " :" + reason;
+		channel->broadcast(server, msg);
+		channel->removeClient(client);
+		if (channel->isEmpty())
+			server.removeChannel(name);
+	}
 }
