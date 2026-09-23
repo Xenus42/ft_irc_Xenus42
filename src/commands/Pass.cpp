@@ -18,7 +18,7 @@ void	handlePass(Server &server, Client *client,
 {
 	if (isValidPassword(server.getPassword()) == false)
 	{
-		reply(client, ":ircserv 464 :Password incorrect");
+		reply(client, ":ircserv 464 * :Password incorrect");
 		return ;
 	}
 
@@ -32,6 +32,6 @@ void	handlePass(Server &server, Client *client,
 	}
 	else
 	{
-		reply(client, ":ircserv 464 :Password incorrect");
+		reply(client, ":ircserv 464 * :Password incorrect");
 	}
 }

@@ -65,17 +65,17 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 
 - [x] **[P1] `432` au lieu de `433` pour un nick déjà pris** (`Nick.cpp:50`). **fixé**.
 
-- [ ] **[P1] Format des numériques cassé dans NICK et PASS.** [testé]
+- [x] **[P1] Format des numériques cassé dans NICK et PASS.** [testé] **fixé**
       Reçu : `:ircserv 432 :alice:Nickname is already in use`
       Attendu : `:ircserv 433 * alice :Nickname is already in use`
       Il manque le paramètre cible et le `:` est mal placé. Idem `464` dans `Pass.cpp` :
       `:ircserv 464 :Password incorrect` → `:ircserv 464 * :Password incorrect`.
 
-- [ ] **[P1] Numériques avec nick vide.** [testé] Un client non enregistré qui fait `MODE #x` reçoit
+- [x] **[P1] Numériques avec nick vide.** [testé] Un client non enregistré qui fait `MODE #x` reçoit
       `:ircserv 403  #x :No such channel` — double espace, champ cible vide. → utiliser `*`
       tant que le nick n'est pas défini (comme le fait déjà `Cap.cpp:9`).
-      **partiellement fixé** : `WHO`, `WHOIS`, `LIST`, `PRIVMSG` utilisent maintenant `*` en
-      fallback. `MODE` (et les autres commandes citées) restent à faire.
+      **fixé** : `WHO`, `WHOIS`, `LIST`, `PRIVMSG`, `MODE` (les 3 fonctions concernées) utilisent
+      maintenant `*` en fallback. Testé : `MODE #x` avant enregistrement → `:ircserv 403 * #x ...`.
 
 ## P2 — Nettoyage
 
