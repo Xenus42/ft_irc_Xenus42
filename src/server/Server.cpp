@@ -1,5 +1,12 @@
 #include "Server.hpp"
 
+Server *Server::_instance = NULL;
+
+Server *Server::getInstance()
+{
+	return (_instance);
+}
+
 // ************************************************************************** //
 //                             Orthodox Canonical Form
 // ************************************************************************** //
@@ -15,6 +22,7 @@ Server::Server(int port, std::string password) : _port(port),
 	_clientsByFd(), _clientsByNick()
 {
 	std::memset(&_address, 0, sizeof(_address));
+	_instance = this;
 }
 
 Server::Server(const Server &other) : _port(other._port),
@@ -74,7 +82,7 @@ void Server::init()
 
 volatile sig_atomic_t Server::_signal = 0;
 
-void	Server::signalHandler(int sig)
+void Server::signalHandler(int sig)
 {
 	(void)sig;
 	_signal = 1;
@@ -82,51 +90,43 @@ void	Server::signalHandler(int sig)
 
 void Server::run()
 {
-    while (_running && !_signal)
-    {
-        if (_pollfds.empty())
-            break;
+	int	result;
 
-        int result = poll(&_pollfds[0], _pollfds.size(), 1000);
-
-        if (result < 0)
-        {
-            if (errno == EINTR)
-                continue;
-
-            std::cerr << "[ERROR] poll: " << std::strerror(errno) << std::endl;
-            break;
-        }
-
-        if (_signal)
-            break;
-
-        if (result > 0)
-            processPollEvents();
-    }
-
-    shutdown();
+	while (_running && !_signal)
+	{
+		if (_pollfds.empty())
+			break ;
+		result = poll(&_pollfds[0], _pollfds.size(), 1000);
+		if (result < 0)
+		{
+			if (errno == EINTR)
+				continue ;
+			std::cerr << "[ERROR] poll: " << std::strerror(errno) << std::endl;
+			break ;
+		}
+		if (_signal)
+			break ;
+		if (result > 0)
+			processPollEvents();
+	}
+	shutdown();
 }
 
 void Server::shutdown()
 {
-    _running = false;
-
-    disconnectAllClients();
-
-    while (!_channels.empty())
-    {
-        const std::string name = _channels.begin()->first;
-        removeChannel(name);
-    }
-
-    _pollfds.clear();
-
-    if (_listenFd != -1)
-    {
-        close(_listenFd);
-        _listenFd = -1;
-    }
+	_running = false;
+	disconnectAllClients();
+	while (!_channels.empty())
+	{
+		const std::string name = _channels.begin()->first;
+		removeChannel(name);
+	}
+	_pollfds.clear();
+	if (_listenFd != -1)
+	{
+		close(_listenFd);
+		_listenFd = -1;
+	}
 }
 
 // ************************************************************************** //

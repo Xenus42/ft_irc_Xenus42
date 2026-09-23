@@ -21,12 +21,12 @@ void	handlePass(Server &server, Client *client,
 	if (params.empty())
 	{
 		reply(client, ":ircserv 461 " + nick + " PASS :Not enough parameters");
-		return;
+		return ;
 	}
 	if (client->isRegistered())
 	{
 		reply(client, ":ircserv 462 " + nick + " :You may not reregister");
-		return;
+		return ;
 	}
 	if (isValidPassword(server.getPassword()) == false)
 	{

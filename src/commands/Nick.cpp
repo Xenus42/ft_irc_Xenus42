@@ -1,58 +1,66 @@
 #include "Server.hpp"
 #include "Tmp_Log.hpp"
 
-static bool isValidNickname(const std::string &nick)
+// Caracteres "special" autorises dans un nick (RFC 2812), a toute position.
+static bool	isSpecial(unsigned char c)
 {
-    if (nick.empty() || nick.size() > 9)
-        return false;
-
-    if (!isalpha(nick[0]) &&
-        nick[0] != '[' &&
-        nick[0] != ']' &&
-        nick[0] != '\\' &&
-        nick[0] != '`' &&
-        nick[0] != '_' &&
-        nick[0] != '^' &&
-        nick[0] != '{' &&
-        nick[0] != '|')
-        return false;
-
-    for (size_t i = 1; i < nick.size(); i++)
-    {
-        if (!isalnum(nick[i]) &&
-            nick[i] != '-' &&
-            nick[i] != '_')
-            return false;
-    }
-
-    return true;
+	return (c == '[' || c == ']' || c == '\\' || c == '^' || c == '_'
+		|| c == '`' || c == '{' || c == '|' || c == '}');
 }
 
-void handleNick(Server &server, Client *client, const std::vector<std::string> &params)
+static bool	isValidNickname(const std::string &nick)
 {
-    if (params.empty())
-    {
-        reply(client, ":ircserv 431 :No nickname given");        
-        return;
-    }
+	unsigned char	first;
+	unsigned char	c;
 
-    std::string nick = params[0];
+	if (nick.empty() || nick.size() > 9)
+		return (false);
+	first = static_cast<unsigned char>(nick[0]);
+	if (!isalpha(first) && !isSpecial(first))
+		return (false);
+	for (size_t i = 1; i < nick.size(); i++)
+	{
+		c = static_cast<unsigned char>(nick[i]);
+		if (!isalnum(c) && !isSpecial(c) && c != '-')
+			return (false);
+	}
+	return (true);
+}
 
-    if (!isValidNickname(nick))
-    {
-        // TODO: check if reply message is ok
-        reply(client, ":ircserv 432 :" + nick + ":Erroneous nickname");
-        return;
-    }
+void	handleNick(Server &server, Client *client,
+		const std::vector<std::string> &params)
+{
+	const std::string target = client->getNickname().empty() ? "*" : client->getNickname();
 
-    if (server.getClientByNick(nick))
-    {
-        reply(client, ":ircserv 432 :" + nick + ":Nickname is already in use");
-        return;
-    }
+	if (params.empty())
+	{
+		reply(client, ":ircserv 431 " + target + " :No nickname given");
+		return ;
+	}
 
-    server.changeNickname(client, nick);
-    
-    if (client->isRegistered())
-        server.sendWelcome(client);
+	const std::string nick = params[0];
+
+	if (!isValidNickname(nick))
+	{
+		reply(client, ":ircserv 432 " + target + " " + nick
+			+ " :Erroneous nickname");
+		return ;
+	}
+
+	Client *existing = server.getClientByNick(nick);
+	if (existing == client)
+		return ;
+			// meme nick (casse eventuellement differente) : no-op silencieux
+
+	if (existing)
+	{
+		reply(client, ":ircserv 433 " + target + " " + nick
+			+ " :Nickname is already in use");
+		return ;
+	}
+
+	server.changeNickname(client, nick);
+
+	if (client->isRegistered())
+		server.sendWelcome(client);
 }

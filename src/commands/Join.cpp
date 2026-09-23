@@ -8,10 +8,12 @@
 
 void	reply(Client *client, const std::string &line)
 {
-	Server	serv;
+	Server	*serv;
 
-	std::string full = line + "\r\n";
-	serv.sendMessage(client, full);
+	serv = Server::getInstance();
+	if (!serv)
+		return ;
+	serv->sendMessage(client, line + "\r\n");
 }
 
 // Decoupe une liste "a,b,c" en elements individuels.

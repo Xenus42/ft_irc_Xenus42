@@ -47,38 +47,42 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 
 - [x] **[P1] Pas de limite à 15 paramètres** (RFC 1459). **fixé** (`Parsing::parse`, `MAX_PARAMS`).
 
-- [ ] **[P1] Nicks et channels sensibles à la casse.** [testé]
+- [x] **[P1] Nicks et channels sensibles à la casse.** [testé]
       `alice` et `BOB`/`bob` coexistent ; `#Test` et `#test` sont deux channels distincts et
       un message dans l'un n'atteint pas l'autre. L'IRC impose une comparaison insensible à la
       casse, avec le *scrambling* `[]\` ↔ `{}|`. → clé de map normalisée dans `_clientsByNick`
       et `_channels`, en gardant le nom d'affichage à part.
+      **fixé** : clés `_clientsByNick`/`_channels` normalisées (`toIrcUpper`, RFC 1459), nom
+      d'affichage conservé via `Channel::getName()`. Testé : `ALICE`/`alice` collision, `#Test`/`#test` fusionnés.
 
-- [ ] **[P1] Validation de nick trop stricte.** [testé : `a[b]c` refusé]
+- [x] **[P1] Validation de nick trop stricte.** [testé : `a[b]c` refusé]
       `src/commands/Nick.cpp:20-26` n'autorise que `alnum`, `-` et `_` après le 1er caractère,
       alors que `[ ] \ ` ^ { } |` sont légaux — et sont d'ailleurs acceptés en position 0 par
       le même code. Incohérent.
+      **fixé** : `isSpecial()` autorise `[ ] \ ^ _ ` { | }` à toute position.
 
 ## P1 — Format des codes numériques
 
-- [ ] **[P1] `432` au lieu de `433` pour un nick déjà pris** (`Nick.cpp:50`).
+- [x] **[P1] `432` au lieu de `433` pour un nick déjà pris** (`Nick.cpp:50`). **fixé**.
 
-- [ ] **[P1] Format des numériques cassé dans NICK et PASS.** [testé]
+- [x] **[P1] Format des numériques cassé dans NICK et PASS.** [testé] **fixé**
       Reçu : `:ircserv 432 :alice:Nickname is already in use`
       Attendu : `:ircserv 433 * alice :Nickname is already in use`
       Il manque le paramètre cible et le `:` est mal placé. Idem `464` dans `Pass.cpp` :
       `:ircserv 464 :Password incorrect` → `:ircserv 464 * :Password incorrect`.
 
-- [ ] **[P1] Numériques avec nick vide.** [testé] Un client non enregistré qui fait `MODE #x` reçoit
+- [x] **[P1] Numériques avec nick vide.** [testé] Un client non enregistré qui fait `MODE #x` reçoit
       `:ircserv 403  #x :No such channel` — double espace, champ cible vide. → utiliser `*`
       tant que le nick n'est pas défini (comme le fait déjà `Cap.cpp:9`).
-      **partiellement fixé** : `WHO`, `WHOIS`, `LIST`, `PRIVMSG` utilisent maintenant `*` en
-      fallback. `MODE` (et les autres commandes citées) restent à faire.
+      **fixé** : `WHO`, `WHOIS`, `LIST`, `PRIVMSG`, `MODE` (les 3 fonctions concernées) utilisent
+      maintenant `*` en fallback. Testé : `MODE #x` avant enregistrement → `:ircserv 403 * #x ...`.
 
 ## P2 — Nettoyage
 
-- [ ] **[P2] `isalpha`/`isalnum`/`isdigit` avec un `char` signé** — `Nick.cpp:9,22` et `Utils.cpp:13` :
+- [x] **[P2] `isalpha`/`isalnum`/`isdigit` avec un `char` signé** — `Nick.cpp:9,22` et `Utils.cpp:13` :
       UB pour les octets > 127. Il faut caster en `unsigned char`, comme c'est correctement fait
       dans `Mode.cpp:121` et `Parsing_Utils.cpp:32`.
+      **fixé** : `Nick.cpp` castait déjà, `Utils.cpp:isNumeric` caste maintenant aussi.
 
 - [x] **[P2] Mode debug `--parse-test` dans `main.cpp:27-140`** — ~115 lignes de tests en dur à supprimer.
       **fixé** : bloc supprimé.
@@ -192,7 +196,7 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
       `Client::appendBuffer` grossit indéfiniment → un client peut faire exploser la RAM.
       → couper à 512 octets (RFC 1459) et déconnecter au-delà.
 
-- [ ] **[P0] `reply()` construit un `Server` complet à chaque ligne envoyée.**
+- [x] **[P0] `reply()` construit un `Server` complet à chaque ligne envoyée.**
       `src/commands/Join.cpp:10-15` :
       ```cpp
       void reply(Client *client, const std::string &line) {
@@ -204,6 +208,13 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
       `~Server()` est vide. **Dès que le destructeur libérera quelque chose (point ci-dessus),
       ça devient un double-free généralisé.** → passer par `Server&` (déjà disponible dans tous
       les `handleXxx`) ou en faire une méthode de `Client`.
+      **fixé** : `reply()` utilise maintenant `Server::getInstance()` (pointeur statique vers
+      l'unique instance reelle) au lieu de construire un `Server` jetable. Ce point etait devenu
+      **critique apres le merge des sockets non-bloquantes** : le nouveau `sendMessage` bufferise
+      et pose le flag `POLLOUT` sur `_pollfds` — l'objet temporaire avait un `_pollfds` vide, donc
+      **la quasi-totalite des `reply()` (401/403/431/432/433/442/482...) etait silencieusement
+      perdue**, alors que `server.sendWelcome()` (vrai `Server&`) fonctionnait. Testé : `433`/`401`
+      livres correctement.
 
 ## P1 — Dispatch et commandes manquantes
 
