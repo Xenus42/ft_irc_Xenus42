@@ -34,18 +34,18 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
       **C'est exactement le cas `nc`**, que le sujet demande de tester.
       → accepter `\n` et traiter le `\r` éventuel comme optionnel.
 
-- [ ] **[P1] Listes de cibles non gérées : `JOIN #a,#b`.** [testé : crée littéralement un channel
+- [x] **[P1] Listes de cibles non gérées : `JOIN #a,#b`.** [testé : crée littéralement un channel
       nommé `#a,#b`] Idem pour les clés `JOIN #a,#b key1,key2`. Même problème pour `PART #a,#b`,
       `PRIVMSG a,b :msg`, `KICK #c a,b`.
-      **partiellement fixé** : `PRIVMSG`, `NOTICE`, `WHOIS`, `LIST` gèrent maintenant les listes
-      virgule. `JOIN`, `PART`, `KICK` restent à faire.
+      **fixé** : `JOIN` (channels + clés), `PART`, `KICK`, `PRIVMSG`, `NOTICE`, `WHOIS`, `LIST`
+      gèrent maintenant les listes séparées par virgule.
 
-- [ ] **[P1] Pas de limite de 512 octets par ligne.** [testé : un PRIVMSG de 2000 octets est relayé
+- [x] **[P1] Pas de limite de 512 octets par ligne.** [testé : un PRIVMSG de 2000 octets est relayé
       intégralement, 2033 octets reçus] (voir aussi le P0 « buffer d'entrée sans limite » côté serveur)
-      **partiellement fixé** : le buffer client est borné à 512 octets (`Client::appendBuffer`),
-      mais une ligne complète déjà reçue peut encore dépasser 512 octets sans être rejetée.
+      **fixé** : buffer client borné à 512 octets (`Client::appendBuffer`) et rejet d'une ligne
+      déjà complète mais trop longue (`Parsing::parse`, `MAX_LINE_LENGTH`).
 
-- [ ] **[P1] Pas de limite à 15 paramètres** (RFC 1459).
+- [x] **[P1] Pas de limite à 15 paramètres** (RFC 1459). **fixé** (`Parsing::parse`, `MAX_PARAMS`).
 
 - [ ] **[P1] Nicks et channels sensibles à la casse.** [testé]
       `alice` et `BOB`/`bob` coexistent ; `#Test` et `#test` sont deux channels distincts et
@@ -71,6 +71,8 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 - [ ] **[P1] Numériques avec nick vide.** [testé] Un client non enregistré qui fait `MODE #x` reçoit
       `:ircserv 403  #x :No such channel` — double espace, champ cible vide. → utiliser `*`
       tant que le nick n'est pas défini (comme le fait déjà `Cap.cpp:9`).
+      **partiellement fixé** : `WHO`, `WHOIS`, `LIST`, `PRIVMSG` utilisent maintenant `*` en
+      fallback. `MODE` (et les autres commandes citées) restent à faire.
 
 ## P2 — Nettoyage
 
@@ -78,7 +80,8 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
       UB pour les octets > 127. Il faut caster en `unsigned char`, comme c'est correctement fait
       dans `Mode.cpp:121` et `Parsing_Utils.cpp:32`.
 
-- [ ] **[P2] Mode debug `--parse-test` dans `main.cpp:27-140`** — ~115 lignes de tests en dur à supprimer.
+- [x] **[P2] Mode debug `--parse-test` dans `main.cpp:27-140`** — ~115 lignes de tests en dur à supprimer.
+      **fixé** : bloc supprimé.
 
 ---
 
