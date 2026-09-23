@@ -6,7 +6,53 @@
 
 void Server::sendMessage(Client *client, const std::string &message)
 {
-	send(client->getFd(), message.c_str(), message.size(), 0);
+	if (!client)
+		return ;
+
+	client->appendOutBuffer(message);
+
+	for (size_t i = 0; i < _pollfds.size(); ++i)
+	{
+		if (_pollfds[i].fd == client->getFd())
+		{
+			_pollfds[i].events |= POLLOUT;
+			break ;
+		}
+	}
+}
+
+void Server::sendClient(int fd)
+{
+	Client *client = getClientByFd(fd);
+
+	if (!client)
+		return ;
+
+	std::string &buffer = client->getOutBuffer();
+
+	if (buffer.empty())
+		return ;
+
+	ssize_t bytes = send(fd, buffer.c_str(), buffer.size(), 0);
+
+	if (bytes > 0)
+	{
+		buffer.erase(0, bytes);
+
+		if (buffer.empty())
+		{
+			for (size_t i = 0; i < _pollfds.size(); ++i)
+			{
+				if (_pollfds[i].fd == fd)
+				{
+					_pollfds[i].events &= ~POLLOUT;
+					break ;
+				}
+			}
+		}
+	}
+	else if (bytes < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+		disconnectClient(client);
 }
 
 void Server::sendWelcome(Client *client)

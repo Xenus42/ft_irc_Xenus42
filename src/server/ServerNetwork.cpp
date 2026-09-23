@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <fcntl.h>
 
 // ************************************************************************** //
 //                                   Socket
@@ -6,19 +7,21 @@
 
 void Server::createSocket()
 {
-	int	opt;
+	int opt;
 
 	_listenFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_listenFd < 0)
 	{
-		throw std::runtime_error(std::string("socket: ")
-			+ std::strerror(errno));
+		throw std::runtime_error(std::string("socket: ") + std::strerror(errno));
 	}
+
+	if (fcntl(_listenFd, F_SETFL, O_NONBLOCK) < 0)
+		throw std::runtime_error(std::string("fcntl: ") + std::strerror(errno));
+
 	opt = 1;
 	if (setsockopt(_listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 	{
-		throw std::runtime_error(std::string("setsockopt: ")
-			+ std::strerror(errno));
+		throw std::runtime_error(std::string("setsockopt: ") + std::strerror(errno));
 	}
 }
 
@@ -65,54 +68,69 @@ void Server::processPollEvents()
 	for (size_t i = 0; i < _pollfds.size();)
 	{
 		revents = _pollfds[i].revents;
+		fd = _pollfds[i].fd;
+
 		// Fd not open
 		if (revents & POLLNVAL)
 		{
-			if (_pollfds[i].fd == _listenFd)
+			if (fd == _listenFd)
 			{
 				_running = false;
 				return ;
 			}
-			else
-				disconnectClient(getClientByFd(_pollfds[i].fd));
+			disconnectClient(getClientByFd(fd));
 			continue ;
 		}
+
 		// Error on fd
 		if (revents & POLLERR)
 		{
-			if (_pollfds[i].fd == _listenFd)
+			if (fd == _listenFd)
 			{
 				_running = false;
 				return ;
 			}
-			else
-				disconnectClient(getClientByFd(_pollfds[i].fd));
+			disconnectClient(getClientByFd(fd));
 			continue ;
 		}
+
 		// New client connection
-		if (_pollfds[i].fd == _listenFd)
+		if (fd == _listenFd)
 		{
 			if (revents & POLLIN)
 				acceptClient();
+
 			++i;
 			continue ;
 		}
-		// Data available to read from client
+
+		// Read client data
 		if (revents & POLLIN)
 		{
-			fd = _pollfds[i].fd;
 			receiveClient(fd);
-			// If client still exist, continue on next client
-			if (i < _pollfds.size() && _pollfds[i].fd == fd)
-				++i;
-			continue ;
+
+			// if client is disconnect, continue to the next one
+			if (i >= _pollfds.size() || _pollfds[i].fd != fd)
+				continue ;
 		}
-		// Connection closed without data to read
+
+		// Send pending data
+		if (revents & POLLOUT)
+		{
+			sendClient(fd);
+
+			// sendClient may disconnect the client
+			if (i >= _pollfds.size() || _pollfds[i].fd != fd)
+				continue ;
+		}
+
+		// Connection closed
 		if (revents & POLLHUP)
 		{
-			disconnectClient(getClientByFd(_pollfds[i].fd));
+			disconnectClient(getClientByFd(fd));
 			continue ;
 		}
+
 		++i;
 	}
 }
@@ -141,11 +159,20 @@ void Server::acceptClient()
 
 	len = sizeof(clientAddr);
 	clientFd = accept(_listenFd, (sockaddr *)&clientAddr, &len);
+	
 	if (clientFd < 0)
 	{
 		std::cerr << "[ERROR] accept: " << std::strerror(errno) << std::endl;
 		return ;
 	}
+
+	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
+	{
+		std::cerr << "[ERROR] fcntl: " << std::strerror(errno) << std::endl;
+		close(clientFd);
+		return ;
+	}
+
 	addClient(clientFd, clientAddr);
 }
 
@@ -157,7 +184,13 @@ void Server::receiveClient(int fd)
 
 	if (bytes < 0)
 	{
-		std::cerr << "[ERROR] recv: " << std::strerror(errno) << std::endl;
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return ;
+	
+		std::cerr << "[ERROR] recv: "
+			<< std::strerror(errno) << std::endl;
+	
+		disconnectClient(getClientByFd(fd));
 		return ;
 	}
 
@@ -172,7 +205,7 @@ void Server::receiveClient(int fd)
 	if (!client)
 		return ;
 
-	client->appendBuffer(buffer, bytes);
+	client->appendInBuffer(buffer, bytes);
 
 	std::string line;
 

@@ -19,7 +19,8 @@ class Client
         const std::string   &getNickname() const;
         const std::string   &getUsername() const;
         const std::string   &getHostname() const;
-        const std::string   &getBuffer() const;
+        const std::string   &getInBuffer() const;
+        std::string         &getOutBuffer();
         bool                isAuthenticated() const;
 
         // === Setters ===
@@ -32,8 +33,9 @@ class Client
         void setPassword(const std::string &password);
 
         // === Buffer ===
-        void appendBuffer(const char *data, size_t len);
-        void clearBuffer();
+        void appendInBuffer(const char *data, size_t len);
+        void appendOutBuffer(const std::string &message);
+        void clearInBuffer();
         bool extractLine(std::string &line);
 
         // === Registration ===
@@ -52,7 +54,7 @@ class Client
         std::string     _servername;
         std::string     _realname;
         std::string     _password;
-        std::string     _buffer;
-
+        std::string     _inBuffer;
+        std::string     _outBuffer;
         bool            _authenticated;
 };

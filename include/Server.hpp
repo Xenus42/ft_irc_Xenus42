@@ -112,7 +112,7 @@ class Server
 
 	    void    sendMessage(Client *client, const std::string &message);
         void    sendWelcome(Client *client);
-    
+        void    sendClient(int fd);
 
     // ************************************************************************** //
     //                                  Server Utils

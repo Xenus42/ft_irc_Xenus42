@@ -5,19 +5,19 @@
 // ************************************************************************** //
 
 Client::Client() : _fd(-1), _address(), _nickname(""), _username(""),
-	_hostname(""), _buffer(""), _authenticated(false)
+	_hostname(""), _inBuffer(""), _authenticated(false)
 {
 }
 
 Client::Client(int fd, const sockaddr_in &address) : _fd(fd), _address(address),
-	_nickname(""), _username(""), _hostname(""), _buffer(""),
+	_nickname(""), _username(""), _hostname(""), _inBuffer(""),
 	_authenticated(false)
 {
 }
 
 Client::Client(const Client &other) : _fd(other._fd), _address(other._address),
 	_nickname(other._nickname), _username(other._username),
-	_hostname(other._hostname), _buffer(other._buffer),
+	_hostname(other._hostname), _inBuffer(other._inBuffer),
 	_authenticated(other._authenticated)
 {
 }
@@ -31,7 +31,7 @@ Client &Client::operator=(const Client &other)
 		_nickname = other._nickname;
 		_username = other._username;
 		_hostname = other._hostname;
-		_buffer = other._buffer;
+		_inBuffer = other._inBuffer;
 		_authenticated = other._authenticated;
 	}
 	return (*this);
@@ -65,9 +65,14 @@ const std::string &Client::getHostname() const
 	return (_hostname);
 }
 
-const std::string &Client::getBuffer() const
+const std::string &Client::getInBuffer() const
 {
-	return (_buffer);
+	return (_inBuffer);
+}
+
+std::string	&Client::getOutBuffer()
+{
+	return (_outBuffer);
 }
 
 bool Client::isAuthenticated() const
@@ -125,31 +130,36 @@ void Client::setPassword(const std::string &password)
 static const size_t	MAX_LINE_LENGTH = 512;
 		// RFC 1459: taille max d'une ligne IRC, CRLF compris
 
-void Client::appendBuffer(const char *data, size_t len)
+void Client::appendInBuffer(const char *data, size_t len)
 {
-	_buffer.append(data, len);
-	if (_buffer.size() > MAX_LINE_LENGTH
-		&& _buffer.find('\n') == std::string::npos)
-		_buffer.erase(MAX_LINE_LENGTH);
+	_inBuffer.append(data, len);
+	if (_inBuffer.size() > MAX_LINE_LENGTH
+		&& _inBuffer.find('\n') == std::string::npos)
+		_inBuffer.erase(MAX_LINE_LENGTH);
 			// pas de fin de ligne au-dela de la limite : on borne la memoire
 }
 
-void Client::clearBuffer()
+void Client::appendOutBuffer(const std::string &message)
 {
-	_buffer.clear();
+	_outBuffer += message;
+}
+
+void Client::clearInBuffer()
+{
+	_inBuffer.clear();
 }
 
 bool Client::extractLine(std::string &line)
 {
-	size_t pos = _buffer.find('\n');
+	size_t pos = _inBuffer.find('\n');
 
 	if (pos == std::string::npos)
 		return (false);
 
 	size_t end = pos;
-	if (end > 0 && _buffer[end - 1] == '\r') // le \r est optionnel (cas nc)
+	if (end > 0 && _inBuffer[end - 1] == '\r') // le \r est optionnel (cas nc)
 		--end;
-	line = _buffer.substr(0, end);
-	_buffer.erase(0, pos + 1);
+	line = _inBuffer.substr(0, end);
+	_inBuffer.erase(0, pos + 1);
 	return (true);
 }
