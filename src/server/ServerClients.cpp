@@ -6,33 +6,12 @@
 /*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 17:47:41 by lebroue           #+#    #+#             */
-/*   Updated: 2026/09/23 17:47:45 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/09/23 19:39:34 by lebroue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
-
-// Normalise un nick selon le casemapping IRC (RFC 1459) : insensible a la
-// casse, avec le scrambling []\ <-> {}|.
-static std::string toIrcUpper(const std::string &str)
-{
-	unsigned char	c;
-
-	std::string result = str;
-	for (std::string::size_type i = 0; i < result.size(); ++i)
-	{
-		c = static_cast<unsigned char>(result[i]);
-		if (c >= 'a' && c <= 'z')
-			result[i] = static_cast<char>(c - 'a' + 'A');
-		else if (c == '{')
-			result[i] = '[';
-		else if (c == '}')
-			result[i] = ']';
-		else if (c == '|')
-			result[i] = '\\';
-	}
-	return (result);
-}
+#include "Utils.hpp"
 
 // ************************************************************************** //
 //                                  Client lifecycle
@@ -51,6 +30,7 @@ void Server::addClient(int fd, const sockaddr_in &address)
 void Server::disconnectClient(Client *client)
 {
 	int		fd;
+	delete	client;
 
 	if (!client)
 		return ;
@@ -60,7 +40,6 @@ void Server::disconnectClient(Client *client)
 	removeClientByFd(client);
 	removePollfd(fd);
 	close(fd);
-	delete	client;
 	printLog("SERVER", "Client disconnected and cleaned up");
 }
 

@@ -18,14 +18,35 @@ bool	isNumeric(std::string str)
 
 bool	isValidPort(const std::string &str)
 {
+	char	*end;
+	long	port;
+
 	if (!isNumeric(str))
 		return (false);
-
-	char *end;
-	long port = std::strtol(str.c_str(), &end, 10);
+	port = std::strtol(str.c_str(), &end, 10);
 	if (*end != '\0')
 		return (false);
 	if (port < 1024 || port > 65535)
 		return (false);
 	return (true);
+}
+
+std::string toIrcUpper(const std::string &str)
+{
+	std::string result = str;
+
+	for (std::string::size_type i = 0; i < result.size(); ++i)
+	{
+		unsigned char c = static_cast<unsigned char>(result[i]);
+
+		if (c >= 'a' && c <= 'z')
+			result[i] = static_cast<char>(c - 'a' + 'A');
+		else if (c == '{')
+			result[i] = '[';
+		else if (c == '}')
+			result[i] = ']';
+		else if (c == '|')
+			result[i] = '\\';
+	}
+	return (result);
 }
