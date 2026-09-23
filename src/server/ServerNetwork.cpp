@@ -215,6 +215,8 @@ void Server::receiveClient(int fd)
 		{
 			Parsing::Command cmd = _parser.parse(line);
 			dispatchCommand(client, cmd);
+			if (getClientByFd(fd) == NULL)
+				return;
 		}
 		catch (const std::exception &e)
 		{

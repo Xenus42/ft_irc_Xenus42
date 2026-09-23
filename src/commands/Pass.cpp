@@ -1,37 +1,22 @@
 #include "Server.hpp"
 
-static bool	isValidPassword(const std::string &password)
+void	handlePass(Server &server, Client *client, const std::vector<std::string> &params)
 {
-	if (password.empty() || password.size() > 255)
-		return (false);
-	if (password.find(' ') != std::string::npos)
-		return (false);
-	if (password.find('\r') != std::string::npos)
-		return (false);
-	if (password.find('\n') != std::string::npos)
-		return (false);
-	return (true);
-}
+	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 
-void	handlePass(Server &server, Client *client,
-		const std::vector<std::string> &params)
-{
-	if (isValidPassword(server.getPassword()) == false)
+	if (params.empty())
+		return reply(client, ":ircserv 461 " + nick + " PASS :Not enough parameters");
+	
+	if (client->isRegistered())
+		return reply(client, ":ircserv 462 " + nick + " :You may not reregister");
+	
+	if (params[0] != server.getPassword())
 	{
-		reply(client, ":ircserv 464 :Password incorrect");
-		return ;
+		client->setAuthenticated(false);
+		return reply(client, ":ircserv 464 " + nick + " :Password incorrect");
 	}
-
-	const std::string &providedPassword = params[0];
-
-	if (providedPassword == server.getPassword())
-	{
-		client->setAuthenticated(true);
-		if (client->isRegistered())
-			server.sendWelcome(client);
-	}
-	else
-	{
-		reply(client, ":ircserv 464 :Password incorrect");
-	}
+	
+	client->setAuthenticated(true);
+	if (client->isRegistered())
+		server.sendWelcome(client);
 }

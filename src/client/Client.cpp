@@ -82,7 +82,7 @@ bool Client::isAuthenticated() const
 
 bool Client::isRegistered() const
 {
-	return (!_nickname.empty() && !_username.empty() && !_hostname.empty());
+	return (_authenticated && !_nickname.empty() && !_username.empty() && !_hostname.empty());
 }
 
 // ************************************************************************** //

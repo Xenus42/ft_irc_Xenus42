@@ -6,6 +6,13 @@
 
 void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 {
+	if (!client->isRegistered() && cmd.name != "PASS" && cmd.name != "NICK"
+		&& cmd.name != "USER" && cmd.name != "CAP" && cmd.name != "QUIT" && cmd.name != "PING")
+	{
+		const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
+		sendMessage(client, ":ircserv 451 " + nick + " :You have not registered\r\n");
+		return ;
+	}
 	if (cmd.name == "JOIN")
 		handleJoin(*this, client, cmd.params);
 	else if (cmd.name == "PART")

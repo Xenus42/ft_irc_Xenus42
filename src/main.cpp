@@ -139,7 +139,7 @@ int	main(int ac, char **av)
 		return (EXIT_SUCCESS);
 	} // FIN TEST DU PARSING
 	
-	if (ac != 3 || !isValidPort(av[1]))
+	if (ac != 3 || !isValidPort(av[1]) || !isValidPassword(av[2]))
 	{
 		// TODO: specify error type
 		std::cerr << "Error: bad arguments" << std::endl;

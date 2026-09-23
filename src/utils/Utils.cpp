@@ -29,3 +29,16 @@ bool isValidPort(const std::string &str)
         return false;
     return true;
 }
+
+bool isValidPassword(const std::string &password)
+{
+    if (password.empty() || password.size() > 255)
+        return (false);
+    if (password.find(' ') != std::string::npos)
+        return (false);
+    if (password.find('\r') != std::string::npos)
+        return (false);
+    if (password.find('\n') != std::string::npos)
+        return (false);
+    return (true);
+}

@@ -51,8 +51,8 @@ void handleNick(Server &server, Client *client, const std::vector<std::string> &
         return;
     }
 
+    bool wasRegistered = client->isRegistered();
     server.changeNickname(client, nick);
-    
-    if (client->isRegistered())
-        server.sendWelcome(client);
+    if (!wasRegistered && client->isRegistered())
+	    server.sendWelcome(client);
 }
