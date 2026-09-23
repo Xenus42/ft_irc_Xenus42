@@ -25,6 +25,8 @@
 *.dll
 *.so.*
 
+# Executable
+ircserv
 
 # Fortran module files
 *.mod

@@ -51,11 +51,11 @@ void handleUser(Server &server, Client *client, const std::vector<std::string> &
     const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 
     if (client->isRegistered())
-        return reply(client, ":ircserv 462 " + nick + " :You may not reregister");
+        return server.sendMessage(client, ":ircserv 462 " + nick + " :You may not reregister");
 
     if (params.size() < 4)
     {
-        reply(client, ":ircserv 461 " + nick + " USER :Not enough parameters");
+        server.sendMessage(client, ":ircserv 461 " + nick + " USER :Not enough parameters");
         return;
     }
 
@@ -71,7 +71,7 @@ void handleUser(Server &server, Client *client, const std::vector<std::string> &
         !isValidHostname(hostname) ||
         !isValidServername(servername))
     {
-        reply(client, ":ircserv 461 " + nick + " USER :Invalid parameters");
+        server.sendMessage(client, ":ircserv 461 " + nick + " USER :Invalid parameters");
         return;
     }
     client->setUsername(username);

@@ -52,18 +52,18 @@ void handleNick(Server &server, Client *client, const std::vector<std::string> &
     const std::string current = client->getNickname().empty() ? "*" : client->getNickname();
 
     if (params.empty() || params[0].empty())
-        return reply(client, ":ircserv 431 " + current + " :No nickname given");
+        return server.sendMessage(client, ":ircserv 431 " + current + " :No nickname given");
 
     const std::string newNick = params[0];
 
     if (!isValidNickname(newNick))
-        return reply(client, ":ircserv 432 " + current + " " + newNick + " :Erroneous nickname");
+        return server.sendMessage(client, ":ircserv 432 " + current + " " + newNick + " :Erroneous nickname");
 
     Client *owner = server.getClientByNick(newNick);
     if (owner == client)
         return;
     if (owner != NULL)
-        return reply(client, ":ircserv 433 " + current + " " + newNick + " :Nickname is already in use");
+        return server.sendMessage(client, ":ircserv 433 " + current + " " + newNick + " :Nickname is already in use");
 
     const bool wasRegistered = client->isRegistered();
     const std::string oldPrefix = client->getNickname() + "!" + client->getUsername()
