@@ -57,6 +57,7 @@ void Server::init()
 	{
 		signal(SIGINT, signalHandler);
 		signal(SIGQUIT, signalHandler);
+		signal(SIGPIPE, SIG_IGN);
 		createSocket();
 		bindSocket();
 		listenSocket();

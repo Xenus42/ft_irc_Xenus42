@@ -15,11 +15,8 @@ void Server::createSocket()
 		throw std::runtime_error(std::string("socket: ") + std::strerror(errno));
 	}
 
-	int flags = fcntl(_listenFd, F_GETFL, 0);
-	if (flags < 0 || fcntl(_listenFd, F_SETFL, flags | O_NONBLOCK) < 0)
-	{
+	if (fcntl(_listenFd, F_SETFL, O_NONBLOCK) < 0)
 		throw std::runtime_error(std::string("fcntl: ") + std::strerror(errno));
-	}
 
 	opt = 1;
 	if (setsockopt(_listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
@@ -162,16 +159,18 @@ void Server::acceptClient()
 
 	len = sizeof(clientAddr);
 	clientFd = accept(_listenFd, (sockaddr *)&clientAddr, &len);
+	
 	if (clientFd < 0)
 	{
 		std::cerr << "[ERROR] accept: " << std::strerror(errno) << std::endl;
 		return ;
 	}
 
-	int flags = fcntl(_listenFd, F_GETFL, 0);
-	if (flags < 0 || fcntl(_listenFd, F_SETFL, flags | O_NONBLOCK) < 0)
+	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
 	{
-		throw std::runtime_error(std::string("fcntl: ") + std::strerror(errno));
+		std::cerr << "[ERROR] fcntl: " << std::strerror(errno) << std::endl;
+		close(clientFd);
+		return ;
 	}
 
 	addClient(clientFd, clientAddr);
