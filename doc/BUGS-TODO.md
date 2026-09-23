@@ -79,9 +79,10 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 
 ## P2 — Nettoyage
 
-- [ ] **[P2] `isalpha`/`isalnum`/`isdigit` avec un `char` signé** — `Nick.cpp:9,22` et `Utils.cpp:13` :
+- [x] **[P2] `isalpha`/`isalnum`/`isdigit` avec un `char` signé** — `Nick.cpp:9,22` et `Utils.cpp:13` :
       UB pour les octets > 127. Il faut caster en `unsigned char`, comme c'est correctement fait
       dans `Mode.cpp:121` et `Parsing_Utils.cpp:32`.
+      **fixé** : `Nick.cpp` castait déjà, `Utils.cpp:isNumeric` caste maintenant aussi.
 
 - [x] **[P2] Mode debug `--parse-test` dans `main.cpp:27-140`** — ~115 lignes de tests en dur à supprimer.
       **fixé** : bloc supprimé.
