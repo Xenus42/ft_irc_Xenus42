@@ -118,10 +118,7 @@ void Client::setRealName(const std::string &realName)
 {
 	_realname = realName;
 }
-void Client::setPassword(const std::string &password)
-{
-	_password = password;
-}
+
 
 // ************************************************************************** //
 //                              Buffer

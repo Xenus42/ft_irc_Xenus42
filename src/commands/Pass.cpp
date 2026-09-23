@@ -16,9 +16,21 @@ static bool	isValidPassword(const std::string &password)
 void	handlePass(Server &server, Client *client,
 		const std::vector<std::string> &params)
 {
+	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
+
+	if (params.empty())
+	{
+		reply(client, ":ircserv 461 " + nick + " PASS :Not enough parameters");
+		return;
+	}
+	if (client->isRegistered())
+	{
+		reply(client, ":ircserv 462 " + nick + " :You may not reregister");
+		return;
+	}
 	if (isValidPassword(server.getPassword()) == false)
 	{
-		reply(client, ":ircserv 464 :Password incorrect");
+		reply(client, ":ircserv 464 " + nick + " :Password incorrect");
 		return ;
 	}
 
@@ -32,6 +44,7 @@ void	handlePass(Server &server, Client *client,
 	}
 	else
 	{
-		reply(client, ":ircserv 464 :Password incorrect");
+		reply(client, ":ircserv 464 " + nick + " :Password incorrect");
+		client->setAuthenticated(false);
 	}
 }
