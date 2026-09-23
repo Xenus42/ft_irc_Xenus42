@@ -50,3 +50,16 @@ std::string toIrcUpper(const std::string &str)
 	}
 	return (result);
 }
+
+bool isValidPassword(const std::string &password)
+{
+    if (password.empty() || password.size() > 255)
+        return (false);
+    if (password.find(' ') != std::string::npos)
+        return (false);
+    if (password.find('\r') != std::string::npos)
+        return (false);
+    if (password.find('\n') != std::string::npos)
+        return (false);
+    return (true);
+}
