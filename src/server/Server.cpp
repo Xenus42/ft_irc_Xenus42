@@ -1,12 +1,5 @@
 #include "Server.hpp"
 
-Server *Server::_instance = NULL;
-
-Server *Server::getInstance()
-{
-	return (_instance);
-}
-
 // ************************************************************************** //
 //                             Orthodox Canonical Form
 // ************************************************************************** //
@@ -22,7 +15,6 @@ Server::Server(int port, std::string password) : _port(port),
 	_clientsByFd(), _clientsByNick()
 {
 	std::memset(&_address, 0, sizeof(_address));
-	_instance = this;
 }
 
 Server::Server(const Server &other) : _port(other._port),

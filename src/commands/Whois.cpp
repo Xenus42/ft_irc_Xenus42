@@ -25,10 +25,10 @@ void	handleWhois(Server &server, Client *client,
 
 	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 	if (!client->isAuthenticated())
-		return (reply(client, ":ircserv 451 " + nick
+		return (server.sendMessage(client, ":ircserv 451 " + nick
 				+ " :You have not registered"));
 	if (params.empty())
-		return (reply(client, ":ircserv 431 " + nick + " :No nickname given"));
+		return (server.sendMessage(client, ":ircserv 431 " + nick + " :No nickname given"));
 	const std::vector<std::string> targetNicks = splitComma(params[0]);
 	for (std::vector<std::string>::size_type i = 0; i < targetNicks.size(); ++i)
 	{
@@ -37,19 +37,19 @@ void	handleWhois(Server &server, Client *client,
 		target = server.getClientByNick(targetNick);
 		if (target == NULL)
 		{
-			reply(client, ":ircserv 401 " + nick + " " + targetNick
+			server.sendMessage(client, ":ircserv 401 " + nick + " " + targetNick
 				+ " :No such nick/channel");
 			continue ;
 		}
 		// format 311 : <nick> <user> <host> * :<realname>
-		reply(client, ":ircserv 311 " + nick + " " + targetNick + " "
+		server.sendMessage(client, ":ircserv 311 " + nick + " " + targetNick + " "
 			+ target->getUsername() + " " + target->getHostname() + " * :"
 			+ target->getUsername());
 		// format 312 : <nick> <server> :<info>
-		reply(client, ":ircserv 312 " + nick + " " + targetNick
+		server.sendMessage(client, ":ircserv 312 " + nick + " " + targetNick
 			+ " ircserv :ft_irc server");
 	}
 	// une seule ligne 318 de fin, apres tous les pseudos demandes
-	reply(client, ":ircserv 318 " + nick + " " + params[0]
+	server.sendMessage(client, ":ircserv 318 " + nick + " " + params[0]
 		+ " :End of WHOIS list");
 }

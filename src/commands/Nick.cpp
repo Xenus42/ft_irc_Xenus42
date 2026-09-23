@@ -34,7 +34,7 @@ void	handleNick(Server &server, Client *client,
 
 	if (params.empty())
 	{
-		reply(client, ":ircserv 431 " + target + " :No nickname given");
+		server.sendMessage(client, ":ircserv 431 " + target + " :No nickname given");
 		return ;
 	}
 
@@ -42,7 +42,7 @@ void	handleNick(Server &server, Client *client,
 
 	if (!isValidNickname(nick))
 	{
-		reply(client, ":ircserv 432 " + target + " " + nick
+		server.sendMessage(client, ":ircserv 432 " + target + " " + nick
 			+ " :Erroneous nickname");
 		return ;
 	}
@@ -54,7 +54,7 @@ void	handleNick(Server &server, Client *client,
 
 	if (existing)
 	{
-		reply(client, ":ircserv 433 " + target + " " + nick
+		server.sendMessage(client, ":ircserv 433 " + target + " " + nick
 			+ " :Nickname is already in use");
 		return ;
 	}

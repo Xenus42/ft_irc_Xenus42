@@ -6,7 +6,7 @@
 /*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/08 17:00:48 by williamguer       #+#    #+#             */
-/*   Updated: 2026/09/20 18:07:33 by willda-s         ###   ########.fr       */
+/*   Updated: 2026/09/23 20:44:16 by willda-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,14 +189,12 @@ bool Channel::isEmpty() const
 // ---- Diffusion ----
 void Channel::broadcast(Server &server, const std::string &message, Client *exclude)
 {
-    std::string full = message + "\r\n";
-
     std::map<Client*, int>::const_iterator it;
     for (it = _status.begin(); it != _status.end(); ++it)
     {
         if (it->first == exclude)
             continue;
-        server.sendMessage(it->first, full);
+        server.sendMessage(it->first, message);
     }
 }
 

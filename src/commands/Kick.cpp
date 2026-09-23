@@ -23,16 +23,16 @@ void handleKick(Server &server, Client *client, const std::vector<std::string> &
 	const std::string nick = client->getNickname();
 
 	if (params.size() < 2)
-		return reply(client, ":ircserv 461 " + nick + " KICK :Not enough parameters");
+		return server.sendMessage(client, ":ircserv 461 " + nick + " KICK :Not enough parameters");
 	const std::string channelName = params[0];
 	const std::string reason = (params.size() > 2) ? params[2] : "No reason given";
 	Channel *channel = server.getChannel(channelName);
 	if (channel == NULL)
-		return reply(client, ":ircserv 403 " + nick + " " + channelName + " :No such channel");
+		return server.sendMessage(client, ":ircserv 403 " + nick + " " + channelName + " :No such channel");
 	if (!channel->isMember(client))
-		return reply(client, ":ircserv 442 " + nick + " " + channelName + " :You're not on that channel");
+		return server.sendMessage(client, ":ircserv 442 " + nick + " " + channelName + " :You're not on that channel");
 	if (!channel->isOperator(client))
-		return reply(client, ":ircserv 482 " + nick + " " + channelName + " :You're not channel operator");
+		return server.sendMessage(client, ":ircserv 482 " + nick + " " + channelName + " :You're not channel operator");
 
 	const std::vector<std::string> targets = splitComma(params[1]);
 	for (std::vector<std::string>::size_type i = 0; i < targets.size(); ++i)
@@ -42,12 +42,12 @@ void handleKick(Server &server, Client *client, const std::vector<std::string> &
 
 		if (targetClient == NULL)
 		{
-			reply(client, ":ircserv 401 " + nick + " " + targetNick + " :No such nick/channel");
+			server.sendMessage(client, ":ircserv 401 " + nick + " " + targetNick + " :No such nick/channel");
 			continue ;
 		}
 		if (!channel->isMember(targetClient))
 		{
-			reply(client, ":ircserv 441 " + nick + " " + targetNick + " " + channelName + " :They aren't on that channel");
+			server.sendMessage(client, ":ircserv 441 " + nick + " " + targetNick + " " + channelName + " :They aren't on that channel");
 			continue ;
 		}
 		channel->broadcast(server, ":" + nick + "!" + client->getUsername() + "@" + client->getHostname() + " KICK " + channelName + " " + targetNick + " :" + reason);

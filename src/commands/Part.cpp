@@ -27,10 +27,10 @@ void	handlePart(Server &server, Client *client,
 
 	const std::string nick = client->getNickname();
 	if (!client->isRegistered())
-		return (reply(client, ":ircserv 451 " + nick
+		return (server.sendMessage(client, ":ircserv 451 " + nick
 				+ " :You have not registered"));
 	if (params.empty())
-		return (reply(client, ":ircserv 461 " + nick
+		return (server.sendMessage(client, ":ircserv 461 " + nick
 				+ " PART :Not enough parameters"));
 	const std::string reason = (params.size() > 1) ? params[1] : "";
 	const std::vector<std::string> names = splitComma(params[0]);
@@ -40,13 +40,13 @@ void	handlePart(Server &server, Client *client,
 		channel = server.getChannel(name);
 		if (channel == NULL)
 		{
-			reply(client, ":ircserv 403 " + nick + " " + name
+			server.sendMessage(client, ":ircserv 403 " + nick + " " + name
 				+ " :No such channel");
 			continue ;
 		}
 		if (!channel->isMember(client))
 		{
-			reply(client, ":ircserv 442 " + nick + " " + name
+			server.sendMessage(client, ":ircserv 442 " + nick + " " + name
 				+ " :You're not on that channel");
 			continue ;
 		}

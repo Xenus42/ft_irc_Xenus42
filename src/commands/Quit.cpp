@@ -17,7 +17,7 @@ void	handleQuit(Server &server, Client *client,
 		if (it->second->isMember(client))
 			it->second->broadcast(server, msg, client);
 	}
-	reply(client, "ERROR :Closing Link: " + client->getNickname() + " ("
+	server.sendMessage(client, "ERROR :Closing Link: " + client->getNickname() + " ("
 		+ reason + ")");
 	server.disconnectClient(client);
 }

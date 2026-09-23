@@ -52,6 +52,6 @@ void	handleNotice(Server &server, Client *client,
 		dest = server.getClientByNick(target);
 		if (dest == NULL)
 			continue ;
-		reply(dest, ":" + prefix + " NOTICE " + target + " :" + message);
+		server.sendMessage(dest, ":" + prefix + " NOTICE " + target + " :" + message);
 	}
 }

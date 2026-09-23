@@ -6,16 +6,6 @@
 // TODEL:
 #include <iostream>
 
-void	reply(Client *client, const std::string &line)
-{
-	Server	*serv;
-
-	serv = Server::getInstance();
-	if (!serv)
-		return ;
-	serv->sendMessage(client, line + "\r\n");
-}
-
 // Decoupe une liste "a,b,c" en elements individuels.
 static std::vector<std::string> splitComma(const std::string &str)
 {
@@ -40,7 +30,7 @@ static void	joinOne(Server &server, Client *client, const std::string &nick,
 
 	if (name.empty() || name[0] != '#')
 	{
-		reply(client, ":ircserv 403 " + nick + " " + name
+		server.sendMessage(client, ":ircserv 403 " + nick + " " + name
 			+ " :No such channel");
 		return ;
 	}
@@ -57,20 +47,20 @@ static void	joinOne(Server &server, Client *client, const std::string &nick,
 	{
 		if (channel->hasMode(MODE_HAS_KEY) && key != channel->getKey())
 		{
-			reply(client, ":ircserv 475 " + nick + " " + name
+			server.sendMessage(client, ":ircserv 475 " + nick + " " + name
 				+ " :Cannot join channel (+k)");
 			return ;
 		}
 		if (channel->hasMode(MODE_INVITE_ONLY) && !channel->isInvited(client))
 		{
-			reply(client, ":ircserv 473 " + nick + " " + name
+			server.sendMessage(client, ":ircserv 473 " + nick + " " + name
 				+ " :Cannot join channel (+i)");
 			return ;
 		}
 		if (channel->hasMode(MODE_HAS_LIMIT)
 			&& static_cast<int>(channel->getClientCount()) >= channel->getUserLimit())
 		{
-			reply(client, ":ircserv 471 " + nick + " " + name
+			server.sendMessage(client, ":ircserv 471 " + nick + " " + name
 				+ " :Cannot join channel (+l)");
 			return ;
 		}
@@ -83,14 +73,14 @@ static void	joinOne(Server &server, Client *client, const std::string &nick,
 		+ client->getHostname();
 	channel->broadcast(server, ":" + prefix + " JOIN " + name);
 	if (!channel->getTopic().empty())
-		reply(client, ":ircserv 332 " + nick + " " + name + " :"
+		server.sendMessage(client, ":ircserv 332 " + nick + " " + name + " :"
 			+ channel->getTopic());
 	else
-		reply(client, ":ircserv 331 " + nick + " " + name
+		server.sendMessage(client, ":ircserv 331 " + nick + " " + name
 			+ " :No topic is set");
-	reply(client, ":ircserv 353 " + nick + " = " + name + " :"
+	server.sendMessage(client, ":ircserv 353 " + nick + " = " + name + " :"
 		+ channel->getMemberList());
-	reply(client, ":ircserv 366 " + nick + " " + name + " :End of /NAMES list");
+	server.sendMessage(client, ":ircserv 366 " + nick + " " + name + " :End of /NAMES list");
 }
 
 // —  JOIN <#channel>{,<#channel>} [key{,key}]
@@ -99,10 +89,10 @@ void	handleJoin(Server &server, Client *client,
 {
 	const std::string nick = client->getNickname();
 	if (!client->isRegistered())
-		return (reply(client, ":ircserv 451 " + nick
+		return (server.sendMessage(client, ":ircserv 451 " + nick
 				+ " :You have not registered"));
 	if (params.empty())
-		return (reply(client, ":ircserv 461 " + nick
+		return (server.sendMessage(client, ":ircserv 461 " + nick
 				+ " JOIN :Not enough parameters"));
 	const std::vector<std::string> names = splitComma(params[0]);
 	const std::vector<std::string> keys = (params.size() > 1) ? splitComma(params[1]) : std::vector<std::string>();

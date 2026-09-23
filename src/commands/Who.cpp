@@ -10,15 +10,15 @@ void	handleWho(Server &server, Client *client,
 
 	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 	if (!client->isAuthenticated())
-		return (reply(client, ":ircserv 451 " + nick
+		return (server.sendMessage(client, ":ircserv 451 " + nick
 				+ " :You have not registered"));
 	if (params.empty())
-		return (reply(client, ":ircserv 461 " + nick
+		return (server.sendMessage(client, ":ircserv 461 " + nick
 				+ " WHO :Not enough parameters"));
 	const std::string name = params[0];
 	channel = server.getChannel(name);
 	if (channel == NULL)
-		return (reply(client, ":ircserv 315 " + nick + " " + name
+		return (server.sendMessage(client, ":ircserv 315 " + nick + " " + name
 				+ " :End of WHO list"));
 	std::vector<Client *> members = channel->getMembers();
 	// une ligne 352 par membre du channel
@@ -26,10 +26,10 @@ void	handleWho(Server &server, Client *client,
 	{
 		member = members[i];
 		// format 352 : <chan> <user> <host> <server> <nick> <flags> :<hopcount> <realname>
-		reply(client, ":ircserv 352 " + nick + " " + name + " "
+		server.sendMessage(client, ":ircserv 352 " + nick + " " + name + " "
 			+ member->getUsername() + " " + member->getHostname() + " ircserv "
 			+ member->getNickname() + " H :0 " + member->getUsername());
 	}
 	// une seule ligne 315 de fin, apres toute la boucle
-	reply(client, ":ircserv 315 " + nick + " " + name + " :End of WHO list");
+	server.sendMessage(client, ":ircserv 315 " + nick + " " + name + " :End of WHO list");
 }
