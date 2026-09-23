@@ -93,10 +93,11 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 
 ## P1 — Commandes manquantes ou non branchées
 
-- [ ] **[P1] `PART` n'est pas branché.** [testé : aucune réponse]
+- [x] **[P1] `PART` n'est pas branché.** [testé : aucune réponse] **fixé**
       `handlePart` existe (`src/commands/Part.cpp`), est compilé, mais n'est **ni déclaré dans
       `include/Commands.hpp` ni appelé dans `Server::dispatchCommand`**
       (`src/server/ServerCommands.cpp:9-44`). C'est du code mort.
+      `PART` est maintenant déclaré et appelé dans `dispatchCommand`.
 
 - [ ] **[P1] `JOIN 0`** (quitter tous les channels) non géré.
 
@@ -105,25 +106,33 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 - [ ] **[P1] Pas de validation des noms de channel.** `JOIN` n'exige qu'un `#` initial et laisse
       passer espaces, virgules, `:` et caractères de contrôle. `MODE` accepte `#` **et** `&`,
       `JOIN` non → incohérent entre les deux.
+      **partiellement fixé** : les virgules ne posent plus problème (`splitComma` sépare la liste
+      avant), mais aucune validation de caractères de contrôle/espaces dans un nom individuel.
 
 ## P1 — Codes numériques
 
-- [ ] **[P1] `461` utilisé comme fourre-tout dans MODE.** [testé]
+- [x] **[P1] `461` utilisé comme fourre-tout dans MODE.** [testé] **fixé**
       `+l abc`, `+l 0`, `+l 99999999999` renvoient tous `461 Not enough parameters` alors que
       des paramètres sont bien présents. `+k` sur un channel déjà `+k` devrait renvoyer `467`.
+      `ApplyMode` valide maintenant que `+l` est numérique (461 sinon) et gère l'overflow ; `+k`
+      sur un channel déjà `+k` renvoie bien `467`.
 
 ## P2 — Robustesse et nettoyage
 
-- [ ] **[P2] `Channel::broadcast` appelle `::send()` en dur** (`Channel.cpp:200`) au lieu de passer
+- [x] **[P2] `Channel::broadcast` appelle `::send()` en dur** (`Channel.cpp:200`) au lieu de passer
       par le serveur — le commentaire ligne 190 le note déjà. Voir aussi le P0 serveur sur la
       valeur de retour de `send()`.
+      **fixé** : `Channel::broadcast` prend maintenant `Server&` et appelle `server.sendMessage()`.
 
-- [ ] **[P2] `reply()` déclaré dans `Channel.hpp:90` mais défini dans `Join.cpp:10`** — placement
+- [x] **[P2] `reply()` déclaré dans `Channel.hpp:90` mais défini dans `Join.cpp:10`** — placement
       incohérent (voir aussi le P0 serveur sur `Server serv;`).
+      **fixé** : la déclaration est maintenant dans `Commands.hpp`.
 
-- [ ] **[P2] `ApplyMode` n'est pas `static`** (`Mode.cpp:97`) — pollue l'espace de noms global.
+- [x] **[P2] `ApplyMode` n'est pas `static`** (`Mode.cpp:97`) — pollue l'espace de noms global.
+      **fixé** : `ApplyMode` est maintenant `static`.
 
-- [ ] **[P2] Indentation cassée dans `Topic.cpp:19-26`** (le `else` n'est pas aligné avec son `if`).
+- [x] **[P2] Indentation cassée dans `Topic.cpp:19-26`** (le `else` n'est pas aligné avec son `if`).
+      **fixé** (reformaté).
 
 ---
 
@@ -131,44 +140,55 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 
 ## P0 — Le serveur meurt (à corriger en premier)
 
-- [ ] **[P0] `PASS` sans paramètre → SIGABRT.** [testé, rc=-6]
+- [x] **[P0] `PASS` sans paramètre → SIGABRT.** [testé, rc=-6] **fixé**
       `src/commands/Pass.cpp:25` lit `params[0]` sans jamais tester `params.empty()`.
       Un client qui envoie `PASS\r\n` tue le serveur. → ajouter le garde `461 ERR_NEEDMOREPARAMS`.
+      Le garde `params.empty()` est en place.
 
-- [ ] **[P0] Déconnexion d'un client seul dans ≥ 2 channels → SIGSEGV.** [testé, rc=-11]
+- [x] **[P0] Déconnexion d'un client seul dans ≥ 2 channels → SIGSEGV.** [testé, rc=-11] **fixé**
       `src/server/ServerClients.cpp:50-61` : `removeClientFromChannels()` itère sur `_channels`
       et appelle `removeChannel()` qui fait `_channels.erase(it)` → itérateur invalidé, puis `++it`.
       Se déclenche aussi bien sur `QUIT` que sur une fermeture brutale de socket.
       → collecter les noms à supprimer dans un `std::vector<std::string>`, supprimer après la boucle
       (ou `_channels.erase(it++)`).
+      `++it` se fait bien avant `removeChannel()`, plus d'invalidation.
 
 - [ ] **[P0] `QUIT` suivi d'une autre commande dans le même paquet TCP → use-after-free.** [testé, rc=-6]
       `handleQuit` (`src/commands/Quit.cpp:22`) appelle `disconnectClient()` qui fait `delete client`,
       puis `src/server/ServerNetwork.cpp:213` reboucle sur `client->extractLine(line)`.
       → faire remonter un booléen « client détruit » depuis `dispatchCommand` et sortir de la boucle,
       ou différer la destruction en fin de tour de `processPollEvents`.
+      **toujours présent** dans `ServerNetwork.cpp::receiveClient` : le `while (client->extractLine(line))`
+      ne vérifie pas si `client` a été détruit après `dispatchCommand`.
 
-- [ ] **[P0] `disconnectAllClients()` invalide son propre itérateur.**
+- [x] **[P0] `disconnectAllClients()` invalide son propre itérateur.** **fixé**
       `src/server/ServerClients.cpp:37-42` : `disconnectClient()` fait `_clientsByFd.erase()`.
       Même bug que le précédent, sur le chemin `shutdown()`.
       → `while (!_clientsByFd.empty()) disconnectClient(_clientsByFd.begin()->second);`
+      C'est exactement le pattern utilisé maintenant.
 
 ## P0 — Violations du sujet
 
-- [ ] **[P0] Les sockets sont bloquantes.** [testé : `/proc/<pid>/fdinfo` → `O_NONBLOCK=False` sur le fd
+- [x] **[P0] Les sockets sont bloquantes.** **fixé**
+      [testé : `/proc/<pid>/fdinfo` → `O_NONBLOCK=False` sur le fd
       d'écoute **et** sur les fds clients]
       Aucun `fcntl(fd, F_SETFL, O_NONBLOCK)` nulle part. Le sujet l'exige explicitement.
       → à poser dans `createSocket()` et dans `acceptClient()` juste après `accept()`.
+      `fcntl(..., O_NONBLOCK)` posé dans les deux.
 
-- [ ] **[P0] Un seul client qui ne lit pas fige le serveur entier.** [testé : après ~9 400 messages
+- [x] **[P0] Un seul client qui ne lit pas fige le serveur entier.** **fixé**
+      [testé : après ~9 400 messages
       diffusés vers un client passif, plus aucune nouvelle connexion n'est servie]
       Conséquence directe du point précédent + `send()` appelé en direct.
       « Your server must never block » — c'est le point le plus sanctionné en soutenance.
       → buffer de sortie par client + `POLLOUT` dans `_pollfds` quand ce buffer est non vide.
+      Buffer de sortie par client + `POLLOUT` implémentés (`sendClient`, `appendOutBuffer`).
 
 - [ ] **[P0] Valeur de retour de `send()` jamais vérifiée → envois partiels perdus.**
       `src/server/ServerCommunication.cpp:9` et `src/channel/Channel.cpp:200`.
       → même correctif que ci-dessus (file d'attente d'écriture).
+      **partiellement fixé** : `sendClient()` gère le cas `bytes > 0` (retire du buffer), mais le
+      comportement sur erreur/`EAGAIN` de `send()` côté sortie n'est pas totalement audité.
 
 - [ ] **[P0] Le mot de passe est contournable.** [testé] Sans aucun `PASS`, ou avec un `PASS` **faux**,
       on peut faire `JOIN`, `MODE`, `TOPIC`, `KICK`, `INVITE` :
@@ -177,22 +197,33 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
       MODE #secret +i                             →  :alice!a@a MODE #secret +i
       ```
       Ces handlers testent `isRegistered()` (nick+user+host non vides) mais jamais `isAuthenticated()`.
+      **toujours présent** : `JOIN`/`PART` ne testent que `isRegistered()`, et `MODE`/`TOPIC`/`KICK`/
+      `INVITE` ne testent toujours rien du tout.
 
-- [ ] **[P0] `SIGPIPE` non ignoré.** Pas de `signal(SIGPIPE, SIG_IGN)` ni de `MSG_NOSIGNAL` dans les
+- [x] **[P0] `SIGPIPE` non ignoré.** **fixé**
+      Pas de `signal(SIGPIPE, SIG_IGN)` ni de `MSG_NOSIGNAL` dans les
       `send()`. Écrire vers un socket que le pair vient de fermer tue le process.
+      `signal(SIGPIPE, SIG_IGN)` posé dans `Server::init()`.
 
-- [ ] **[P0] Pas de handler `SIGINT`.** [testé, rc=-2] Ctrl+C tue le serveur sans fermer les fds
+- [x] **[P0] Pas de handler `SIGINT`.** **fixé**
+      [testé, rc=-2] Ctrl+C tue le serveur sans fermer les fds
       ni libérer quoi que ce soit. → handler qui met `_running = false`, `poll()` sort sur `EINTR`.
+      `signalHandler` sur `SIGINT`/`SIGQUIT` positionne un flag vérifié dans `run()`.
 
 ## P0 — Fuites mémoire / ressources
 
-- [ ] **[P0] `~Server()` est vide** (`src/server/Server.cpp:44`). Aucun `delete` sur les `Client *` de
+- [x] **[P0] `~Server()` est vide** (`src/server/Server.cpp:44`). **fixé**
+      Aucun `delete` sur les `Client *` de
       `_clientsByFd` ni sur les `Channel *` de `_channels`. Tout fuit à l'arrêt.
+      `~Server()` appelle `shutdown()` qui fait `disconnectAllClients()` et vide `_channels`.
 
-- [ ] **[P0] `_listenFd` n'est jamais fermé.** `Server::shutdown()` (`Server.cpp:87-91`) met
+- [x] **[P0] `_listenFd` n'est jamais fermé.** **fixé**
+      `Server::shutdown()` (`Server.cpp:87-91`) met
       `_listenFd = -1` sans `close()`.
+      `shutdown()` appelle maintenant `close(_listenFd)` avant de le mettre à `-1`.
 
-- [ ] **[P0] Buffer d'entrée sans limite.** [testé : 5 Mo envoyés sans un seul `\r\n`, tout est accumulé]
+- [x] **[P0] Buffer d'entrée sans limite.** **fixé** (voir section Parsing, `MAX_LINE_LENGTH`)
+      [testé : 5 Mo envoyés sans un seul `\r\n`, tout est accumulé]
       `Client::appendBuffer` grossit indéfiniment → un client peut faire exploser la RAM.
       → couper à 512 octets (RFC 1459) et déconnecter au-delà.
 
@@ -241,18 +272,20 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 
 ## P1 — Enregistrement et authentification
 
-- [ ] **[P1] `PASS` après enregistrement → `464`, devrait être `462 ERR_ALREADYREGISTRED`.** [testé]
+- [x] **[P1] `PASS` après enregistrement → `464`, devrait être `462 ERR_ALREADYREGISTRED`.** [testé] **fixé**
 
 - [ ] **[P1] `USER` envoyé une 2ᵉ fois est accepté et renvoie un second welcome.** [testé]
       Devrait être `462`. Permet d'écraser username/hostname après coup.
 
-- [ ] **[P1] `NICK` vers son propre nick actuel → `432 already in use`.** [testé]
+- [x] **[P1] `NICK` vers son propre nick actuel → `432 already in use`.** [testé] **fixé**
       Devrait être un no-op silencieux.
 
 - [ ] **[P1] `handlePass` valide le mot de passe *du serveur*, pas celui du client.**
       `src/commands/Pass.cpp:19` : `isValidPassword(server.getPassword())`. Si le mot de passe
       du serveur contient un espace ou dépasse 255 caractères, **tous** les clients sont
       rejetés en 464. La validation devrait porter sur `params[0]`.
+      **toujours présent** : le crash (`params.empty()`) et le format (`462`/`464 *`) sont fixés,
+      mais la validation cible toujours `server.getPassword()` et non `params[0]`.
 
 - [ ] **[P1] `004` incomplet.** `:ircserv 004 nick ircserv 1.0 io` n'annonce pas les modes de channel
       supportés (`itkol`). Pas de `005 ISUPPORT` non plus (`ServerCommunication.cpp:28` le note déjà).
@@ -269,6 +302,7 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 
   → une seule règle : tout sauf `PASS`/`NICK`/`USER`/`CAP`/`QUIT` doit exiger
   `isAuthenticated() && isRegistered()`, idéalement via un garde unique dans `dispatchCommand`.
+  **toujours présent**, table de vérification identique observée sur le code actuel.
 
 - [ ] **[P1] `isRegistered()` dépend de `_hostname`** (`src/client/Client.cpp:95`), qui est rempli
       avec le 2ᵉ paramètre de `USER` — donc une valeur fournie par le client, jamais vérifiée.
@@ -278,22 +312,29 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
 
 ## P2 — Robustesse
 
-- [ ] **[P2] `processPollEvents` ignore `POLLERR`, `POLLHUP` et `POLLNVAL`.**
+- [x] **[P2] `processPollEvents` ignore `POLLERR`, `POLLHUP` et `POLLNVAL`.** **fixé**
       `src/server/ServerNetwork.cpp:126-150` — la version qui les gérait est commentée juste
       au-dessus (lignes 64-124). Un fd en erreur garde son `revents` positionné, `poll()` rend
       la main immédiatement, la boucle ne fait rien → **100 % CPU indéfiniment**.
+      `processPollEvents` gère maintenant `POLLNVAL`/`POLLERR`/`POLLHUP` explicitement.
 
-- [ ] **[P2] `recv() < 0` ne déconnecte pas le client.** `ServerNetwork.cpp:192-196` se contente
+- [x] **[P2] `recv() < 0` ne déconnecte pas le client.** **fixé**
+      `ServerNetwork.cpp:192-196` se contente
       d'un `return`. Combiné au point précédent → boucle infinie sur un fd cassé.
+      `receiveClient` déconnecte maintenant sur toute erreur autre que `EAGAIN`/`EWOULDBLOCK`.
 
-- [ ] **[P2] `Server::run()` appelle `processPollEvents()` même après une erreur de `poll()`**
+- [x] **[P2] `Server::run()` appelle `processPollEvents()` même après une erreur de `poll()`** **fixé**
       (`Server.cpp:74-81`), donc sur des `revents` périmés. Il manque un `continue`/`break`.
+      `run()` fait `break` sur erreur `poll()` (hors `EINTR`), et n'appelle `processPollEvents()`
+      que si `result > 0`.
 
-- [ ] **[P2] `Server::sendMessage` ne teste pas `client != NULL`** (`ServerCommunication.cpp:9`).
+- [x] **[P2] `Server::sendMessage` ne teste pas `client != NULL`** (`ServerCommunication.cpp:9`). **fixé**
+      `sendMessage` fait `if (!client) return;` en première ligne.
 
-- [ ] **[P2] Constructeur de copie et `operator=` de `Server`** copient des pointeurs bruts
+- [x] **[P2] Constructeur de copie et `operator=` de `Server`** copient des pointeurs bruts
       (`_clientsByFd`) → double-free potentiel — **et oublient `_channels`** (`Server.cpp:20-42`).
-      → les rendre privés et non définis.
+      → les rendre privés et non définis. **fixé**
+      Les deux sont maintenant `private` dans `Server.hpp`.
 
 ## P2 — Nettoyage avant soutenance
 
@@ -319,6 +360,8 @@ Chaque entrée garde sa priorité : **[P0]** = bloquant (crash / violation du su
       `.PHONY` oublie `clean-all` et `fclean-all`.
 
 - [ ] **[P2] Headers 42 absents** sur tous les fichiers sauf `Channel.hpp` et `Channel.cpp`.
+      **partiellement fait** : quelques fichiers (`ServerClients.cpp`, `List.cpp`,
+      `Parsing_Utils.cpp`...) en ont maintenant, mais ce n'est pas systématique.
 
 ---
 
