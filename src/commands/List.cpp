@@ -8,9 +8,6 @@ void	handleList(Server &server, Client *client,
 		const std::vector<std::string> &params)
 {
 	const std::string nick = client->getNickname();
-	if (!client->isAuthenticated())
-		return (reply(client, ":ircserv 451 " + nick
-				+ " :You have not registered"));
 	reply(client, ":ircserv 321 " + nick + " Channel :Users  Name");
 	const std::map<std::string, Channel *> &channels = server.getChannels();
 	std::map<std::string, Channel *>::const_iterator it;

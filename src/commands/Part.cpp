@@ -11,9 +11,6 @@ void handlePart(Server &server, Client *client,
 {
     const std::string nick = client->getNickname();
 
-    if (!client->isRegistered())
-        return reply(client, ":ircserv 451 " + nick + " :You have not registered");
-
     if (params.empty())
         return reply(client, ":ircserv 461 " + nick + " PART :Not enough parameters");
 

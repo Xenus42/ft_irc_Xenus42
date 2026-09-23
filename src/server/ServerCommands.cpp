@@ -49,6 +49,6 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleCap(*this, client, cmd.params);
 	else
 	{
-		std::cout << "[SERVER] Unknown command: " << cmd.name << std::endl;
+		sendMessage(client, ":ircserv 421 " + client->getNickname() + " " + cmd.name + " :Unknown command\r\n");
 	}
 }
