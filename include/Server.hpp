@@ -65,13 +65,14 @@ class Server
 
 	// === Client lifecycle ===
 	void addClient(int fd, const sockaddr_in &address);
-	void disconnectClient(Client *client);
+	void disconnectClient(Client *client, const std::string &reason);
 	void disconnectAllClients();
 
 	// === Client Identity ===
 	void changeNickname(Client *client, const std::string &newNick);
 	Client *getClientByNick(const std::string &nick);
 	void removeClientFromChannels(Client *client);
+	void broadcastQuit(Client *client, const std::string &reason);
 
 	// === Client Indexes ===
 	void addClientByFd(Client *client);

@@ -78,7 +78,7 @@ void Server::processPollEvents()
 				_running = false;
 				return ;
 			}
-			disconnectClient(getClientByFd(fd));
+			disconnectClient(getClientByFd(fd), "Connection closed");
 			continue ;
 		}
 
@@ -90,7 +90,7 @@ void Server::processPollEvents()
 				_running = false;
 				return ;
 			}
-			disconnectClient(getClientByFd(fd));
+			disconnectClient(getClientByFd(fd), "Connection error");
 			continue ;
 		}
 
@@ -104,8 +104,9 @@ void Server::processPollEvents()
 			continue ;
 		}
 
-		// Read client data
-		if (revents & POLLIN)
+		// Read client data (ignored once the client has sent QUIT)
+		Client *client = getClientByFd(fd);
+		if ((revents & POLLIN) && client && !client->isClosing())
 		{
 			receiveClient(fd);
 
@@ -127,7 +128,7 @@ void Server::processPollEvents()
 		// Connection closed
 		if (revents & POLLHUP)
 		{
-			disconnectClient(getClientByFd(fd));
+			disconnectClient(getClientByFd(fd), "Connection closed");
 			continue ;
 		}
 
@@ -190,13 +191,13 @@ void Server::receiveClient(int fd)
 		std::cerr << "[ERROR] recv: "
 			<< std::strerror(errno) << std::endl;
 
-		disconnectClient(getClientByFd(fd));
+		disconnectClient(getClientByFd(fd), "Read error");
 		return ;
 	}
 
 	if (bytes == 0)
 	{
-		disconnectClient(getClientByFd(fd));
+		disconnectClient(getClientByFd(fd), "Connection closed");
 		return ;
 	}
 
@@ -217,7 +218,8 @@ void Server::receiveClient(int fd)
 			if (cmd.name.empty())
 				continue;
 			dispatchCommand(client, cmd);
-			if (getClientByFd(fd) == NULL)
+			// QUIT: ignore the rest of the buffer, sendClient() disconnects
+			if (client->isClosing())
 				return;
 		}
 		catch (const std::exception &e)

@@ -23,6 +23,7 @@ class Client
         const std::string   &getInBuffer() const;
         std::string         &getOutBuffer();
         bool                isAuthenticated() const;
+        bool                isClosing() const;
 
         // === Setters ===
         void setNickname(const std::string &nickname);
@@ -31,6 +32,7 @@ class Client
         void setAuthenticated(bool value);
         void setServerName(const std::string &servername);
         void setRealName(const std::string &realname);
+        void markClosing();
 
         // === Buffer ===
         void appendInBuffer(const char *data, size_t len);
@@ -56,6 +58,7 @@ class Client
         std::string     _inBuffer;
         std::string     _outBuffer;
         bool            _authenticated;
+        bool            _closing;
 };
 
 #endif

@@ -12,6 +12,7 @@
 
 #include "Server.hpp"
 #include "Utils.hpp"
+#include <set>
 
 // ************************************************************************** //
 //                                  Client lifecycle
@@ -27,13 +28,14 @@ void Server::addClient(int fd, const sockaddr_in &address)
 	std::cout << "[SERVER] Client " << fd << " connected" << std::endl;
 }
 
-void Server::disconnectClient(Client *client)
+void Server::disconnectClient(Client *client, const std::string &reason)
 {
 	int		fd;
 
 	if (!client)
 		return ;
 	fd = client->getFd();
+	broadcastQuit(client, reason);
 	removeClientFromChannels(client);
 	removeClientByNick(client);
 	removeClientByFd(client);
@@ -50,7 +52,7 @@ void Server::disconnectAllClients()
 	while (!_clientsByFd.empty())
 	{
 		client = _clientsByFd.begin()->second;
-		disconnectClient(client);
+		disconnectClient(client, "Server shutting down");
 	}
 }
 
@@ -81,6 +83,27 @@ void Server::removeClientFromChannels(Client *client)
 			}
 		}
 	}
+}
+
+// Sends QUIT once to every client sharing at least one channel with client.
+void Server::broadcastQuit(Client *client, const std::string &reason)
+{
+	std::set<Client *>	targets;
+
+	if (!client)
+		return ;
+	for (std::map<std::string, Channel *>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+	{
+		if (!it->second->isMember(client))
+			continue ;
+		std::vector<Client *> members = it->second->getMembers();
+		targets.insert(members.begin(), members.end());
+	}
+	targets.erase(client);
+	const std::string msg = ":" + client->getNickname() + "!" + client->getUsername()
+		+ "@" + client->getHostname() + " QUIT :" + reason;
+	for (std::set<Client *>::iterator it = targets.begin(); it != targets.end(); ++it)
+		sendMessage(*it, msg);
 }
 
 // ************************************************************************** //

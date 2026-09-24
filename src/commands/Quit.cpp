@@ -3,21 +3,17 @@
 #include "Server.hpp"
 
 // —  QUIT [:reason]
+// The client is only marked as closing: sendClient() disconnects it once
+// ERROR has been flushed, so the message actually reaches it.
 void	handleQuit(Server &server, Client *client,
 		const std::vector<std::string> &params)
 {
+	const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 	const std::string reason = params.empty() ? "Client Quit" : params[0];
-	const std::string prefix = client->getNickname() + "!"
-		+ client->getUsername() + "@" + client->getHostname();
-	const std::string msg = ":" + prefix + " QUIT :" + reason;
-	const std::map<std::string, Channel *> &channels = server.getChannels();
-	std::map<std::string, Channel *>::const_iterator it;
-	for (it = channels.begin(); it != channels.end(); ++it)
-	{
-		if (it->second->isMember(client))
-			it->second->broadcast(server, msg, client);
-	}
-	server.sendMessage(client, "ERROR :Closing Link: " + client->getNickname() + " ("
+
+	server.broadcastQuit(client, "Quit: " + reason);
+	server.removeClientFromChannels(client);
+	server.sendMessage(client, "ERROR :Closing Link: " + nick + " ("
 		+ reason + ")");
-	server.disconnectClient(client);
+	client->markClosing();
 }

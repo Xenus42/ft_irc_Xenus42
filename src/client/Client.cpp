@@ -5,20 +5,20 @@
 // ************************************************************************** //
 
 Client::Client() : _fd(-1), _address(), _nickname(""), _username(""),
-	_hostname(""), _inBuffer(""), _authenticated(false)
+	_hostname(""), _inBuffer(""), _authenticated(false), _closing(false)
 {
 }
 
 Client::Client(int fd, const sockaddr_in &address) : _fd(fd), _address(address),
 	_nickname(""), _username(""), _hostname(""), _inBuffer(""),
-	_authenticated(false)
+	_authenticated(false), _closing(false)
 {
 }
 
 Client::Client(const Client &other) : _fd(other._fd), _address(other._address),
 	_nickname(other._nickname), _username(other._username),
 	_hostname(other._hostname), _inBuffer(other._inBuffer),
-	_authenticated(other._authenticated)
+	_authenticated(other._authenticated), _closing(other._closing)
 {
 }
 
@@ -33,6 +33,7 @@ Client &Client::operator=(const Client &other)
 		_hostname = other._hostname;
 		_inBuffer = other._inBuffer;
 		_authenticated = other._authenticated;
+		_closing = other._closing;
 	}
 	return (*this);
 }
@@ -80,6 +81,11 @@ bool Client::isAuthenticated() const
 	return (_authenticated);
 }
 
+bool Client::isClosing() const
+{
+	return (_closing);
+}
+
 bool Client::isRegistered() const
 {
 	return (_authenticated && !_nickname.empty() && !_username.empty() && !_hostname.empty());
@@ -117,6 +123,11 @@ void Client::setServerName(const std::string &serverName)
 void Client::setRealName(const std::string &realName)
 {
 	_realname = realName;
+}
+
+void Client::markClosing()
+{
+	_closing = true;
 }
 
 

@@ -41,6 +41,9 @@ void Server::sendClient(int fd)
 
 		if (buffer.empty())
 		{
+			// QUIT: ERROR has been flushed, the connection can be closed
+			if (client->isClosing())
+				return (disconnectClient(client, "Client Quit"));
 			for (size_t i = 0; i < _pollfds.size(); ++i)
 			{
 				if (_pollfds[i].fd == fd)
@@ -52,7 +55,7 @@ void Server::sendClient(int fd)
 		}
 	}
 	else if (bytes < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
-		disconnectClient(client);
+		disconnectClient(client, "Write error");
 }
 
 void Server::sendWelcome(Client *client)
