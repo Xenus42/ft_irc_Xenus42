@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include <arpa/inet.h>
 
 // ************************************************************************** //
 //                             Orthodox Canonical Form
@@ -10,7 +11,7 @@ Client::Client() : _fd(-1), _address(), _nickname(""), _username(""),
 }
 
 Client::Client(int fd, const sockaddr_in &address) : _fd(fd), _address(address),
-	_nickname(""), _username(""), _hostname(""), _inBuffer(""),
+	_nickname(""), _username(""), _hostname(inet_ntoa(address.sin_addr)), _inBuffer(""),
 	_authenticated(false), _closing(false)
 {
 }

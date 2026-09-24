@@ -1,17 +1,17 @@
 // lib C++
-#include <cstdlib>  // atoi
-#include <iostream> // std::cout, std::cerr
-#include <map>      // std::map
-#include <set>      // std::set
-#include <sstream>  // std::stringstream
-#include <string>   // std::string
-#include <vector>   // std::vector
+#include <cstdlib>  
+#include <iostream>
+#include <map>      
+#include <set>      
+#include <sstream>  
+#include <string>   
+#include <vector>
 
 // lib POSIX / Reseau
-#include <errno.h>      // error
-#include <netinet/in.h> // sockaddr_in
-#include <poll.h>       // poll
-#include <signal.h>     // signal
+#include <errno.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <signal.h>
 
 // include
 #include "Client.hpp"
@@ -21,11 +21,8 @@
 
 int	main(int ac, char **av)
 {
-	Parsing	parser;
-
 	if (ac != 3 || !isValidPort(av[1]) || !isValidPassword(av[2]))
 	{
-		// TODO: specify error type
 		std::cerr << "Error: bad arguments" << std::endl;
 		return (EXIT_FAILURE);
 	}

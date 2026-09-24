@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-// TODEL: del Class Server ??
 class	Server;
 class	Client;
 

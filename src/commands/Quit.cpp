@@ -2,9 +2,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
 
-// —  QUIT [:reason]
-// The client is only marked as closing: sendClient() disconnects it once
-// ERROR has been flushed, so the message actually reaches it.
 void	handleQuit(Server &server, Client *client,
 		const std::vector<std::string> &params)
 {

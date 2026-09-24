@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ServerClients.cpp                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/23 17:47:41 by lebroue           #+#    #+#             */
-/*   Updated: 2026/09/24 15:52:12 by willda-s         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "Server.hpp"
 #include "Utils.hpp"
 #include <set>
@@ -85,7 +73,6 @@ void Server::removeClientFromChannels(Client *client)
 	}
 }
 
-// Sends QUIT once to every client sharing at least one channel with client.
 void Server::broadcastQuit(Client *client, const std::string &reason)
 {
 	std::set<Client *>	targets;

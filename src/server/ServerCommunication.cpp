@@ -41,7 +41,6 @@ void Server::sendClient(int fd)
 
 		if (buffer.empty())
 		{
-			// QUIT: ERROR has been flushed, the connection can be closed
 			if (client->isClosing())
 				return (disconnectClient(client, "Client Quit"));
 			for (size_t i = 0; i < _pollfds.size(); ++i)
@@ -74,7 +73,6 @@ void Server::sendWelcome(Client *client)
         ":ircserv 003 " + nick +
         " :This server was created today");
 
-	// TODO: check message excepted
     sendMessage(client,
         ":ircserv 004 " + nick +
         " ircserv 1.0 io");

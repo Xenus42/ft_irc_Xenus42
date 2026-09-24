@@ -75,7 +75,6 @@ void handleUser(Server &server, Client *client, const std::vector<std::string> &
         return;
     }
     client->setUsername(username);
-    client->setHostname(hostname);
     client->setServerName(servername);
     client->setRealName(realname);
 

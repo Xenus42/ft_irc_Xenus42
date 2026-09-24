@@ -218,7 +218,6 @@ void Server::receiveClient(int fd)
 			if (cmd.name.empty())
 				continue;
 			dispatchCommand(client, cmd);
-			// QUIT: ignore the rest of the buffer, sendClient() disconnects
 			if (client->isClosing())
 				return;
 		}

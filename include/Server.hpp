@@ -14,7 +14,6 @@
 #include <unistd.h>
 #include <vector>
 
-// TODEL:
 #include "Channel.hpp"
 #include "Commands.hpp"
 
