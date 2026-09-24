@@ -17,7 +17,6 @@
 #include "Client.hpp"
 #include "Parsing.hpp"
 #include "Server.hpp"
-#include "Tmp_Log.hpp"
 #include "Utils.hpp"
 
 int	main(int ac, char **av)
