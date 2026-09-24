@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMMANDS_HPP
+#define COMMANDS_HPP
 
 #include "Client.hpp"
 #include "Server.hpp"
@@ -43,3 +44,5 @@ void	handleCap(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handleList(Server &server, Client *client,
 			const std::vector<std::string> &params);
+
+#endif

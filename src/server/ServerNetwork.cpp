@@ -214,6 +214,8 @@ void Server::receiveClient(int fd)
 		try
 		{
 			Parsing::Command cmd = _parser.parse(line);
+			if (cmd.name.empty())
+				continue;
 			dispatchCommand(client, cmd);
 			if (getClientByFd(fd) == NULL)
 				return;

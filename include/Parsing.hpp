@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PARSING_HPP
+#define PARSING_HPP
 
 #include <stdexcept>
 #include <string>
@@ -36,3 +37,5 @@ class Parsing
 	std::vector<std::string> splitAndPutSimpleWordsIntoArray(const std::string &input) const;
 	std::vector<std::string> splitCommandAndArgsToArray(const std::string &input) const;
 };
+
+#endif

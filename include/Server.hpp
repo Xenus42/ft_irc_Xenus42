@@ -1,8 +1,8 @@
-#pragma once
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
 #include "Client.hpp"
 #include "Parsing.hpp"
-#include "Tmp_Log.hpp"
 #include <cerrno>
 #include <cstring>
 #include <iostream>
@@ -120,18 +120,6 @@ class Server
 	void sendWelcome(Client *client);
 	void sendClient(int fd);
 
-	// **************************************************************************
-		//
-	//                                  Server Utils
-	// **************************************************************************
-		//
-
-	// === Print ===
-	void printPollfds() const;
-	void printClientsByFd() const;
-	void printServerStatus() const;
-	void printChannels() const;
-
   private:
 	int _port;
 	std::string _password;
@@ -148,3 +136,5 @@ class Server
 	std::map<std::string, Client *> _clientsByNick;
 	std::map<std::string, Channel *> _channels;
 };
+
+#endif

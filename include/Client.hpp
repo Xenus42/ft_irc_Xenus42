@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
 
 #include "Server.hpp"
 #include <string>
@@ -30,7 +31,6 @@ class Client
         void setAuthenticated(bool value);
         void setServerName(const std::string &servername);
         void setRealName(const std::string &realname);
-        void setPassword(const std::string &password);
 
         // === Buffer ===
         void appendInBuffer(const char *data, size_t len);
@@ -40,7 +40,6 @@ class Client
 
         // === Registration ===
         bool isRegistered() const;
-        bool hasPassword() const;
 
 		friend class Server;
 
@@ -58,3 +57,5 @@ class Client
         std::string     _outBuffer;
         bool            _authenticated;
 };
+
+#endif

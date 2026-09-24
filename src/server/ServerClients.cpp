@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerClients.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
+/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 17:47:41 by lebroue           #+#    #+#             */
-/*   Updated: 2026/09/23 19:39:34 by lebroue          ###   ########.fr       */
+/*   Updated: 2026/09/24 15:52:12 by willda-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ void Server::addClient(int fd, const sockaddr_in &address)
 void Server::disconnectClient(Client *client)
 {
 	int		fd;
-	delete	client;
 
 	if (!client)
 		return ;
@@ -40,7 +39,8 @@ void Server::disconnectClient(Client *client)
 	removeClientByFd(client);
 	removePollfd(fd);
 	close(fd);
-	printLog("SERVER", "Client disconnected and cleaned up");
+	delete	client;
+	std::cout << "[SERVER] Client disconnected and cleaned up" << std::endl;
 }
 
 void Server::disconnectAllClients()

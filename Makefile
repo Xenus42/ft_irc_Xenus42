@@ -8,8 +8,8 @@ vpath %.i include
 #					FILES						 #
 #------------------------------------------------#
 NAME		= ircserv
-INCLUDES	= Server.hpp Client.hpp Tmp_Log.hpp Utils.hpp Channel.hpp Commands.hpp
-SRC_FILES	= main Client Tmp_Log Utils Channel Join Part Parsing Parsing_Utils Topic Pass Nick User Mode Server ServerChannels ServerClients ServerCommunication ServerNetwork ServerUtils ServerCommands Invite Privmsg Kick Notice Who Whois List Ping Quit Cap
+INCLUDES	= Server.hpp Client.hpp Utils.hpp Channel.hpp Commands.hpp
+SRC_FILES	= main Client Utils Channel Join Part Parsing Parsing_Utils Topic Pass Nick User Mode Server ServerChannels ServerClients ServerCommunication ServerNetwork ServerCommands Invite Privmsg Kick Notice Who Whois List Ping Quit Cap
 
 #------------------------------------------------#
 #					DIRECTORY					 #
@@ -34,7 +34,7 @@ RM			= rm -rf
 #------------------------------------------------#
 #					FLAGS						 #
 #------------------------------------------------#
-IFLAGS		= -Iinclude 
+IFLAGS		= -Iinclude
 CFLAGS		= -Wall -Wextra -Werror
 CPPFLAGS	= -MMD -MP $(IFLAGS)
 MAKEFLAGS	+= --no-print-directory
@@ -46,7 +46,7 @@ all: $(NAME)
 
 $(NAME): $(OBJ)
 	@echo "\n$(MAGENTA)$(BOLD)💻 Compiling executable...$(RESET)"
-	@$(CC) $(CFLAGS) $(OBJ) -o $(NAME) 
+	@$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
 	@echo "$(GREEN)$(BOLD)\n✅ Compilation successful!$(RESET)"
 	@echo "$(CYAN)    └─ Ready to run: ./$(NAME)\n$(RESET)"
 

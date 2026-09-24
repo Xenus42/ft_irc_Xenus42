@@ -33,7 +33,7 @@ static void broadcastNickChange(Server &server, Client *client, const std::strin
 
     const std::map<std::string, Channel *> &channels = server.getChannels();
     std::map<std::string, Channel *>::const_iterator it;
-    
+
     for (it = channels.begin(); it != channels.end(); ++it)
     {
         if (!it->second->isMember(client))
@@ -44,7 +44,7 @@ static void broadcastNickChange(Server &server, Client *client, const std::strin
 
     std::set<Client *>::iterator target;
     for (target = targets.begin(); target != targets.end(); ++target)
-        server.sendMessage(*target, msg + "\r\n");
+        server.sendMessage(*target, msg);
 }
 
 void handleNick(Server &server, Client *client, const std::vector<std::string> &params)

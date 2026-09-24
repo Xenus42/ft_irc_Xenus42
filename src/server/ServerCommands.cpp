@@ -10,7 +10,7 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		&& cmd.name != "USER" && cmd.name != "CAP" && cmd.name != "QUIT" && cmd.name != "PING")
 	{
 		const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
-		sendMessage(client, ":ircserv 451 " + nick + " :You have not registered\r\n");
+		sendMessage(client, ":ircserv 451 " + nick + " :You have not registered");
 		return ;
 	}
 	if (cmd.name == "JOIN")
@@ -49,6 +49,6 @@ void Server::dispatchCommand(Client *client, const Parsing::Command &cmd)
 		handleCap(*this, client, cmd.params);
 	else
 	{
-		sendMessage(client, ":ircserv 421 " + client->getNickname() + " " + cmd.name + " :Unknown command\r\n");
+		sendMessage(client, ":ircserv 421 " + client->getNickname() + " " + cmd.name + " :Unknown command");
 	}
 }
