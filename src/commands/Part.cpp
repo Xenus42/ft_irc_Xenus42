@@ -49,7 +49,7 @@ void	handlePart(Server &server, Client *client,
 		}
 		const std::string prefix = nick + "!" + client->getUsername() + "@"
 			+ client->getHostname();
-		std::string msg = ":" + prefix + " PART " + name;
+		std::string msg = ":" + prefix + " PART " + channel->getName();
 		if (!reason.empty())
 			msg += " :" + reason;
 		channel->broadcast(server, msg);

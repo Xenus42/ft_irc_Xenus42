@@ -39,11 +39,11 @@ void	handleWhois(Server &server, Client *client,
 			continue ;
 		}
 		// format 311 : <nick> <user> <host> * :<realname>
-		server.sendMessage(client, ":ircserv 311 " + nick + " " + targetNick + " "
+		server.sendMessage(client, ":ircserv 311 " + nick + " " + target->getNickname() + " "
 			+ target->getUsername() + " " + target->getHostname() + " * :"
-			+ target->getUsername());
+			+ target->getRealName());
 		// format 312 : <nick> <server> :<info>
-		server.sendMessage(client, ":ircserv 312 " + nick + " " + targetNick
+		server.sendMessage(client, ":ircserv 312 " + nick + " " + target->getNickname()
 			+ " ircserv :ft_irc server");
 	}
 	// une seule ligne 318 de fin, apres tous les pseudos demandes

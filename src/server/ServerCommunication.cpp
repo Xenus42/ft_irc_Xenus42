@@ -75,5 +75,7 @@ void Server::sendWelcome(Client *client)
 
     sendMessage(client,
         ":ircserv 004 " + nick +
-        " ircserv 1.0 io");
+        " ircserv 1.0 i itkol kol");
+	sendMessage(client, ":ircserv 422 " + nick +
+		" :MOTD File is missing");
 }

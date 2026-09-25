@@ -40,6 +40,8 @@ void handleKick(Server &server, Client *client, const std::vector<std::string> &
 		const std::string &targetNick = targets[i];
 		Client *targetClient = server.getClientByNick(targetNick);
 
+		if (!channel->isOperator(client))
+			break;
 		if (targetClient == NULL)
 		{
 			server.sendMessage(client, ":ircserv 401 " + nick + " " + targetNick + " :No such nick/channel");
@@ -50,7 +52,7 @@ void handleKick(Server &server, Client *client, const std::vector<std::string> &
 			server.sendMessage(client, ":ircserv 441 " + nick + " " + targetNick + " " + channelName + " :They aren't on that channel");
 			continue ;
 		}
-		channel->broadcast(server, ":" + nick + "!" + client->getUsername() + "@" + client->getHostname() + " KICK " + channelName + " " + targetNick + " :" + reason);
+		channel->broadcast(server, ":" + nick + "!" + client->getUsername() + "@" + client->getHostname() + " KICK " + channel->getName() + " " + targetClient->getNickname() + " :" + reason);
 		channel->removeClient(targetClient);
 	}
 

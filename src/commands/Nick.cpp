@@ -60,9 +60,9 @@ void handleNick(Server &server, Client *client, const std::vector<std::string> &
         return server.sendMessage(client, ":ircserv 432 " + current + " " + newNick + " :Erroneous nickname");
 
     Client *owner = server.getClientByNick(newNick);
-    if (owner == client)
+    if (owner == client && client->getNickname() == newNick)
         return;
-    if (owner != NULL)
+    if (owner != NULL && owner != client)
         return server.sendMessage(client, ":ircserv 433 " + current + " " + newNick + " :Nickname is already in use");
 
     const bool wasRegistered = client->isRegistered();

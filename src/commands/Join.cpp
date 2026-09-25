@@ -21,6 +21,19 @@ static std::vector<std::string> splitComma(const std::string &str)
 	return (result);
 }
 
+static bool isValidChannelName(const std::string &name)
+{
+	if (name.size() < 2 || name.size() > 50 || name[0] != '#')
+		return (false);
+	for (size_t i = 1; i < name.size(); ++i)
+	{
+		unsigned char c = static_cast<unsigned char>(name[i]);
+		if (c <= 32 || c == 127 || c == ',' || c == ':')
+			return (false);
+	}
+	return (true);
+}
+
 // Joins a single channel for one JOIN command (name + optional key).
 static void	joinOne(Server &server, Client *client, const std::string &nick,
 		const std::string &name, const std::string &key)
@@ -28,7 +41,7 @@ static void	joinOne(Server &server, Client *client, const std::string &nick,
 	Channel	*channel;
 	bool	created;
 
-	if (name.empty() || name[0] != '#')
+	if (!isValidChannelName(name))
 	{
 		server.sendMessage(client, ":ircserv 403 " + nick + " " + name
 			+ " :No such channel");
@@ -71,16 +84,16 @@ static void	joinOne(Server &server, Client *client, const std::string &nick,
 		channel->addOperator(client);
 	const std::string prefix = nick + "!" + client->getUsername() + "@"
 		+ client->getHostname();
-	channel->broadcast(server, ":" + prefix + " JOIN " + name);
+	channel->broadcast(server, ":" + prefix + " JOIN " + channel->getName());
 	if (!channel->getTopic().empty())
-		server.sendMessage(client, ":ircserv 332 " + nick + " " + name + " :"
+		server.sendMessage(client, ":ircserv 332 " + nick + " " + channel->getName() + " :"
 			+ channel->getTopic());
 	else
-		server.sendMessage(client, ":ircserv 331 " + nick + " " + name
+		server.sendMessage(client, ":ircserv 331 " + nick + " " + channel->getName()
 			+ " :No topic is set");
-	server.sendMessage(client, ":ircserv 353 " + nick + " = " + name + " :"
+	server.sendMessage(client, ":ircserv 353 " + nick + " = " + channel->getName() + " :"
 		+ channel->getMemberList());
-	server.sendMessage(client, ":ircserv 366 " + nick + " " + name + " :End of /NAMES list");
+	server.sendMessage(client, ":ircserv 366 " + nick + " " + channel->getName() + " :End of /NAMES list");
 }
 
 // —  JOIN <#channel>{,<#channel>} [key{,key}]

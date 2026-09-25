@@ -21,6 +21,7 @@ class Client
         const std::string   &getUsername() const;
         const std::string   &getHostname() const;
         const std::string   &getInBuffer() const;
+		const std::string   &getRealName() const;
         std::string         &getOutBuffer();
         bool                isAuthenticated() const;
         bool                isClosing() const;

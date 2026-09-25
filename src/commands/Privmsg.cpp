@@ -57,7 +57,7 @@ void	handlePrivmsg(Server &server, Client *client,
 					+ " :Cannot send to channel");
 				continue ;
 			}
-			channel->broadcast(server, ":" + prefix + " PRIVMSG " + target
+			channel->broadcast(server, ":" + prefix + " PRIVMSG " + channel->getName()
 				+ " :" + message, client);
 			continue ;
 		}

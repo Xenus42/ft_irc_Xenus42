@@ -23,10 +23,11 @@ void	handleWho(Server &server, Client *client,
 	{
 		member = members[i];
 		// format 352 : <chan> <user> <host> <server> <nick> <flags> :<hopcount> <realname>
-		server.sendMessage(client, ":ircserv 352 " + nick + " " + name + " "
+		const std::string flags = channel->isOperator(member) ? "H@" : "H";
+		server.sendMessage(client, ":ircserv 352 " + nick + " " + channel->getName() + " "
 			+ member->getUsername() + " " + member->getHostname() + " ircserv "
-			+ member->getNickname() + " H :0 " + member->getUsername());
+			+ member->getNickname() + " " + flags + " :0 " + member->getRealName());
 	}
 	// une seule ligne 315 de fin, apres toute la boucle
-	server.sendMessage(client, ":ircserv 315 " + nick + " " + name + " :End of WHO list");
+	server.sendMessage(client, ":ircserv 315 " + nick + " " + channel->getName() + " :End of WHO list");
 }

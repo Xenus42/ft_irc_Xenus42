@@ -72,6 +72,11 @@ const std::string &Client::getInBuffer() const
 	return (_inBuffer);
 }
 
+const std::string &Client::getRealName() const
+{
+	return (_realname);
+}
+
 std::string &Client::getOutBuffer()
 {
 	return (_outBuffer);

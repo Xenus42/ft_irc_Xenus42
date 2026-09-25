@@ -13,10 +13,9 @@ Parsing::Command Parsing::parse(const std::string &line) const
 	Command cmd;
 
 	std::string input = line;
-	// std::string input = removeSpaceBeginningAndEndString(line);
 	if (input.empty())
 		return (cmd);
-	if (input.size() > MAX_LINE_LENGTH) // RFC 1459: 512 octets CRLF compris
+	if (input.size() > MAX_LINE_LENGTH - 2)
 		return (cmd);
 	if (input.size() == 1 && input[0] == ':')
 		throw std::runtime_error("Invalid IRC prefix: missing command");
@@ -27,7 +26,6 @@ Parsing::Command Parsing::parse(const std::string &line) const
 	cmd.name = toUpperCase(words[0]);
 	std::vector<std::string>::size_type i = 1;
 	while (i < words.size() && cmd.params.size() < MAX_PARAMS)
-	// RFC 1459: 15 parametres max
 	{
 		cmd.params.push_back(words[i]);
 		++i;

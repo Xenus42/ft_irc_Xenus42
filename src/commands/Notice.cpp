@@ -43,7 +43,7 @@ void	handleNotice(Server &server, Client *client,
 				continue ;
 			if (!channel->isMember(client))
 				continue ;
-			channel->broadcast(server, ":" + prefix + " NOTICE " + target + " :"
+			channel->broadcast(server, ":" + prefix + " NOTICE " + channel->getName() + " :"
 				+ message, client);
 			continue ;
 		}

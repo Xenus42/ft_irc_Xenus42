@@ -221,10 +221,8 @@ void Server::receiveClient(int fd)
 			if (client->isClosing())
 				return;
 		}
-		catch (const std::exception &e)
+		catch (const std::exception &)
 		{
-			const std::string target = client->getNickname().empty() ? "*" : client->getNickname();
-			sendMessage(client, ":ircserv 421 " + target + " :" + e.what());
 		}
 	}
 }
