@@ -19,10 +19,8 @@ Le parseur fait pour l'instant :
 - conserver un parametre de texte libre vide lorsqu'il est present apres `:`
 - conserver le texte libre tel quel apres le premier `:`, sans retirer les espaces
   ou les `:` supplementaires qu'il contient
-- classifier les commandes IRC reconnues via une fonction simple de dispatch interne
 - rejeter les prefixes invalides, comme une ligne reduite a `:` seul ou a des espaces apres `:`,
   en levant une erreur explicite plutot que de produire une commande vide
-- fonctionner dans le mode de test `--parse-test` du programme principal
 
 ## Organisation interne
 
@@ -32,8 +30,6 @@ Le code est reparti en deux fichiers, tous deux membres de la classe `Parsing` (
 [src/parsing/Parsing.cpp](../src/parsing/Parsing.cpp) contient la logique principale :
 - `parse` : orchestre les fonctions outils dans l'ordre (nettoyage des espaces, extraction du
   prefixe, decoupage en mots, mise en majuscules du nom de commande)
-- `getCommandType` : renvoie le nom de commande si elle est reconnue, sinon `"UNKNOWN"`
-- `isKnownCommand` : verifie si un nom de commande fait partie des commandes IRC gerees
 
 [src/parsing/Parsing_Utils.cpp](../src/parsing/Parsing_Utils.cpp) contient les petites fonctions
 outils, chacune avec un role precis :
@@ -48,36 +44,6 @@ outils, chacune avec un role precis :
 
 Toutes ces methodes sont `public` (aucune n'est `static` ni `private`) : `Parsing` doit etre
 instanciee pour les utiliser (`Parsing parser; parser.parse(line);`).
-
-## Cas de test de base
-
-Le mode `--parse-test` dans [src/main.cpp](../src/main.cpp) est utilise pour valider a chaque fois les cas suivants, avec leurs exemples de chaine de test en argument :
-- 1. `JOIN` avec un parametre et des espaces/tabulations autour : `"  JOIN\t\t#general  "`
-- 2. `PASS` avec un parametre suivi d'un retour a la ligne : `"PASS\t1234\r\n"`
-- 3. `JOIN` avec plusieurs parametres simples : `"JOIN #chan password"`
-- 4. une ligne vide : `""`
-- 5. plusieurs espaces entre mots : `"josie    alice   boby"`
-- 6. un parametre IRC avec texte libre apres les deux points : `"PRIVMSG #chan :hello there"`
-- 7. un autre cas avec cible et texte libre : `"NOTICE alice :bonjour les amis"`
-- 8. plusieurs parametres suivis d'un texte libre : `"TOPIC #general :nouveau sujet"`
-- 9. un cas avec plusieurs parametres simples et un mode : `"MODE #chan +o alice"`
-- 10. un cas limite avec texte libre vide : `"QUIT :"`
-- 11. un autre cas limite avec texte libre vide et une autre commande : `"PART #chan :"`
-- 12. un cas avec plusieurs parametres simples sans texte libre : `"KICK #chan alice"`
-- 13. un cas avec cible et texte libre : `"WHO #chan :names"`
-- 14. un cas avec la commande LIST et un parametre simple : `"LIST #chan"`
-- 15. un cas avec la commande NICK et un parametre unique : `"NICK alice"`
-- 16. un cas avec la commande PRIVMSG et un texte libre : `"PRIVMSG bob :hello"`
-- 17. un cas avec la commande INVITE et deux parametres : `"INVITE alice #chan"`
-- 18. un cas avec la commande TOPIC et un texte libre : `"TOPIC #chan :new topic"`
-- 19. un cas avec la commande KICK et deux parametres : `"KICK #chan alice"`
-- 20. un cas avec la commande USER et plusieurs parametres : `"USER guest 0 * :Guest"`
-- 21. un cas avec la commande MODE et un parametre simple : `"MODE #chan +i"`
-- 22. un cas avec la commande NOTICE et un parametre simple : `"NOTICE alice :hello"`
-- 23. un cas avec la commande WHO et deux parametres simples : `"WHO #chan alice"`
-- 24. un cas avec la commande PRIVMSG et un texte libre vide : `"PRIVMSG #chan :"`
-- 25. un cas avec un prefixe IRC avant la commande : `":nick!user@host PRIVMSG #chan :hello"`
-- 26. un cas avec une commande en minuscules : `"join #chan"`
 - 27. un cas avec un prefixe sur une commande de changement de surnom : `":nick!user@host NICK alice"`
 - 28. un cas avec une commande PING et un texte libre : `"PING :server"`
 - 29. un cas avec un parametre libre pour PASS : `"PASS :secret"`
