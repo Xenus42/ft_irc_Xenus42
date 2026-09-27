@@ -1,25 +1,5 @@
-#include "Channel.hpp"
-#include "Client.hpp"
-#include <string>
-#include <sys/socket.h>
-
-// TODEL:
-#include <iostream>
-
-// Decoupe une liste "a,b,c" en elements individuels.
-static std::vector<std::string> splitComma(const std::string &str)
-{
-	std::vector<std::string> result;
-	std::string::size_type start = 0;
-	std::string::size_type comma;
-	while ((comma = str.find(',', start)) != std::string::npos)
-	{
-		result.push_back(str.substr(start, comma - start));
-		start = comma + 1;
-	}
-	result.push_back(str.substr(start));
-	return (result);
-}
+#include "Commands.hpp"
+#include "Utils.hpp"
 
 static bool isValidChannelName(const std::string &name)
 {
@@ -34,7 +14,6 @@ static bool isValidChannelName(const std::string &name)
 	return (true);
 }
 
-// Joins a single channel for one JOIN command (name + optional key).
 static void	joinOne(Server &server, Client *client, const std::string &nick,
 		const std::string &name, const std::string &key)
 {

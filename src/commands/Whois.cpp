@@ -1,21 +1,5 @@
-#include "Client.hpp"
-#include "Server.hpp"
-
-// Splits a "a,b,c" list into individual nicknames.
-static std::vector<std::string> splitComma(const std::string &str)
-{
-	std::vector<std::string> result;
-	std::string::size_type start = 0;
-	std::string::size_type comma;
-
-	while ((comma = str.find(',', start)) != std::string::npos)
-	{
-		result.push_back(str.substr(start, comma - start));
-		start = comma + 1;
-	}
-	result.push_back(str.substr(start));
-	return (result);
-}
+#include "Commands.hpp"
+#include "Utils.hpp"
 
 // —  WHOIS <nickname>{,<nickname>}
 void	handleWhois(Server &server, Client *client,
@@ -41,12 +25,11 @@ void	handleWhois(Server &server, Client *client,
 		// format 311 : <nick> <user> <host> * :<realname>
 		server.sendMessage(client, ":ircserv 311 " + nick + " " + target->getNickname() + " "
 			+ target->getUsername() + " " + target->getHostname() + " * :"
-			+ target->getRealName());
+			+ target->getRealname());
 		// format 312 : <nick> <server> :<info>
 		server.sendMessage(client, ":ircserv 312 " + nick + " " + target->getNickname()
 			+ " ircserv :ft_irc server");
 	}
-	// une seule ligne 318 de fin, apres tous les pseudos demandes
 	server.sendMessage(client, ":ircserv 318 " + nick + " " + params[0]
 		+ " :End of WHOIS list");
 }

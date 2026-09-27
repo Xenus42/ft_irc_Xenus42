@@ -1,99 +1,75 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include "Channel.hpp"
 #include "Client.hpp"
 #include "Parsing.hpp"
-#include <cerrno>
-#include <cstring>
-#include <iostream>
+#include <csignal>
 #include <map>
 #include <netinet/in.h>
 #include <poll.h>
-#include <signal.h>
-#include <stdio.h>
-#include <unistd.h>
+#include <string>
 #include <vector>
-
-#include "Channel.hpp"
-#include "Commands.hpp"
 
 class Server
 {
-	// **************************************************************************
-		//
-	//                                  Server Main
-	// **************************************************************************
-		//
+	// ---------------- Server.cpp ----------------
 
-	// === Constructors ===
+	// === Orthodox Canonical Form ===
   private:
 	Server(const Server &other);
 	Server &operator=(const Server &other);
 
   public:
 	Server();
-	Server(int _port, std::string password);
+	Server(int _port, const std::string &password);
 	~Server();
 
-	// === Life cycle ===
+	// === Life Cycle ===
 	void init();
+	static void signalHandler(int sig);
 	void run();
 	void shutdown();
-	void processPollEvents();
-	static void signalHandler(int sig);
 
 	// === Getters ===
 	std::string getPassword() const;
 
-	// **************************************************************************
-		//
-	//                                  Server Channels
-	// **************************************************************************
-		//
+	// ---------------- ServerChannels.cpp ----------------
 
-	Channel *getChannel(const std::string &name);
+	// === Channel lifecycle ===
 	Channel *createChannel(const std::string &name);
+	Channel *getChannel(const std::string &name);
 	void removeChannel(const std::string &name);
 	const std::map<std::string, Channel *> &getChannels() const;
 
-	// **************************************************************************
-		//
-	//                                  Server Clients
-	// **************************************************************************
-		//
+	// ---------------- ServerClients.cpp ----------------
 
 	// === Client lifecycle ===
 	void addClient(int fd, const sockaddr_in &address);
 	void disconnectClient(Client *client, const std::string &reason);
 	void disconnectAllClients();
 
-	// === Client Identity ===
-	void changeNickname(Client *client, const std::string &newNick);
-	Client *getClientByNick(const std::string &nick);
+	// === Client Channels ===
 	void removeClientFromChannels(Client *client);
 	void broadcastQuit(Client *client, const std::string &reason);
+
+	// === Client Identity ===
+	void changeNickname(Client *client, const std::string &newNick);
 
 	// === Client Indexes ===
 	void addClientByFd(Client *client);
 	Client *getClientByFd(int fd);
 	void removeClientByFd(Client *client);
-
 	void addClientByNick(Client *client);
+	Client *getClientByNick(const std::string &nick);
 	void removeClientByNick(Client *client);
 
-	// **************************************************************************
-		//
-	//                                  Server Commands
-	// **************************************************************************
-		//
+	// ---------------- ServerCommands.cpp ----------------
 
+	// === Command Dispatch ===
 	void dispatchCommand(Client *client, const Parsing::Command &cmd);
 
-	// **************************************************************************
-		//
-	//                                  Server Network
-	// **************************************************************************
-		//
+	// ---------------- ServerNetwork.cpp ----------------
 
 	// === Socket ===
   private:
@@ -101,24 +77,22 @@ class Server
 	void bindSocket();
 	void listenSocket();
 
-	// === Poll ===
   public:
+	// === Poll ===
 	void addPollfd(int fd);
+	void processPollEvents();
 	void removePollfd(int fd);
 
 	// === Client I/O ===
 	void acceptClient();
 	void receiveClient(int fd);
 
-	// **************************************************************************
-		//
-	//                                  Server Communication
-	// **************************************************************************
-		//
+	// ---------------- ServerCommunication.cpp ----------------
 
+	// === Communication ===
 	void sendMessage(Client *client, const std::string &message);
-	void sendWelcome(Client *client);
 	void sendClient(int fd);
+	void sendWelcome(Client *client);
 
   private:
 	int _port;

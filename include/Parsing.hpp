@@ -12,8 +12,9 @@ class Parsing
 	static const std::string::size_type MAX_PARAMS = 15;
 
 	Parsing();
+	Parsing(const Parsing &other);
+	Parsing &operator=(const Parsing &other);
 	~Parsing();
-
 	struct	Command
 	{
 		std::string prefix;

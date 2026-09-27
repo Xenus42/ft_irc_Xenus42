@@ -1,21 +1,5 @@
-#include "Channel.hpp"
-#include "Client.hpp"
-#include "Server.hpp"
-
-// Splits a "a,b,c" list into individual targets.
-static std::vector<std::string> splitComma(const std::string &str)
-{
-	std::vector<std::string> result;
-	std::string::size_type start = 0;
-	std::string::size_type comma;
-	while ((comma = str.find(',', start)) != std::string::npos)
-	{
-		result.push_back(str.substr(start, comma - start));
-		start = comma + 1;
-	}
-	result.push_back(str.substr(start));
-	return (result);
-}
+#include "Commands.hpp"
+#include "Utils.hpp"
 
 // —  NOTICE <target>{,<target>} <message>
 void	handleNotice(Server &server, Client *client,

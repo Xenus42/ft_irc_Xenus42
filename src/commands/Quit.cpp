@@ -1,6 +1,4 @@
-#include "Channel.hpp"
-#include "Client.hpp"
-#include "Server.hpp"
+#include "Commands.hpp"
 
 void	handleQuit(Server &server, Client *client,
 		const std::vector<std::string> &params)

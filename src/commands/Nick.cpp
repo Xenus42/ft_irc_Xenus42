@@ -1,4 +1,5 @@
-#include "Server.hpp"
+#include "Commands.hpp"
+#include <cctype>
 #include <set>
 
 static bool	isSpecial(unsigned char c)

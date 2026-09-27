@@ -1,10 +1,8 @@
-#include <cerrno>
-#include <climits>
+#include "Utils.hpp"
+#include <cctype>
 #include <cstdlib>
-#include <iostream>
-#include <string>
 
-bool	isNumeric(std::string str)
+static bool	isNumeric(const std::string &str)
 {
 	if (str.empty())
 		return (false);
@@ -62,4 +60,19 @@ bool isValidPassword(const std::string &password)
     if (password.find('\n') != std::string::npos)
         return (false);
     return (true);
+}
+
+std::vector<std::string>	splitComma(const std::string &str)
+{
+	std::vector<std::string> result;
+	std::string::size_type start = 0;
+	std::string::size_type comma;
+
+	while ((comma = str.find(',', start)) != std::string::npos)
+	{
+		result.push_back(str.substr(start, comma - start));
+		start = comma + 1;
+	}
+	result.push_back(str.substr(start));
+	return (result);
 }

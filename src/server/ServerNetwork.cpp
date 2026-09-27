@@ -1,9 +1,13 @@
 #include "Server.hpp"
 #include <fcntl.h>
+#include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <stdexcept>
+#include <sys/socket.h>
+#include <unistd.h>
 
-// ************************************************************************** //
-//                                   Socket
-// ************************************************************************** //
+// === Socket ===
 
 void Server::createSocket()
 {
@@ -46,9 +50,7 @@ void Server::listenSocket()
 	std::cout << "[INFO  ] Listening on port " << _port << std::endl;
 }
 
-// ************************************************************************** //
-//                                   Poll
-// ************************************************************************** //
+// === Poll ===
 
 void Server::addPollfd(int fd)
 {
@@ -131,7 +133,6 @@ void Server::processPollEvents()
 			disconnectClient(getClientByFd(fd), "Connection closed");
 			continue ;
 		}
-
 		++i;
 	}
 }
@@ -148,9 +149,7 @@ void Server::removePollfd(int fd)
 	}
 }
 
-// ************************************************************************** //
-//                                   Client I/O
-// ************************************************************************** //
+// === Client I/O ===
 
 void Server::acceptClient()
 {

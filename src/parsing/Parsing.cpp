@@ -4,6 +4,17 @@ Parsing::Parsing()
 {
 }
 
+Parsing::Parsing(const Parsing &other)
+{
+	(void)other;
+}
+
+Parsing &Parsing::operator=(const Parsing &other)
+{
+	(void)other;
+	return (*this);
+}
+
 Parsing::~Parsing()
 {
 }

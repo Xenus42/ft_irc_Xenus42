@@ -1,25 +1,23 @@
+#include "Parsing.hpp"
 #include "Client.hpp"
 #include <arpa/inet.h>
 
-// ************************************************************************** //
-//                             Orthodox Canonical Form
-// ************************************************************************** //
+// === Orthodox Canonical Form ===
 
-Client::Client() : _fd(-1), _address(), _nickname(""), _username(""),
-	_hostname(""), _inBuffer(""), _authenticated(false), _closing(false)
+Client::Client() : _fd(-1), _authenticated(false), _closing(false)
 {
 }
 
-Client::Client(int fd, const sockaddr_in &address) : _fd(fd), _address(address),
-	_nickname(""), _username(""), _hostname(inet_ntoa(address.sin_addr)), _inBuffer(""),
-	_authenticated(false), _closing(false)
+Client::Client(int fd, const sockaddr_in &address) : _fd(fd),
+	_hostname(inet_ntoa(address.sin_addr)), _authenticated(false), _closing(false)
 {
 }
 
-Client::Client(const Client &other) : _fd(other._fd), _address(other._address),
-	_nickname(other._nickname), _username(other._username),
-	_hostname(other._hostname), _inBuffer(other._inBuffer),
-	_authenticated(other._authenticated), _closing(other._closing)
+Client::Client(const Client &other) : _fd(other._fd), _nickname(other._nickname),
+	_username(other._username), _hostname(other._hostname),
+	_realname(other._realname), _inBuffer(other._inBuffer),
+	_outBuffer(other._outBuffer), _authenticated(other._authenticated),
+	_closing(other._closing)
 {
 }
 
@@ -28,11 +26,12 @@ Client &Client::operator=(const Client &other)
 	if (this != &other)
 	{
 		_fd = other._fd;
-		_address = other._address;
 		_nickname = other._nickname;
 		_username = other._username;
 		_hostname = other._hostname;
+		_realname = other._realname;
 		_inBuffer = other._inBuffer;
+		_outBuffer = other._outBuffer;
 		_authenticated = other._authenticated;
 		_closing = other._closing;
 	}
@@ -43,9 +42,7 @@ Client::~Client()
 {
 }
 
-// ************************************************************************** //
-//                              Getters
-// ************************************************************************** //
+// === Getters ===
 
 int Client::getFd() const
 {
@@ -67,12 +64,7 @@ const std::string &Client::getHostname() const
 	return (_hostname);
 }
 
-const std::string &Client::getInBuffer() const
-{
-	return (_inBuffer);
-}
-
-const std::string &Client::getRealName() const
+const std::string &Client::getRealname() const
 {
 	return (_realname);
 }
@@ -94,12 +86,10 @@ bool Client::isClosing() const
 
 bool Client::isRegistered() const
 {
-	return (_authenticated && !_nickname.empty() && !_username.empty() && !_hostname.empty());
+	return (_authenticated && !_nickname.empty() && !_username.empty());
 }
 
-// ************************************************************************** //
-//                              Setters
-// ************************************************************************** //
+// === Setters ===
 
 void Client::setNickname(const std::string &nickname)
 {
@@ -111,24 +101,14 @@ void Client::setUsername(const std::string &username)
 	_username = username;
 }
 
-void Client::setHostname(const std::string &hostname)
+void Client::setRealname(const std::string &realname)
 {
-	_hostname = hostname;
+	_realname = realname;
 }
 
 void Client::setAuthenticated(bool authenticated)
 {
 	_authenticated = authenticated;
-}
-
-void Client::setServerName(const std::string &serverName)
-{
-	_servername = serverName;
-}
-
-void Client::setRealName(const std::string &realName)
-{
-	_realname = realName;
 }
 
 void Client::markClosing()
@@ -137,30 +117,20 @@ void Client::markClosing()
 }
 
 
-// ************************************************************************** //
-//                              Buffer
-// ************************************************************************** //
+// === Buffer ===
 
-static const size_t	MAX_LINE_LENGTH = 512;
-// RFC 1459: max IRC line length, CRLF included
 
 void Client::appendInBuffer(const char *data, size_t len)
 {
 	_inBuffer.append(data, len);
-	if (_inBuffer.size() > MAX_LINE_LENGTH
+	if (_inBuffer.size() > Parsing::MAX_LINE_LENGTH
 		&& _inBuffer.find('\n') == std::string::npos)
-		_inBuffer.erase(MAX_LINE_LENGTH);
-	// no line ending beyond the limit: bound memory usage
+		_inBuffer.erase(Parsing::MAX_LINE_LENGTH);
 }
 
 void Client::appendOutBuffer(const std::string &message)
 {
 	_outBuffer += message;
-}
-
-void Client::clearInBuffer()
-{
-	_inBuffer.clear();
 }
 
 bool Client::extractLine(std::string &line)

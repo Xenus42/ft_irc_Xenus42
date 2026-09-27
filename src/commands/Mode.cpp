@@ -1,18 +1,16 @@
-#include "Server.hpp"
+#include "Commands.hpp"
 #include <cctype>
 #include <cerrno>
 #include <climits>
 #include <cstdlib>
-#include <iostream>
 #include <sstream>
-
-struct		modechange
+struct		ModeChange
 {
 	bool	add;
 	char	mode;
 	std::string arg;
 
-	modechange(bool a, char m) : add(a), mode(m)
+	ModeChange(bool a, char m) : add(a), mode(m)
 	{
 	}
 };
@@ -31,17 +29,16 @@ static bool	takesArg(char mode, bool add)
 		return (add);
 	return (false);
 }
-/*
-MODE #douv +i -> modechange{add: +, mode: 'i', arg: ""}
-MODE #douv +ol-k bob 42 -> modechange{+, o, "bob"}, {+, l, "42"}, {-, k, ""}
-*/
-static std::vector<modechange> parseModeString(Server &server, Client *client,
+
+//MODE #douv +i -> ModeChange{add: +, mode: 'i', arg: ""}
+//MODE #douv +ol-k bob 42 -> ModeChange{+, o, "bob"}, {+, l, "42"}, {-, k, ""}
+static std::vector<ModeChange> parseModeString(Server &server, Client *client,
 	const std::string &modes, const std::vector<std::string> &args)
 {
 	bool	add;
 	size_t	indexArg;
 
-	std::vector<modechange> changes;
+	std::vector<ModeChange> changes;
 	std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
 	add = true;
 	indexArg = 0;
@@ -56,7 +53,7 @@ static std::vector<modechange> parseModeString(Server &server, Client *client,
 				+ " :is unknown mode char to me");
 		else
 		{
-			modechange tmp(add, modes[i]);
+			ModeChange tmp(add, modes[i]);
 			if (takesArg(tmp.mode, tmp.add))
 			{
 				if (indexArg < args.size())
@@ -101,8 +98,8 @@ static std::string channelModeReply(Channel *channel, bool isMember)
 	return (modes + args);
 }
 
-static bool	ApplyMode(Server &server, Client *client, Channel *channel,
-		const modechange &mc)
+static bool	applyMode(Server &server, Client *client, Channel *channel,
+		const ModeChange &mc)
 {
 	char	*end;
 	long	limit;
@@ -199,15 +196,15 @@ void	handleMode(Server &server, Client *client,
 		return (server.sendMessage(client, ":ircserv 482 " + nick + " " + name
 				+ " :You're not channel operator"));
 	std::vector<std::string> args(params.begin() + 2, params.end());
-	std::vector<modechange> vecmode = parseModeString(server, client, params[1], args);
-	std::string modes, modeargs;
+	std::vector<ModeChange> modeChanges = parseModeString(server, client, params[1], args);
+	std::string modes, modeArgs;
 	sign = '\0';
-	for (size_t i = 0; i < vecmode.size(); i++)
+	for (size_t i = 0; i < modeChanges.size(); i++)
 	{
-		const modechange &mc = vecmode[i];
+		const ModeChange &mc = modeChanges[i];
 		const char cur = (mc.add ? '+' : '-');
 
-		if (!ApplyMode(server, client, channel, mc))
+		if (!applyMode(server, client, channel, mc))
 			continue ;
 		if (sign != cur)
 		{
@@ -216,11 +213,11 @@ void	handleMode(Server &server, Client *client,
 		}
 		modes += mc.mode;
 		if (mc.mode == 'o' || (mc.add && (mc.mode == 'k' || mc.mode == 'l')))
-			modeargs += " " + mc.arg;
+			modeArgs += " " + mc.arg;
 	}
 	const std::string prefix = nick + "!" + client->getUsername() + "@"
 		+ client->getHostname();
 	if (!modes.empty())
 		channel->broadcast(server, ":" + prefix + " MODE " + channel->getName()
-			+ " " + modes + modeargs);
+			+ " " + modes + modeArgs);
 }

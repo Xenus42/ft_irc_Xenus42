@@ -1,29 +1,39 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Channel.cpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: willda-s <willda-s@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/08 17:00:48 by williamguer       #+#    #+#             */
-/*   Updated: 2026/09/23 20:44:16 by willda-s         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-#include "Channel.hpp"
-#include "Client.hpp"
 #include "Server.hpp"
+
+
+Channel::Channel() : _userLimit(0), _modes(0)
+{
+}
 
 Channel::Channel(const std::string &name) : _name(name), _topic(""), _key(""),
 	_userLimit(0), _modes(0), _status(), _invited()
 {
 }
 
-Channel::~Channel()
+Channel::Channel(const Channel &other) : _name(other._name), _topic(other._topic),
+	_key(other._key), _userLimit(other._userLimit), _modes(other._modes),
+	_status(other._status), _invited(other._invited)
 {
 }
 
-// ---- Statut interne (privé) ----
+Channel &Channel::operator=(const Channel &other)
+{
+	if (this != &other)
+	{
+		_name = other._name;
+		_topic = other._topic;
+		_key = other._key;
+		_userLimit = other._userLimit;
+		_modes = other._modes;
+		_status = other._status;
+		_invited = other._invited;
+	}
+	return (*this);
+}
+
+Channel::~Channel()
+{
+}
 
 bool Channel::hasStatus(Client *client, int flag) const
 {
@@ -48,8 +58,6 @@ void Channel::unsetStatus(Client *client, int flag)
 		_status.erase(it);
 }
 
-// ---- Membres ----
-
 void Channel::addClient(Client *client)
 {
 	setStatus(client, STATUS_MEMBER);
@@ -67,8 +75,6 @@ bool Channel::isMember(Client *client) const
 	return (hasStatus(client, STATUS_MEMBER));
 }
 
-// ---- Opérateurs ----
-
 void Channel::addOperator(Client *client)
 {
 	if (!isMember(client))
@@ -85,7 +91,6 @@ bool Channel::isOperator(Client *client) const
 {
 	return (hasStatus(client, STATUS_OPERATOR));
 }
-// ---- Invitations ----
 
 void Channel::addInvited(Client *client)
 {
@@ -102,8 +107,6 @@ void Channel::removeInvited(Client *client)
     _invited.erase(client);
 }
 
-// ---- Topic ----
-
 void Channel::setTopic(const std::string &topic)
 {
 	_topic = topic;
@@ -113,8 +116,6 @@ const std::string &Channel::getTopic() const
 {
 	return (_topic);
 }
-
-// ---- Key ----
 
 void Channel::setKey(const std::string &key)
 {
@@ -133,8 +134,6 @@ void Channel::removeKey()
 	unsetMode(MODE_HAS_KEY);
 }
 
-// ---- User limit ----
-
 void Channel::setUserLimit(int limit)
 {
 	_userLimit = limit;
@@ -152,8 +151,6 @@ void Channel::removeUserLimit()
 	unsetMode(MODE_HAS_LIMIT);
 }
 
-// ---- Modes ----
-
 void Channel::setMode(int flag)
 {
 	_modes |= flag;
@@ -168,8 +165,6 @@ bool Channel::hasMode(int flag) const
 {
 	return ((_modes & flag) != 0);
 }
-
-// ---- Utils ----
 
 const std::string &Channel::getName() const
 {
@@ -186,7 +181,6 @@ bool Channel::isEmpty() const
     return _status.empty();
 }
 
-// ---- Diffusion ----
 void Channel::broadcast(Server &server, const std::string &message, Client *exclude)
 {
     std::map<Client*, int>::const_iterator it;

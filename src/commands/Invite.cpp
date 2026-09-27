@@ -1,5 +1,4 @@
-#include "Channel.hpp"
-#include "Client.hpp"
+#include "Commands.hpp"
 
 void handleInvite(Server &server, Client *client, const std::vector<std::string> &params)
 {

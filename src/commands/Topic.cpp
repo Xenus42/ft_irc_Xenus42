@@ -1,5 +1,4 @@
-#include "Server.hpp"
-#include "Channel.hpp"
+#include "Commands.hpp"
 
 void handleTopic(Server &server, Client *client,const std::vector<std::string> &params)
 {

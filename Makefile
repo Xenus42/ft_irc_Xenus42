@@ -2,20 +2,16 @@
 #					STRUCTURE					 #
 #------------------------------------------------#
 vpath %.cpp src src/client src/utils src/server src/commands src/channel src/parsing
-vpath %.i include
-
 #------------------------------------------------#
 #					FILES						 #
 #------------------------------------------------#
 NAME		= ircserv
-INCLUDES	= Server.hpp Client.hpp Utils.hpp Channel.hpp Commands.hpp
-SRC_FILES	= main Client Utils Channel Join Part Parsing Parsing_Utils Topic Pass Nick User Mode Server ServerChannels ServerClients ServerCommunication ServerNetwork ServerCommands Invite Privmsg Kick Notice Who Whois List Ping Quit Cap
+SRC_FILES	= main Client Utils Channel Join Part Parsing ParsingUtils Topic Pass Nick User Mode Server ServerChannels ServerClients ServerCommunication ServerNetwork ServerCommands Invite Privmsg Kick Notice Who Whois List Ping Quit
 
 #------------------------------------------------#
 #					DIRECTORY					 #
 #------------------------------------------------#
 OBJ_DIR		= .build/
-INC_DIR		= include/
 
 #------------------------------------------------#
 #					PATHS						 #
@@ -23,7 +19,6 @@ INC_DIR		= include/
 SRC			= $(addsuffix .cpp, $(SRC_FILES))
 OBJ			= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(SRC_FILES)))
 DEP 		= $(addprefix $(OBJ_DIR), $(addsuffix .d, $(SRC_FILES)))
-INC			= $(addprefix $(INC_DIR), $(INCLUDES))
 
 #------------------------------------------------#
 #					COMMANDS					 #
@@ -72,15 +67,7 @@ fclean: clean
 
 re: fclean all
 
-fclean-all: fclean
-
-clean-all: clean
-
-run: all
-	@echo "$(BOLD)🚀 Running:$(RESET) ./$(NAME) $(ARGS)"
-	@./$(NAME) $(ARGS)
-
-.PHONY: all clean fclean re run
+.PHONY: all clean fclean re
 
 #------------------------------------------------#
 #					COLORS						 #

@@ -1,13 +1,9 @@
 #ifndef COMMANDS_HPP
 #define COMMANDS_HPP
 
-#include "Client.hpp"
 #include "Server.hpp"
 #include <string>
 #include <vector>
-
-class	Server;
-class	Client;
 
 void	handleJoin(Server &server, Client *client,
 			const std::vector<std::string> &params);
@@ -38,8 +34,6 @@ void	handleWhois(Server &server, Client *client,
 void	handlePing(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handleQuit(Server &server, Client *client,
-			const std::vector<std::string> &params);
-void	handleCap(Server &server, Client *client,
 			const std::vector<std::string> &params);
 void	handleList(Server &server, Client *client,
 			const std::vector<std::string> &params);
