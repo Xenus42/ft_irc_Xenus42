@@ -1,962 +1,240 @@
 # ft_irc
 
-# Fiche récapitulative – Projet ft_irc (42)
+Serveur IRC en C++98 compatible avec le cœur du sujet 42 : sockets TCP, clients multiples, canaux, parsing des commandes IRC et gestion des états utilisateurs.
 
-# 1. Bibliothèques utilisées
+Ce projet est développé selon les principes de base du protocole IRC et s’appuie notamment sur les références suivantes :
+- RFC 1459 : Internet Relay Chat Protocol
+- RFC 2812 : Internet Relay Chat: Client Protocol
+- Sujet 42 `ft_irc`
 
-## Bibliothèques C++
+Sources du projet consultées dans le code :
+- `src/server/ServerNetwork.cpp` — sockets, `poll()`, accept/recv/send
+- `src/server/ServerCommands.cpp` — dispatch des commandes IRC
+- `src/parsing/Parsing.cpp` — parsing des lignes de commande
+- `src/commands/Join.cpp` — gestion des canaux
+- `src/channel/Channel.cpp` — logique des canaux et modes
+- `src/client/Client.cpp` — état du client et buffers
 
-```cpp
-#include <iostream>     // Affichage console (cout, cerr)
-#include <string>       // Manipulation des chaînes de caractères
-#include <vector>       // Tableau dynamique
-#include <map>          // Association clé/valeur
-#include <set>          // Ensemble de valeurs uniques
-#include <sstream>      // Découpage des commandes IRC
-#include <algorithm>    // find(), remove(), etc.
-#include <cstdlib>      // atoi(), EXIT_SUCCESS...
-#include <cstring>      // memset(), strerror()
-#include <ctime>        // time()
+## 1. Objectif du projet
+
+Implémenter un serveur IRC minimal, multi-clients, non bloquant, capable de :
+- accepter plusieurs connexions TCP en même temps,
+- gérer l’enregistrement d’un client (`PASS`, `NICK`, `USER`),
+- créer et rejoindre des canaux,
+- envoyer des messages privés et publics,
+- gérer les modes de canaux et la logique d’accès,
+- répondre avec des codes IRC standard (ex. `401`, `403`, `431`, `433`, `461`, `462`, `464`, `475`, etc.).
+
+## 2. Technologies et contraintes
+
+- Langage : C++98
+- Système : Linux
+- Sockets : BSD sockets
+- I/O multiplexing : `poll()`
+- Non bloquant : `fcntl(..., O_NONBLOCK)`
+- Sécurité / robustesse : gestion des erreurs sockets, fermeture propre, flux IRC limité
+
+## 3. Compilation
+
+Depuis la racine du projet :
+
+```bash
+make
 ```
 
-### À quoi servent-elles ?
+Pour nettoyer le build :
 
-* **iostream** : afficher des messages de debug ou des erreurs.
-* **string** : toutes les commandes IRC sont des chaînes de caractères.
-* **vector** : stocker les clients, les channels, les `pollfd`.
-* **map** : associer une clé (par exemple le socket d'un client) à un objet Client.
-* **set** : éviter les doublons (opérateurs, membres...).
-* **sstream** : parser les commandes reçues (`JOIN`, `NICK`, `PRIVMSG`...).
-* **algorithm** : rechercher ou supprimer facilement dans les conteneurs.
-
----
-
-# Bibliothèques réseau / système
-
-```cpp
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <poll.h>
-#include <signal.h>
+```bash
+make clean
+make fclean
 ```
 
-### Elles permettent de :
+## 4. Lancement
 
-* créer des sockets
-* écouter un port
-* accepter des connexions
-* envoyer/recevoir des données
-* gérer plusieurs clients simultanément
-* mettre les sockets en non bloquant
-* gérer Ctrl+C proprement
-
----
-
-# 2. Les structures importantes
-
-## sockaddr_in
-
-Structure représentant une adresse IPv4.
-
-```cpp
-sockaddr_in serverAddr;
-```
-
-Elle contient :
-
-```cpp
-serverAddr.sin_family;
-serverAddr.sin_port;
-serverAddr.sin_addr.s_addr;
+```bash
+./ircserv <port> <password>
 ```
 
 Exemple :
 
-```cpp
-serverAddr.sin_family = AF_INET;
-serverAddr.sin_port = htons(6667);
-serverAddr.sin_addr.s_addr = INADDR_ANY;
-```
-
----
-
-## pollfd
-
-Structure utilisée par `poll()`.
-
-```cpp
-pollfd pfd;
-```
-
-Elle contient :
-
-```cpp
-pfd.fd
-```
-
-Le socket.
-
-```cpp
-pfd.events
-```
-
-Les événements à surveiller.
-
-```cpp
-pfd.revents
-```
-
-Les événements réellement détectés.
-
----
-
-# 3. Les fonctions réseau
-
-## socket()
-
-### Rôle
-
-Créer un socket.
-
-Syntaxe :
-
-```cpp
-int socket(
-    int domain,
-    int type,
-    int protocol
-);
-```
-
-Exemple :
-
-```cpp
-int serverFd = socket(AF_INET, SOCK_STREAM, 0);
-```
-
-Paramètres :
-
-* AF_INET → IPv4
-* SOCK_STREAM → TCP
-* 0 → protocole automatique
-
-Retour :
-
-* > = 0 : succès
-* -1 : erreur
-
----
-
-## setsockopt()
-
-### Rôle
-
-Configurer un socket.
-
-Très utilisé pour réutiliser un port.
-
-```cpp
-int opt = 1;
-
-setsockopt(serverFd,
-           SOL_SOCKET,
-           SO_REUSEADDR,
-           &opt,
-           sizeof(opt));
-```
-
-Sans cette fonction :
-
-```
-Address already in use
-```
-
-après avoir relancé rapidement le serveur.
-
----
-
-## bind()
-
-### Rôle
-
-Associer le socket au port.
-
-```cpp
-bind(serverFd,
-     (sockaddr *)&serverAddr,
-     sizeof(serverAddr));
-```
-
-Après le bind, le serveur écoute réellement sur le port choisi.
-
----
-
-## listen()
-
-### Rôle
-
-Mettre le socket en attente de connexions.
-
-```cpp
-listen(serverFd, SOMAXCONN);
-```
-
-Le serveur est maintenant prêt à accepter des clients.
-
----
-
-## accept()
-
-### Rôle
-
-Accepter une connexion.
-
-```cpp
-int clientFd = accept(
-    serverFd,
-    (sockaddr *)&clientAddr,
-    &len
-);
-```
-
-Important :
-
-Le socket serveur reste ouvert.
-
-`accept()` crée un **nouveau socket** uniquement pour le client.
-
-Chaque client possède donc son propre file descriptor.
-
----
-
-## recv()
-
-### Rôle
-
-Recevoir des données.
-
-```cpp
-char buffer[512];
-
-recv(clientFd,
-     buffer,
-     sizeof(buffer),
-     0);
-```
-
-Retour :
-
-* > 0 → données reçues
-* 0 → client déconnecté
-* -1 → erreur
-
-Exemple :
-
-Le client envoie :
-
-```
-JOIN #42
-```
-
-Le serveur récupère cette chaîne avec `recv()`.
-
----
-
-## send()
-
-### Rôle
-
-Envoyer des données.
-
-```cpp
-send(clientFd,
-     message.c_str(),
-     message.size(),
-     0);
-```
-
-Exemple :
-
-```
-:server 001 user :Welcome
-```
-
-est envoyé au client.
-
----
-
-## close()
-
-### Rôle
-
-Fermer un socket.
-
-```cpp
-close(clientFd);
-```
-
-À utiliser lorsqu'un client quitte le serveur.
-
----
-
-# 4. poll()
-
-## La fonction la plus importante du projet
-
-Permet de surveiller plusieurs sockets simultanément.
-
-Syntaxe :
-
-```cpp
-poll(pollfds.data(),
-     pollfds.size(),
-     timeout);
-```
-
-Exemple :
-
-```cpp
-poll(pollfds.data(),
-     pollfds.size(),
-     -1);
-```
-
-Le `-1` signifie :
-
-Attendre indéfiniment.
-
----
-
-## Pourquoi utiliser poll ?
-
-Sans `poll()` :
-
-Le serveur ne pourrait gérer qu'un seul client à la fois.
-
-Avec `poll()` :
-
-Le serveur surveille :
-
-* le socket serveur
-* tous les sockets clients
-
-Dès qu'un événement arrive :
-
-```
-nouvelle connexion
-
-ou
-
-message reçu
-```
-
-`poll()` le signale immédiatement.
-
----
-
-## Les événements
-
-### POLLIN
-
-Des données sont disponibles.
-
-Très utilisé.
-
----
-
-### POLLOUT
-
-Le socket peut envoyer.
-
----
-
-### POLLERR
-
-Erreur sur le socket.
-
----
-
-### POLLHUP
-
-Client déconnecté.
-
----
-
-# 5. fcntl()
-
-### Rôle
-
-Mettre un socket en mode non bloquant.
-
-```cpp
-fcntl(serverFd,
-       F_SETFL,
-       O_NONBLOCK);
-```
-
-Pourquoi ?
-
-Sinon :
-
-```
-accept()
-
-recv()
-
-send()
-```
-
-peuvent bloquer complètement le serveur.
-
----
-
-# 6. htons()
-
-Host To Network Short.
-
-Convertit un entier 16 bits (port).
-
-```cpp
-serverAddr.sin_port = htons(6667);
-```
-
-Le réseau utilise le format Big Endian.
-
----
-
-# 7. htonl()
-
-Host To Network Long.
-
-Convertit un entier 32 bits.
-
-```cpp
-serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-```
-
----
-
-# 8. memset()
-
-Initialiser une structure.
-
-```cpp
-memset(&serverAddr,
-       0,
-       sizeof(serverAddr));
-```
-
-Très utilisé avant de remplir un `sockaddr_in`.
-
----
-
-# 9. signal()
-
-Intercepter Ctrl+C.
-
-```cpp
-signal(SIGINT, handler);
-```
-
-Exemple :
-
-```cpp
-void handler(int)
-{
-    running = false;
-}
-```
-
-Permet de fermer proprement le serveur.
-
----
-
-# 10. atoi()
-
-Convertir une chaîne en entier.
-
-```cpp
-int port = atoi(argv[1]);
-```
-
-Si :
-
-```
-./ircserv 6667 pass
-```
-
-Alors :
-
-```
-argv[1]
-
-↓
-
-6667
-
-↓
-
-int
-```
+```bash
+./ircserv 6667 mysecret
+```
+
+## 5. Utilisation
+
+Un client IRC peut se connecter au serveur puis envoyer les commandes suivantes :
+
+```text
+PASS mysecret
+NICK alice
+USER alice 0 * :Alice
+JOIN #general
+PRIVMSG #general :Bonjour !
+PRIVMSG bob :Salut
+WHOIS alice
+LIST
+MODE #general
+TOPIC #general :Nouveau sujet
+PART #general
+QUIT :bye
+```
+
+Il est possible de tester avec un client IRC standard ou via un simple client TCP. La logique serveur est organisée autour des fichiers suivants :
+- `include/Server.hpp`
+- `include/Channel.hpp`
+- `include/Client.hpp`
+- `include/Parsing.hpp`
+- `include/Commands.hpp`
+
+## 6. Commandes IRC gérées
+
+Le projet implémente les commandes suivantes dans le dispatch principal (`src/server/ServerCommands.cpp`) :
+
+- `PASS`
+- `NICK`
+- `USER`
+- `JOIN`
+- `PART`
+- `TOPIC`
+- `MODE`
+- `INVITE`
+- `KICK`
+- `PRIVMSG`
+- `NOTICE`
+- `WHO`
+- `WHOIS`
+- `LIST`
+- `PING`
+- `QUIT`
+- `CAP`
+
+Les handlers associés sont dans `src/commands/`.
+
+## 7. Architecture du projet
+
+```text
+include/
+├── Channel.hpp
+├── Client.hpp
+├── Commands.hpp
+├── Parsing.hpp
+├── Server.hpp
+├── Utils.hpp
+
+src/
+├── main.cpp
+├── channel/Channel.cpp
+├── client/Client.cpp
+├── commands/
+│   ├── Invite.cpp
+│   ├── Join.cpp
+│   ├── Kick.cpp
+│   ├── List.cpp
+│   ├── Mode.cpp
+│   ├── Nick.cpp
+│   ├── Notice.cpp
+│   ├── Part.cpp
+│   ├── Pass.cpp
+│   ├── Ping.cpp
+│   ├── Privmsg.cpp
+│   ├── Quit.cpp
+│   ├── Topic.cpp
+│   ├── User.cpp
+│   ├── Who.cpp
+│   └── Whois.cpp
+├── parsing/Parsing.cpp
+├── parsing/ParsingUtils.cpp
+├── server/
+│   ├── Server.cpp
+│   ├── ServerChannels.cpp
+│   ├── ServerClients.cpp
+│   ├── ServerCommands.cpp
+│   ├── ServerCommunication.cpp
+│   ├── ServerNetwork.cpp
+│   └── ...
+├── utils/Utils.cpp
+```
+
+### Rôle des composants
+
+- `Server` : boucle principale, sockets, gestion des clients, dispatch des commandes
+- `Client` : état du client, buffers d’entrée/sortie, authentification, registration
+- `Channel` : gestion des membres, opérateurs, modes, topic, invitations
+- `Parsing` : extraction du préfixe, découpage de la commande et des paramètres
+- `Utils` : validation de port, normalisation de chaînes, découpage CSV
 
----
+## 8. Protocole et standards suivis
 
-# 11. Fonctions de std::string
+Le projet suit les bases de l’IRC tel que défini dans les RFC de référence :
+- parsing des commandes IRC : préfixe, commande, paramètres,
+- codes d’erreur IRC standard,
+- canaux avec nom commençant par `#`,
+- logique de registration `PASS` → `NICK` → `USER`,
+- diffusion de messages au sein d’un canal ou vers un client.
 
-## size()
+Les règles de parsing et de validation sont implémentées dans :
+- `src/parsing/Parsing.cpp`
+- `src/parsing/ParsingUtils.cpp`
+- `include/Parsing.hpp`
 
-Retourne la longueur.
+## 9. Exemples de flux serveur
 
-```cpp
-msg.size();
-```
-
----
-
-## substr()
-
-Extraire une partie.
-
-```cpp
-msg.substr(5);
-```
-
----
-
-## find()
-
-Chercher une sous-chaîne.
-
-```cpp
-msg.find("JOIN");
-```
-
----
-
-## erase()
-
-Supprimer une partie.
-
-```cpp
-msg.erase(pos);
-```
-
----
-
-## append()
-
-Ajouter du texte.
-
-```cpp
-msg.append("\r\n");
-```
-
----
-
-## c_str()
-
-Transformer une string en `const char *`.
-
-Obligatoire avec `send()`.
-
-```cpp
-send(fd,
-     msg.c_str(),
-     msg.size(),
-     0);
-```
-
----
-
-# 12. std::stringstream
-
-Très utilisé pour parser les commandes IRC.
-
-Exemple :
-
-```
-PRIVMSG #42 :Bonjour
-```
-
-Code :
-
-```cpp
-std::stringstream ss(line);
-
-std::string cmd;
-
-ss >> cmd;
-```
-
-Résultat :
-
-```
-cmd = "PRIVMSG"
-```
-
-Puis :
-
-```
-target
-
-↓
-
-message
-```
-
-sont récupérés progressivement.
-
----
-
-# 13. std::vector
-
-Tableau dynamique.
-
-Exemple :
-
-```cpp
-std::vector<pollfd> pollfds;
-```
-
-Fonctions utiles :
-
-```cpp
-push_back()
-
-erase()
-
-size()
-
-clear()
-
-begin()
-
-end()
-```
-
----
-
-# 14. std::map
-
-Association clé → valeur.
-
-Exemple :
-
-```cpp
-std::map<int, Client> clients;
-```
-
-Clé :
-
-```
-socket
-```
-
-Valeur :
-
-```
-Client
-```
-
-Permet de retrouver rapidement un client.
-
----
-
-# 15. std::set
-
-Collection sans doublons.
-
-Exemple :
-
-```cpp
-std::set<std::string> operators;
-```
-
-Très utile pour :
-
-* opérateurs
-* membres
-* invitations
-
----
-
-# 16. std::algorithm
-
-## find()
-
-Chercher un élément.
-
-```cpp
-std::find(vec.begin(),
-          vec.end(),
-          value);
-```
-
----
-
-## remove()
-
-Préparer la suppression.
-
-Souvent combiné avec :
-
-```cpp
-erase()
-```
-
----
+### Enregistrement client
 
-# 17. Déroulement complet du serveur
-
-```
-main()
-
-↓
-
-socket()
-
-↓
-
-setsockopt()
-
-↓
-
-fcntl()
-
-↓
-
-bind()
-
-↓
-
-listen()
-
-↓
-
-poll()
-
-↓
-
-Nouvelle connexion ?
-
-↓
-
-accept()
-
-↓
-
-Ajout dans le vector de pollfd
-
-↓
-
-poll()
-
-↓
-
-recv()
-
-↓
-
-Parser la commande
-
-↓
-
-PASS
-
-↓
-
-NICK
-
-↓
-
-USER
-
-↓
-
-JOIN
-
-↓
-
-PART
-
-↓
-
-PRIVMSG
-
-↓
-
-MODE
-
-↓
-
-KICK
-
-↓
-
-TOPIC
-
-↓
-
-INVITE
-
-↓
-
-send()
-
-↓
-
-close()
+```text
+CLIENT -> PASS mysecret
+CLIENT -> NICK alice
+CLIENT -> USER alice 0 * :Alice
+SERVER -> :ircserv 001 alice :Welcome...
 ```
 
----
+### Création / join d’un canal
 
-# 18. Structures principales du projet
-
-## Server
-
-Responsabilités :
-
-* créer le socket
-* lancer le serveur
-* gérer poll()
-* accepter les connexions
-* supprimer les clients
-* envoyer les réponses
-
----
-
-## Client
-
-Contient généralement :
-
-```cpp
-fd
-
-nickname
-
-username
-
-hostname
-
-buffer
-
-authenticated
-
-registered
-```
-
----
-
-## Channel
-
-Contient :
-
-```cpp
-nom
-
-topic
-
-liste des membres
-
-liste des opérateurs
-
-liste des invités
-
-clé
-
-limite d'utilisateurs
-```
-
----
-
-# 19. Commandes IRC à implémenter
-
-```
-PASS
-```
-
-Authentification.
-
-```
-NICK
-```
-
-Changer de pseudo.
-
-```
-USER
-```
-
-Déclarer le nom d'utilisateur.
-
-```
-JOIN
+```text
+CLIENT -> JOIN #general
+SERVER -> :alice!user@host JOIN #general
+SERVER -> :ircserv 353 alice = #general :alice
+SERVER -> :ircserv 366 alice #general :End of /NAMES list
 ```
 
-Rejoindre un salon.
+### Message privé
 
+```text
+CLIENT -> PRIVMSG bob :bonjour
+SERVER -> :alice!user@host PRIVMSG bob :bonjour
 ```
-PART
-```
 
-Quitter un salon.
+## 10. Sources et références
 
-```
-PRIVMSG
-```
+- RFC 1459 — Internet Relay Chat Protocol
+- RFC 2812 — Internet Relay Chat: Client Protocol
+- Sujet 42 `ft_irc`
+- Code du projet dans `src/` et `include/`
 
-Envoyer un message.
+## 11. Critères de validation du sujet
 
-```
-KICK
-```
+Le projet couvre le cœur attendu du sujet :
+- serveur TCP multi-clients,
+- sockets non bloquants,
+- système de parsing IRC,
+- commandes de base,
+- canaux et messages,
+- gestion d’état du client.
 
-Expulser un utilisateur.
+## 12. Notes de build
 
-```
-INVITE
-```
+Le projet a été conçu pour fonctionner en environnement Linux standard avec `g++` / `c++` en mode C++98.
 
-Inviter un utilisateur.
+Commande de test rapide :
 
-```
-TOPIC
+```bash
+make
+./ircserv 6667 password
 ```
 
-Modifier le sujet d'un salon.
+Puis connexion depuis un client IRC ou un test TCP simple.
 
-```
-MODE
-```
+## 13. Licence / usage
 
-Modifier les modes du salon.
-
----
-
-# 20. Les fonctions indispensables à connaître
-
-| Fonction            | Utilité                                                                  |
-| ------------------- | ------------------------------------------------------------------------ |
-| `socket()`          | Créer un socket TCP.                                                     |
-| `setsockopt()`      | Configurer le socket (`SO_REUSEADDR`).                                   |
-| `bind()`            | Associer le socket à une adresse IP et un port.                          |
-| `listen()`          | Mettre le serveur en attente de connexions.                              |
-| `accept()`          | Créer un socket dédié à un nouveau client.                               |
-| `poll()`            | Gérer plusieurs connexions simultanément sans bloquer.                   |
-| `recv()`            | Recevoir les données envoyées par un client.                             |
-| `send()`            | Envoyer des données à un client.                                         |
-| `close()`           | Fermer un socket proprement.                                             |
-| `fcntl()`           | Activer le mode non bloquant sur les sockets.                            |
-| `htons()`           | Convertir un port au format réseau (16 bits).                            |
-| `htonl()`           | Convertir une adresse au format réseau (32 bits).                        |
-| `memset()`          | Initialiser une structure à zéro.                                        |
-| `signal()`          | Intercepter un signal (ex. `SIGINT`) pour arrêter le serveur proprement. |
-| `atoi()`            | Convertir une chaîne de caractères en entier.                            |
-| `std::stringstream` | Découper et analyser les commandes IRC.                                  |
-| `std::vector`       | Stocker des listes dynamiques (`pollfd`, clients, channels...).          |
-| `std::map`          | Associer rapidement une clé à une valeur (ex. `fd → Client`).            |
-| `std::set`          | Stocker des éléments uniques (opérateurs, invités...).                   |
-| `std::string`       | Manipuler les commandes et les messages IRC.                             |
+Projet pédagogique développé dans le cadre du cursus 42. Le code est destiné à l’apprentissage et à la validation du sujet `ft_irc`.
