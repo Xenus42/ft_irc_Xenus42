@@ -1,23 +1,7 @@
-// lib C++
-#include <cstdlib>  
-#include <iostream>
-#include <map>      
-#include <set>      
-#include <sstream>  
-#include <string>   
-#include <vector>
-
-// lib POSIX / Reseau
-#include <errno.h>
-#include <netinet/in.h>
-#include <poll.h>
-#include <signal.h>
-
-// include
-#include "Client.hpp"
-#include "Parsing.hpp"
 #include "Server.hpp"
-#include "Utils.hpp"
+#include <Utils.hpp>
+#include <cstdlib>
+#include <iostream>
 
 int	main(int ac, char **av)
 {

@@ -1,13 +1,11 @@
 #include "Parsing.hpp"
 #include <cctype>
 
-// Returns true if the character separates words in an IRC line.
 bool Parsing::isSeparator(char c) const
 {
 	return (c == ' ' || c == '\t' || c == '\r' || c == '\n');
 }
 
-// Removes separators at the start and end of the string (not in the middle).
 std::string Parsing::removeSpaceBeginningAndEndString(const std::string &str) const
 {
 	std::string::size_type start = 0;
@@ -19,7 +17,6 @@ std::string Parsing::removeSpaceBeginningAndEndString(const std::string &str) co
 	return (str.substr(start, end - start));
 }
 
-// Uppercases a string, since IRC commands are case-insensitive.
 std::string Parsing::toUpperCase(const std::string &str) const
 {
 	unsigned char currentChar;
@@ -37,8 +34,6 @@ std::string Parsing::toUpperCase(const std::string &str) const
 	return (result);
 }
 
-// Finds the position of the first separator from the given position.
-// Returns std::string::npos if no separator is found before the end.
 std::string::size_type Parsing::findFirstSeparator(const std::string &str,
 	std::string::size_type from) const
 {
@@ -50,9 +45,6 @@ std::string::size_type Parsing::findFirstSeparator(const std::string &str,
 	return (i);
 }
 
-// Extracts the optional prefix (":nick!user@host ") at the start of the line
-// and returns the rest of the line (command + parameters). Throws an
-// exception if the prefix is present but malformed (empty, or no command after).
 std::string Parsing::extractPrefix(const std::string &input,
 	std::string &prefix) const
 {
@@ -71,9 +63,6 @@ std::string Parsing::extractPrefix(const std::string &input,
 	return (commandPart);
 }
 
-// Finds the start of free text marked by ':' (either at the very start of
-// the string, or right after a separator). Returns the position of the first
-// character of the free text (right after the ':'), or npos if absent.
 std::string::size_type Parsing::findTextParamsStart(const std::string &input) const
 {
 	std::string::size_type i;
@@ -90,7 +79,6 @@ std::string::size_type Parsing::findTextParamsStart(const std::string &input) co
 	return (std::string::npos);
 }
 
-// Splits a string into simple words, separated by spaces/tabs.
 std::vector<std::string> Parsing::splitAndPutSimpleWordsIntoArray(const std::string &input) const
 {
 	std::vector<std::string> words;
@@ -115,9 +103,6 @@ std::vector<std::string> Parsing::splitAndPutSimpleWordsIntoArray(const std::str
 	return (words);
 }
 
-// Splits the command and its parameters into words. A word starting with ':'
-// marks the start of free text: everything that follows (including spaces)
-// is kept as-is as a single, last parameter.
 std::vector<std::string> Parsing::splitCommandAndArgsToArray(const std::string &input) const
 {
 	std::string::size_type textParamsStart = findTextParamsStart(input);

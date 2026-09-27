@@ -1,27 +1,29 @@
 #include "Server.hpp"
+#include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <unistd.h>
 
-// ************************************************************************** //
-//                             Orthodox Canonical Form
-// ************************************************************************** //
+// === Orthodox Canonical Form ===
 
 Server::Server() : _port(0), _password(""), _listenFd(-1), _running(false),
-	_address(), _pollfds(), _clientsByFd(), _clientsByNick()
+	_parser(), _address(), _pollfds(), _clientsByFd(), _clientsByNick(), _channels()
 {
 	std::memset(&_address, 0, sizeof(_address));
 }
 
-Server::Server(int port, std::string password) : _port(port),
-	_password(password), _listenFd(-1), _running(false), _address(), _pollfds(),
-	_clientsByFd(), _clientsByNick()
+Server::Server(int _port, const std::string &password) : _port(_port),
+	_password(password), _listenFd(-1), _running(false), _parser(), _address(),
+	_pollfds(), _clientsByFd(), _clientsByNick(), _channels()
 {
 	std::memset(&_address, 0, sizeof(_address));
 }
 
 Server::Server(const Server &other) : _port(other._port),
 	_password(other._password), _listenFd(other._listenFd),
-	_running(other._running), _address(other._address),
+	_running(other._running), _parser(other._parser), _address(other._address),
 	_pollfds(other._pollfds), _clientsByFd(other._clientsByFd),
-	_clientsByNick(other._clientsByNick)
+	_clientsByNick(other._clientsByNick), _channels(other._channels)
 {
 }
 
@@ -33,10 +35,12 @@ Server &Server::operator=(const Server &other)
 		_password = other._password;
 		_listenFd = other._listenFd;
 		_running = other._running;
+		_parser = other._parser;
 		_address = other._address;
 		_pollfds = other._pollfds;
 		_clientsByFd = other._clientsByFd;
 		_clientsByNick = other._clientsByNick;
+		_channels = other._channels;
 	}
 	return (*this);
 }
@@ -46,9 +50,7 @@ Server::~Server()
 	shutdown();
 }
 
-// ************************************************************************** //
-//                                 Life Cycle
-// ************************************************************************** //
+// === Life Cycle ===
 
 void Server::init()
 {
@@ -121,9 +123,7 @@ void Server::shutdown()
 	}
 }
 
-// ************************************************************************** //
-//                                   Getters
-// ************************************************************************** //
+// === Getters ===
 
 std::string Server::getPassword() const
 {

@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "Commands.hpp"
 
 void	handlePass(Server &server, Client *client, const std::vector<std::string> &params)
 {

@@ -1,9 +1,7 @@
 #include "Server.hpp"
 #include "Utils.hpp"
 
-// ************************************************************************** //
-//                            Channel lifecycle
-// ************************************************************************** //
+// === Channel lifecycle ===
 
 Channel *Server::createChannel(const std::string &name)
 {

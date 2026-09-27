@@ -1,25 +1,7 @@
-#include "Channel.hpp"
-#include "Client.hpp"
-#include "Server.hpp"
-#include <string>
-#include <sys/socket.h>
+#include "Commands.hpp"
+#include "Utils.hpp"
 
-// Splits a "#a,#b,#c" list into individual names.
-static std::vector<std::string> splitComma(const std::string &str)
-{
-	std::vector<std::string> result;
-	std::string::size_type start = 0;
-	std::string::size_type comma;
-	while ((comma = str.find(',', start)) != std::string::npos)
-	{
-		result.push_back(str.substr(start, comma - start));
-		start = comma + 1;
-	}
-	result.push_back(str.substr(start));
-	return (result);
-}
-
-// handlePart  —  PART <#channel>{,<#channel>} [:reason]
+// —  PART <#channel>{,<#channel>} [:reason]
 void	handlePart(Server &server, Client *client,
 		const std::vector<std::string> &params)
 {

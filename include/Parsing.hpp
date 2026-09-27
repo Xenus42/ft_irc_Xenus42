@@ -12,8 +12,9 @@ class Parsing
 	static const std::string::size_type MAX_PARAMS = 15;
 
 	Parsing();
+	Parsing(const Parsing &other);
+	Parsing &operator=(const Parsing &other);
 	~Parsing();
-
 	struct	Command
 	{
 		std::string prefix;
@@ -22,9 +23,6 @@ class Parsing
 	};
 
 	Command parse(const std::string &line) const;
-	std::string getCommandType(const Command &cmd) const;
-
-	bool isKnownCommand(const std::string &name) const;
 
 	bool isSeparator(char c) const;
 	std::string removeSpaceBeginningAndEndString(const std::string &str) const;

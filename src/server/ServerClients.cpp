@@ -1,10 +1,10 @@
 #include "Server.hpp"
 #include "Utils.hpp"
+#include <iostream>
 #include <set>
+#include <unistd.h>
 
-// ************************************************************************** //
-//                                  Client lifecycle
-// ************************************************************************** //
+// === Client lifecycle ===
 
 void Server::addClient(int fd, const sockaddr_in &address)
 {
@@ -44,9 +44,7 @@ void Server::disconnectAllClients()
 	}
 }
 
-// ************************************************************************** //
-//                                  Client Channels
-// ************************************************************************** //
+// === Client Channels ===
 
 void Server::removeClientFromChannels(Client *client)
 {
@@ -93,9 +91,7 @@ void Server::broadcastQuit(Client *client, const std::string &reason)
 		sendMessage(*it, msg);
 }
 
-// ************************************************************************** //
-//                                  Client Identity
-// ************************************************************************** //
+// === Client Identity ===
 
 void Server::changeNickname(Client *client, const std::string &newNick)
 {
@@ -109,9 +105,7 @@ void Server::changeNickname(Client *client, const std::string &newNick)
 	addClientByNick(client);
 }
 
-// ************************************************************************** //
-//                                  Client Indexes
-// ************************************************************************** //
+// === Client Indexes ===
 
 void Server::addClientByFd(Client *client)
 {
@@ -151,7 +145,6 @@ Client *Server::getClientByNick(const std::string &nick)
 	if (it == _clientsByNick.end())
 		return (NULL);
 	return (it->second);
-	;
 }
 
 void Server::removeClientByNick(Client *client)

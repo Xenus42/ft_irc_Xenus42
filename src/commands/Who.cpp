@@ -1,6 +1,5 @@
-#include "Channel.hpp"
-#include "Client.hpp"
-#include "Server.hpp"
+#include "Commands.hpp"
+
 
 void	handleWho(Server &server, Client *client,
 		const std::vector<std::string> &params)
@@ -18,7 +17,6 @@ void	handleWho(Server &server, Client *client,
 		return (server.sendMessage(client, ":ircserv 315 " + nick + " " + name
 				+ " :End of WHO list"));
 	std::vector<Client *> members = channel->getMembers();
-	// one 352 line per channel member
 	for (size_t i = 0; i < members.size(); i++)
 	{
 		member = members[i];
@@ -26,8 +24,7 @@ void	handleWho(Server &server, Client *client,
 		const std::string flags = channel->isOperator(member) ? "H@" : "H";
 		server.sendMessage(client, ":ircserv 352 " + nick + " " + channel->getName() + " "
 			+ member->getUsername() + " " + member->getHostname() + " ircserv "
-			+ member->getNickname() + " " + flags + " :0 " + member->getRealName());
+			+ member->getNickname() + " " + flags + " :0 " + member->getRealname());
 	}
-	// une seule ligne 315 de fin, apres toute la boucle
 	server.sendMessage(client, ":ircserv 315 " + nick + " " + channel->getName() + " :End of WHO list");
 }

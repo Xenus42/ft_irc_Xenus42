@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "Commands.hpp"
 
 static bool isValidUsername(const std::string &userName)
 {
@@ -32,20 +32,6 @@ static bool isValidRealname(const std::string &realname)
     return (true);
 }
 
-static bool isValidHostname(const std::string &hostName)
-{
-    if (hostName.empty() || hostName.size() > 255)
-        return (false);
-    return (true);
-}
-
-static bool isValidServername(const std::string &serverName)
-{
-    if (serverName.empty() || serverName.size() > 255)
-        return (false);
-    return (true);
-}
-
 void handleUser(Server &server, Client *client, const std::vector<std::string> &params)
 {
     const std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
@@ -60,21 +46,15 @@ void handleUser(Server &server, Client *client, const std::vector<std::string> &
     }
 
     const std::string &username = params[0];
-    const std::string &hostname = params[1];
-    const std::string &servername = params[2];
     const std::string &realname = params[3];
 
-    if (!isValidUsername(username) ||
-        !isValidRealname(realname) ||
-        !isValidHostname(hostname) ||
-        !isValidServername(servername))
+    if (!isValidUsername(username) || !isValidRealname(realname))
     {
         server.sendMessage(client, ":ircserv 461 " + nick + " USER :Invalid parameters");
         return;
     }
     client->setUsername(username);
-    client->setServerName(servername);
-    client->setRealName(realname);
+	client->setRealname(realname);
 
     if (client->isRegistered())
         server.sendWelcome(client);

@@ -1,17 +1,6 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Channel.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lebroue <lebroue@student.42lyon.fr>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/08 17:01:31 by williamguer       #+#    #+#             */
-/*   Updated: 2026/09/23 19:49:28 by lebroue          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef CHANNEL_HPP
 # define CHANNEL_HPP
+
 # include <map>
 # include <set>
 # include <string>
@@ -36,36 +25,46 @@ class	Server;
 class Channel
 {
   public:
+	Channel();
 	Channel(const std::string &name);
+	Channel(const Channel &other);
+	Channel &operator=(const Channel &other);
 	~Channel();
-	// Member management
+	// === Member management ===
 	void addClient(Client *client);
 	void removeClient(Client *client);
 	bool isMember(Client *client) const;
-	// Operator management
+
+	// === Operator management ===
 	void addOperator(Client *client);
 	void removeOperator(Client *client);
 	bool isOperator(Client *client) const;
-	// Invitations
+
+	// === Invitations ===
 	void addInvited(Client *client);
 	bool isInvited(Client *client) const;
 	void removeInvited(Client *client);
-	// Topic
+
+	// === Topic ===
 	void setTopic(const std::string &topic);
 	const std::string &getTopic() const;
-	// Key
+
+	// === Key ===
 	void setKey(const std::string &key);
 	const std::string &getKey() const;
 	void removeKey();
-	// User limit
+
+	// === User limit ===
 	void setUserLimit(int limit);
 	int getUserLimit() const;
 	void removeUserLimit();
-	// Modes
+
+	// === Modes ===
 	void setMode(int flag);
 	void unsetMode(int flag);
 	bool hasMode(int flag) const;
-	// Utils
+
+	// === Utils ===
 	const std::string &getName() const;
 	size_t getClientCount() const;
 	bool isEmpty() const;
@@ -75,7 +74,6 @@ class Channel
 	std::vector<Client *> getMembers() const;
 
   private:
-	// Internal client status (STATUS_* bits)
 	bool hasStatus(Client *client, int flag) const;
 	void setStatus(Client *client, int flag);
 	void unsetStatus(Client *client, int flag);
@@ -87,7 +85,6 @@ class Channel
 	int _modes;
 	std::map<Client *, int> _status;
 	std::set<Client *> _invited;
-	Channel();
 };
 
 #endif

@@ -1,8 +1,8 @@
 #include "Server.hpp"
+#include <cerrno>
+#include <sys/socket.h>
 
-// ************************************************************************** //
-//                                   Communication
-// ************************************************************************** //
+// === Communication ===
 
 void Server::sendMessage(Client *client, const std::string &message)
 {

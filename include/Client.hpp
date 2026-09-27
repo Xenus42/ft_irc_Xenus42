@@ -1,7 +1,7 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include "Server.hpp"
+#include <cstddef>
 #include <string>
 #include <netinet/in.h>
 
@@ -20,42 +20,30 @@ class Client
         const std::string   &getNickname() const;
         const std::string   &getUsername() const;
         const std::string   &getHostname() const;
-        const std::string   &getInBuffer() const;
-		const std::string   &getRealName() const;
+		const std::string   &getRealname() const;
         std::string         &getOutBuffer();
         bool                isAuthenticated() const;
         bool                isClosing() const;
+		bool				isRegistered() const;
 
         // === Setters ===
         void setNickname(const std::string &nickname);
         void setUsername(const std::string &username);
-        void setHostname(const std::string &hostname);
+        void setRealname(const std::string &realname);
         void setAuthenticated(bool value);
-        void setServerName(const std::string &servername);
-        void setRealName(const std::string &realname);
         void markClosing();
 
         // === Buffer ===
         void appendInBuffer(const char *data, size_t len);
         void appendOutBuffer(const std::string &message);
-        void clearInBuffer();
         bool extractLine(std::string &line);
-
-        // === Registration ===
-        bool isRegistered() const;
-
-		friend class Server;
 
     private:
         int             _fd;
-        sockaddr_in     _address;
-
         std::string     _nickname;
         std::string     _username;
         std::string     _hostname;
-        std::string     _servername;
         std::string     _realname;
-        std::string     _password;
         std::string     _inBuffer;
         std::string     _outBuffer;
         bool            _authenticated;

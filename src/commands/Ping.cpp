@@ -1,5 +1,4 @@
-#include "Client.hpp"
-#include "Server.hpp"
+#include "Commands.hpp"
 
 // —  PING <token>
 void	handlePing(Server &server, Client *client,
