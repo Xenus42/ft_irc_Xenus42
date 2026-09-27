@@ -1,9 +1,9 @@
 #ifndef PARSING_HPP
-#define PARSING_HPP
+# define PARSING_HPP
 
-#include <stdexcept>
-#include <string>
-#include <vector>
+# include <stdexcept>
+# include <string>
+# include <vector>
 
 class Parsing
 {
@@ -24,6 +24,7 @@ class Parsing
 
 	Command parse(const std::string &line) const;
 
+  private:
 	bool isSeparator(char c) const;
 	std::string removeSpaceBeginningAndEndString(const std::string &str) const;
 	std::string toUpperCase(const std::string &str) const;
