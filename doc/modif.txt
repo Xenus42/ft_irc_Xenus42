@@ -1,9 +1,0 @@
-modif   : getBuffer() ==> getInBuffer()
-modif   : appendBuffer() ==> appendInBuffer()
-modif   : clearBuffer ==> clearInBuffer()
-modif   : _buffer ==> _bufferIn
-
-create  : _bufferOut
-create  : getOutBuffer()
-create  : appendOutBuffer()
-create  : sendClient()
