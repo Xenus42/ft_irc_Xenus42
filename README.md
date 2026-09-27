@@ -1,220 +1,225 @@
-# ft_irc — IRC Server Implementation
+# ft_irc
 
-A lightweight IRC (Internet Relay Chat) server written in C++98, implementing the core IRC protocol to enable real-time text communication between clients.
+*This project has been created as part of the 42 curriculum by dabuchhe, lebroue, and willda-s.*
 
-## Overview
+## Description
 
-This project implements a multi-client IRC server using **non-blocking I/O** with `poll()`. The server manages concurrent client connections, channel operations, and command dispatch according to RFC 1459 specifications.
+**ft_irc** is a non-blocking IRC (Internet Relay Chat) server implemented in C++98. It conforms to the core IRC protocol (RFC 1459) and demonstrates advanced networking concepts including asynchronous I/O multiplexing, client-server state management, and real-time message routing across multiple concurrent connections.
 
-**Language:** C++98  
-**Compilation:** `-Wall -Wextra -Werror -std=c++98`
+### Project Goal
 
----
+The project teaches fundamental concepts in systems programming:
+- **Asynchronous I/O multiplexing** using `poll()` for handling multiple clients without threading
+- **RFC protocols compliance** for commands, numeric replies, and message formatting
+- **Non-blocking socket programming** with proper error handling and state transitions
+- **Data structure design** (maps, vectors, sets) for efficient lookups and client/channel management
+- **Signal handling** and graceful server shutdown
 
-## Building & Running
+### What It Does
 
-### Build
+The server allows multiple IRC clients to:
+- Authenticate using a shared password (`PASS` command)
+- Register with a nickname and username (`NICK`, `USER` commands)
+- Create and join channels (`JOIN`, `PART` commands)
+- Exchange messages in channels or privately (`PRIVMSG`, `NOTICE` commands)
+- Manage channel modes and permissions (`MODE`, `KICK`, `INVITE`, `TOPIC` commands)
+- Query user and channel information (`WHO`, `WHOIS`, `LIST` commands)
+
+## Instructions
+
+### Requirements
+
+- **Operating System**: Linux
+- **Compiler**: C++ supporting `-std=c++98`
+- **Dependencies**: None (POSIX system calls and standard C++ library only)
+
+### Compilation
+
 ```bash
-make          # Compile the project
-make clean    # Remove object files and dependencies
-make fclean   # Remove everything (including executable)
-make re       # Clean rebuild
+make
 ```
 
-### Run
+This creates an executable named `ircserv`.
+
+To clean build artifacts:
+```bash
+make clean        # Remove object files
+make fclean       # Remove everything including executable
+make re           # Clean and rebuild
+```
+
+### Execution
+
 ```bash
 ./ircserv <port> <password>
 ```
 
+**Parameters:**
+- `<port>`: TCP listening port (typically 6667 for IRC)
+- `<password>`: Server password (clients must authenticate with this via `PASS` command)
+
 **Example:**
 ```bash
-./ircserv 6667 mypassword
+./ircserv 6667 secretpassword
 ```
 
----
-
-## Architecture
-
-### 1. Server & Client Management
-
-**Key Files:** `src/server/Server.cpp`, `src/client/Client.cpp`
-
-The server operates as a **singleton event loop** using `poll()` to monitor multiple file descriptors simultaneously:
-
-- **Socket Creation:** Listening socket bound to the specified port in non-blocking mode.
-- **Poll Loop:** Continuously monitors incoming connections (`POLLIN`), client data, and outgoing buffers (`POLLOUT`).
-- **Client Lifecycle:** 
-  - `acceptClient()` — Accepts new connections and registers them in the poll set.
-  - `receiveClient()` — Reads incoming data into a **512-byte line buffer** (RFC 1459 limit).
-  - `sendClient()` — Flushes buffered messages to clients.
-  - `disconnectClient()` — Gracefully removes clients and notifies channels.
-
-**Client State:**
-- `_nickname` — User's display name (case-insensitive with IRC scrambling).
-- `_username` / `_hostname` / `_realname` — Identity information.
-- `_inBuffer` / `_outBuffer` — Persistent input and output buffers for partial messages.
-- `_authenticated` — Password validation status.
-- `_registered` — Full registration status (requires password, nick, and user).
-
-**Key Design Decisions:**
-- Non-blocking I/O prevents server stalls on slow clients.
-- `std::map<int, Client*>` indexes clients by socket FD for O(log n) lookup.
-- `std::map<std::string, Client*>` maintains nick uniqueness (case-insensitive).
-- Signal handlers (`SIGINT`, `SIGQUIT`, `SIGPIPE`) enable graceful shutdown.
-
----
-
-### 2. Parsing & Command Dispatch
-
-**Key Files:** `src/parsing/Parsing.cpp`, `src/server/ServerCommands.cpp`
-
-IRC commands follow a line-based protocol with optional prefix, command name, and up to 15 parameters:
-
+The server will output:
 ```
-[:<prefix>] <command> [<param1> ... <param15>] <trailing>
+[INFO  ] Listening on port 6667
 ```
 
-**Parser Responsibilities:**
-- Extract and validate the RFC 1459 **message format** (max 512 bytes per line including `\r\n`).
-- Normalize command names to uppercase.
-- Split parameters while preserving the trailing argument (after the last space or `:` marker).
-- Handle malformed messages gracefully (ignore or disconnect on critical errors).
+### Basic Client Connection Example
 
-**Command Dispatch:**
-- `dispatchCommand()` routes parsed commands to appropriate handlers (e.g., `handleJoin()`, `handleNick()`).
-- Access control: Only unauthenticated clients can send `PASS`, `NICK`, `USER`, `CAP`, or `QUIT`.
-- Unknown commands trigger `ERR_UNKNOWNCOMMAND (421)`.
+Connect using a standard IRC client (e.g., `irssi`, `HexChat`) or use `nc`:
 
-**Implemented Commands:**
-- **Connection:** `PASS`, `NICK`, `USER`, `QUIT`, `PING`
-- **Channel:** `JOIN`, `PART`, `MODE`, `TOPIC`, `INVITE`, `KICK`, `LIST`
-- **Messaging:** `PRIVMSG`, `NOTICE`
-- **Information:** `WHO`, `WHOIS`
-- **Negotiation:** `CAP` (basic support)
-
----
-
-### 3. Channels
-
-**Key Files:** `src/channel/Channel.cpp`, `src/server/ServerChannels.cpp`
-
-Channels are persistent namespaces where clients can join, leave, and exchange messages.
-
-**Channel Features:**
-- **Name:** Starts with `#`, case-insensitive with IRC scrambling (`[]\` ↔ `{}|`).
-- **Membership:** Tracks members and operators separately via `std::map<Client*, int>`.
-- **Modes:**
-  - `+i` — Invite-only (controlled via `INVITE` command).
-  - `+t` — Topic restricted (only operators can change topic).
-  - `+k` — Key-protected (password required to join).
-  - `+l` — User limit (maximum members).
-- **Broadcast:** `broadcast()` sends a message to all members, optionally excluding one client.
-- **Lifecycle:** Created on first `JOIN`, destroyed when empty.
-
-**Topic & Key Management:**
-- `setTopic()` / `getTopic()` — Channel message of the day (editable).
-- `setKey()` / `getKey()` — Optional password (required for join if `+k` set).
-
----
-
-## Data Flow
-
-### Client Registration
-1. Client connects → added to `_clientsByFd`.
-2. Sends `PASS <password>` → validated, `_authenticated = true`.
-3. Sends `NICK <name>` → normalized, added to `_clientsByNick`.
-4. Sends `USER <user> 0 * :<realname>` → user info stored, `_registered = true`.
-5. Server sends welcome messages (`001 RPL_WELCOME`, `002 RPL_YOURHOST`, etc.).
-
-### Channel Join
-1. `JOIN #channelname [key]` arrives.
-2. Parser extracts channel name(s) and key(s).
-3. Server creates channel if needed.
-4. Client added as member; mode checks apply (invite-only, key validation).
-5. `JOIN` message broadcast to all channel members.
-
-### Message Flow
-1. Client sends `PRIVMSG #channel :message`.
-2. Parser extracts target and text.
-3. Server finds channel and broadcasts to all members (except sender).
-4. Or, if target is a nick, message sent to that specific client.
-
----
-
-## Error Handling
-
-The server implements RFC 1459 numeric error codes:
-
-| Code | Condition |
-|------|-----------|
-| `401` | `ERR_NOSUCHNICK` — Target nick not found |
-| `403` | `ERR_NOSUCHCHANNEL` — Channel does not exist |
-| `404` | `ERR_CANNOTSENDTOCHAN` — Missing channel membership |
-| `421` | `ERR_UNKNOWNCOMMAND` — Unrecognized command |
-| `431` | `ERR_NONICKNAMEGIVEN` — No nick provided |
-| `432` | `ERR_ERRONEUSNICKNAME` — Invalid nick format |
-| `433` | `ERR_NICKNAMEINUSE` — Nick already taken |
-| `451` | `ERR_NOTREGISTERED` — Must register first |
-| `461` | `ERR_NEEDMOREPARAMS` — Missing required parameters |
-| `464` | `ERR_PASSWDMISMATCH` — Wrong password |
-| `482` | `ERR_CHANOPRIVSNEEDED` — Operator status required |
-
-Malformed messages or protocol violations result in:
-- Line too long (>512 bytes) → truncation + client disconnect.
-- Missing newline → buffered until complete.
-- Exception during parsing → message ignored, client remains connected.
-
----
-
-## Compilation & Standards
-
-- **C++ Version:** C++98 (strict compliance, no C++11+ features).
-- **Compiler Flags:** `-Wall -Wextra -Werror -std=c++98`.
-- **System Dependencies:** POSIX (Linux/macOS) — uses `poll()`, `select()`, and standard sockets.
-
-### File Organization
-```
-include/         — Header files (Server.hpp, Client.hpp, Channel.hpp, etc.)
-src/
-  ├── main.cpp            — Entry point
-  ├── client/Client.cpp   — Client implementation
-  ├── channel/Channel.cpp — Channel implementation
-  ├── server/Server*.cpp  — Server core, channels, clients, commands, network, communication
-  ├── commands/*.cpp      — Individual command handlers
-  └── parsing/Parsing*.cpp — Message parsing utilities
-Makefile         — Build automation
+```bash
+nc localhost 6667
 ```
 
+Then send commands:
+```
+PASS secretpassword
+NICK alice
+USER alice 0 * :Alice Smith
+JOIN #general
+PRIVMSG #general :Hello everyone!
+QUIT
+```
+
+## Resources
+
+### RFC & Standards Documentation
+
+- **RFC 1459** — Internet Relay Chat Protocol (foundational)  
+  [https://www.rfc-editor.org/rfc/rfc1459](https://www.rfc-editor.org/rfc/rfc1459)  
+  Defines core IRC commands, numeric replies, message format, and protocol semantics.
+
+- **RFC 2812** — Internet Relay Chat: Client Protocol (modern revision)  
+  [https://www.rfc-editor.org/rfc/rfc2812](https://www.rfc-editor.org/rfc/rfc2812)  
+  Clarifications and updates to RFC 1459.
+
+- **Modern IRC Documentation** — Best practices and real-world server behavior  
+  [https://modern.ircdocs.horse/](https://modern.ircdocs.horse/)  
+  Edge cases, extended modes, and practical implementation notes.
+
+### System Programming Resources
+
+- **POSIX Socket API** — Low-level networking  
+  Manual pages: `man 2 socket`, `man 2 bind`, `man 2 listen`, `man 2 accept`, `man 2 recv`, `man 2 send`
+
+- **Poll Multiplexing** — Event-driven I/O  
+  Manual pages: `man 2 poll`, `man 2 fcntl` (for O_NONBLOCK)
+
+- **Signal Handling** — Clean server shutdown  
+  Manual pages: `man 2 signal`, `man 7 signal-safety`
+
+### C++98 Standard Library
+
+Core containers and utilities used:
+- `<map>` / `<set>` — Client and channel indexing by nickname/name
+- `<vector>` — Dynamic arrays for poll descriptors and command parameters
+- `<string>` — IRC message parsing and formatting
+- `<stdexcept>` — Exception handling for protocol errors
+
+## AI Usage Declaration
+
+AI was used to assist with:
+
+- **Code Review & Quality Assurance** — Static analysis of includes, dead code detection, consistency verification, and resource cleanup validation
+- **Parsing Refinement** — Protocol message parsing and validation logic
+- **Channel Logic** — Channel state management and user privilege handling
+
 ---
 
-## Notable Implementation Details
+## Project Highlights
 
-1. **Case-Insensitive Nicks & Channels:** Keys stored normalized; display names preserved separately.
-2. **Circular Buffer Avoidance:** Partial messages buffered in `_inBuffer` until a complete line (`\r\n`) arrives.
-3. **Non-Blocking I/O:** `fcntl(..., O_NONBLOCK)` on all sockets prevents blocking reads/writes.
-4. **Signal Safety:** `SIGPIPE` ignored; `SIGINT`/`SIGQUIT` trigger graceful shutdown.
-5. **Memory Management:** Destructors clean up client maps and channel pointers; no persistent leaks on normal exit.
+### 1. Core Commands Implemented
 
----
+**Authentication:** `PASS`, `NICK`, `USER`, `QUIT`  
+**Channels:** `JOIN`, `PART`, `TOPIC`, `MODE`, `INVITE`, `KICK`, `LIST`  
+**Messaging:** `PRIVMSG`, `NOTICE`  
+**Information:** `WHO`, `WHOIS`, `PING`
 
-## Sources & References
+### 2. Channel Modes
 
-- **RFC 1459:** Internet Relay Chat Protocol  
-  https://tools.ietf.org/html/rfc1459
-- **RFC 2812:** Internet Relay Chat: Client Protocol  
-  https://tools.ietf.org/html/rfc2812
-- **POSIX Socket Programming:** `man 7 socket`, `man 2 poll`, `man 2 recv`, `man 2 send`
-- **C++ Standard (ISO/IEC 14882:1998):** Templates, STL containers (map, vector, set)
+- `+i` — Invite-only (only invited users can join)
+- `+t` — Topic restricted (only operators can set topic)
+- `+k` — Key-protected (requires password to join)
+- `+l` — User limit (maximum members allowed)
 
----
+### 3. Technical Highlights
+
+✓ **Non-blocking I/O** — Server never blocks on socket operations  
+✓ **Asynchronous Multiplexing** — Handles 100+ concurrent clients efficiently via `poll()`  
+✓ **RFC Compliance** — Numeric replies (401, 403, 433, etc.) per RFC 1459  
+✓ **Signal Safety** — Graceful SIGINT/SIGQUIT handling  
+✓ **Buffer Management** — Automatic line buffering with 512-byte limit  
+✓ **Case-Insensitive Matching** — IRC standard scrambling (`[]\` ↔ `{}|`) for nicks/channels
+
+## Project Structure
+
+```
+ft_irc/
+├── Makefile              # Build rules
+├── README.md             # This file
+├── ircserv              # Compiled server executable
+├── include/             # Header files
+│   ├── Server.hpp       # Main server class
+│   ├── Client.hpp       # Client state & buffers
+│   ├── Channel.hpp      # Channel & member management
+│   ├── Commands.hpp     # Command handler declarations
+│   ├── Parsing.hpp      # IRC protocol parser
+│   └── Utils.hpp        # Utility functions
+└── src/                 # Implementation
+    ├── main.cpp
+    ├── server/          # Server networking (poll, accept, send/recv)
+    ├── client/          # Client state machine
+    ├── channel/         # Channel logic
+    ├── commands/        # Individual command implementations
+    ├── parsing/         # IRC message parsing
+    └── utils/           # Helper functions
+```
 
 ## Known Limitations
 
-- No TLS/SSL encryption.
-- Simplified operator/mode system (no full IRC operator hierarchy).
-- No persistent state or logging.
-- Limited to RFC 1459 core features (no SASL, CAP negotiation incomplete).
+- Broadcast of `NICK` changes not yet implemented
+- No server-initiated `PING` keepalive
+- `USER` re-registration not blocked (should return 462)
+- No MOTD/server banner
+
+Detailed issues and future improvements are documented in `doc/BUGS-TODO.md`.
 
 ---
 
-**Project Status:** Functional IRC server suitable for educational purposes and small-scale testing. Production use requires additional hardening and feature completeness.
+## Testing & Debugging
+
+### Quick Test
+
+```bash
+make && ./ircserv 6667 pass &
+nc localhost 6667
+# Then type IRC commands as shown above
+```
+
+### Memory Leak Detection
+
+```bash
+valgrind --leak-check=full ./ircserv 6667 pass
+```
+
+### With Existing IRC Client
+
+```bash
+./ircserv 6667 mypass
+# In another terminal:
+irssi -c localhost -p 6667 -w mypass
+```
+
+---
+
+## References
+
+RFC 1459: Internet Relay Chat Protocol  
+RFC 2812: Internet Relay Chat: Client Protocol  
+Modern IRC Documentation: https://modern.ircdocs.horse/
+Internet Relay Chat with Hexchat : https://youtu.be/G9_vvWTb8sI?si=BdKlBLoU5yM52ju1
